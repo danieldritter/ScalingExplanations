@@ -1,0 +1,21 @@
+{
+    "architectures": [
+      "T5ForConditionalGeneration"
+    ],
+    "d_ff": 4,
+    "d_kv": 2,
+    "d_model": 4,
+    "decoder_start_token_id": 0,
+    "dropout_rate": 0.1,
+    "eos_token_id": 1,
+    "initializer_factor": 1.0,
+    "is_encoder_decoder": true,
+    "layer_norm_epsilon": 1e-06,
+    "model_type": "t5",
+    "num_heads": 2,
+    "num_layers": 2,
+    "output_past": true,
+    "pad_token_id": 0,
+    "relative_attention_num_buckets": 4,
+    "vocab_size": 32128
+  }
