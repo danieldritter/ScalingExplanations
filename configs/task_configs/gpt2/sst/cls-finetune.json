@@ -1,0 +1,14 @@
+{
+    "dataset_name":"sst",
+    "dataset_kwargs":{"cache_dir":"./cached_datasets"},
+    "finetuning":true,
+    "pretrained_model_name":"gpt2-seq-cls",
+    "pretrained_model_config":"gpt2",
+    "tokenizer_config_name":"gpt2",
+    "seq2seq":false,
+    "num_labels":2,
+    "trained_layers": ["classifier.dense.weight", "classifier.dense.bias"],
+    "head":"gpt2-cls",
+    "pad_token":"!",
+    "max_length":512
+}

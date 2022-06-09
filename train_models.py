@@ -1,139 +1,180 @@
 from sacred import Experiment 
 from sacred.observers import MongoObserver
 import torch 
-import pytorch_lightning as pl 
 import numpy as np 
 import random 
 import os 
-from transformers import AutoConfig 
+import wandb 
+from transformers import AutoConfig, TrainingArguments, Trainer, DataCollatorWithPadding, TrainerCallback, EarlyStoppingCallback, DataCollatorForSeq2Seq
+import transformers 
+from copy import deepcopy
+from datasets import load_metric
 from dataset_registry import DATASETS
 from model_registry import MODELS, TOKENIZERS
-from task_registry import TASKS 
-from utils.sacred_logger import SacredLogger
+from classification_head_registry import CLASSIFICATION_HEADS
+from constants import WANDB_KEY, WANDB_ENTITY, PROJECT_NAME
+from utils.custom_trainer import CustomTrainer
 from torchsummary import summary 
 
 ex = Experiment("model_training")
-ex.observers.append(MongoObserver())
-
 """
-Currently:
-May need to write custom datasets for some things. Have small testing configs for most models set up. 
-Need to write training loop in most generic way possible, and copy in sacredlogger here. Also need to 
-write LightningModule wrapper with option for finetuning. Should probably just ignore conditional generation 
-stuff altogether, and just slap linear heads on top of embeddings for all classes. Going to be more readable 
-that way anyway. 
+TODO:
+Solve stupid GPT test config bug 
 
-Still not sure why performance for pooler is so bad. Try running full finetuning with averaging and see if performance is still good. 
-Ran frozen with averaging, and gets around 84%, which seems reasonable. 
+Figure out how to control number of gpus and parallelize large models 
+
+Can make the spurious sst dataset better. Currently using UNK token at end of sentence, but it's possible 
+that that appears in non-positive examples (if a sentences ends in an OOV word). Probably a minor issue for now, 
+but could improve by searching through set of tokens that appear in datasets, and then choosing one that does not as spurious token. 
+
+test randomized RoBERTa-base sized model, to see if it can reach 100% on the simple spurious task 
+
+Figure out if 'label' v 'labels' thing is just T5 or a general Seq2Seq thing
+
+look at preprocess_metrics for trainer_args to try and clean up input-output for metric calculation
+Figure out why T5 memory fails so often (I think it has to do with the size of the ouput tensors being saved on gpu)
+
+Write test script to run quick (but complete) training pass for all models and datasets. Can add to it as you go. 
+
+Currently, for the non-finetuning T5 case, we have to untie the embedding and output weights (randomly initialize the LM head),
+which isn't generally how it's trained or finetuned. Keeping them tied and then only updating the embedding and output weights 
+requires backpropping all the way to the inputs though, which kind of defeats the purpose of only tuning the head. 
 
 """
 
 @ex.config
 def config():
     seed = 12345
-
-    # Model params 
-    pretrained_model_name = "roberta"
-    # pretrained_model_config = "./test_configs/roberta_test.json"
-    pretrained_model_config = "roberta-base"
-    tokenizer_name = "roberta-base"
-    enable_checkpointing = False
-    head_type = "linear"
-    head_kwargs = {} 
-    if head_type == "mlp":
-        head_kwargs["hidden_size"] = 32
-    
-    # dataset params 
-    dataset_name = "sst"
-    # dataset_kwargs = {"num_samples":2000}
-    dataset_kwargs = {"num_samples":None}
-
-    # Training params 
-    lr = .00003
-    weight_decay = 0.1
-    use_warmup = True 
-    decay_lr = True
-    warmup_steps = 1000
-    lr_scheduler = "plateau"
-    lr_decay = .5
-    finetuning = True 
-    num_epochs = 10
+    run_name = "gpt2/mnli/avg-finetune"
+    num_samples = None 
+    # Can be overridden in task-specific configs for multiple test sets (e.g. mnli match and mismatch)
+    test_split = "test"
+    # HF Trainer arguments
     batch_size = 32
-    num_gpus = 1 
-    use_early_stopping = True
-    early_stopping_mode = "max"
+    lr = .00005
+    weight_decay = 0.0
+    num_epochs = 10
+    use_early_stopping = True 
     early_stopping_patience = 5
-    early_stopping_metric = "val_acc"
-    early_stopping_min_delta = 0.0
+    early_stopping_threshold = 0.0
+    report_to = "wandb"
+    # report_to = "none"
+    track_train_metrics = True
+    load_best_model_at_end = True 
+    hf_trainer_args = {
+        "output_dir":"model_outputs/"+run_name,
+        "evaluation_strategy":"epoch",
+        "per_device_train_batch_size":batch_size,
+        "per_device_eval_batch_size":batch_size,
+        "gradient_accumulation_steps":1,
+        "learning_rate":lr,
+        "weight_decay":weight_decay,
+        "adam_beta1":0.9,
+        "adam_beta2":0.999,
+        "adam_epsilon":1e-8,
+        "num_train_epochs":num_epochs,
+        "lr_scheduler_type":"linear",
+        "warmup_ratio":.06,
+        "logging_strategy":"steps",
+        "logging_steps":500,
+        "eval_accumulation_steps":100,
+        "save_total_limit":1,
+        "seed":seed,
+        "run_name":run_name,
+        "disable_tqdm":False,
+        "report_to":report_to,
+        "metric_for_best_model":"eval_accuracy",
+        "load_best_model_at_end": load_best_model_at_end
+    }
+    ex.add_config(f"./configs/task_configs/{run_name}.json")
+    # Checkpoint params 
+    save_strategy = "epoch"
+    save_total_limit = 1
 
-    # Task specific params set later 
-    num_classes = None 
-    task_kwargs = None 
-    task = None 
-    test_split = None 
-    pooling = None
-
-
-@ex.config 
-def dataset_kwargs(dataset_name):
-    """
-    Figure out how to initialize datasets that need different parameters here 
-    """
-    pass 
-
-@ex.config 
-def model_kwargs(pretrained_model_name):
-    """
-    Figure out how to initialize different model parameters here 
-    """
-    if pretrained_model_name == "roberta":
-        pooling = "avg"
-
-@ex.config
-def task_kwargs(dataset_name, num_classes, pooling, head_kwargs, head_type, finetuning, weight_decay, warmup_steps, lr_scheduler, lr_decay):
-    """
-    Figure out how to initialize task arguments here
-    """
-    if dataset_name == "multinli":
-        task = "sequence_classification"
-        num_classes = 3
-        head_kwargs["num_classes"] = num_classes 
-        task_kwargs = {"head_type":head_type, "head_kwargs":head_kwargs, "pooling":pooling, 
-                        "finetuning":finetuning, "weight_decay":weight_decay,"warmup_steps":warmup_steps,"lr_scheduler":lr_scheduler,"lr_decay":lr_decay}
-        test_split = "test_match"
-    elif dataset_name == "sst":
-        task = "sequence_classification"
-        num_classes = 2 
-        head_kwargs["num_classes"] = num_classes 
-        task_kwargs =  {"head_type":head_type, "head_kwargs":head_kwargs, "pooling":pooling, 
-                        "finetuning":finetuning, "weight_decay":weight_decay,"warmup_steps":warmup_steps,"lr_scheduler":lr_scheduler,"lr_decay":lr_decay}
-        test_split = "test"
+class TrainMetricCallback(TrainerCallback):
+    
+    def __init__(self, trainer) -> None:
+        super().__init__()
+        self._trainer = trainer
+    
+    def on_epoch_end(self, args, state, control, **kwargs):
+        if control.should_evaluate:
+            control_copy = deepcopy(control)
+            self._trainer.evaluate(eval_dataset=self._trainer.train_dataset, metric_key_prefix="train")
+            return control_copy
 
 @ex.automain 
 def train_model(_seed, _config):
+    if _config["report_to"] == "wandb":
+        os.environ["WANDB_API_KEY"] = WANDB_KEY
+        wandb.init(project=PROJECT_NAME, entity=WANDB_ENTITY, name=_config["run_name"])
+        wandb.config.update(_config)
     # Setting manual seeds 
     torch.manual_seed(_seed)
     torch.cuda.manual_seed(_seed)
     np.random.seed(_seed)
     random.seed(_seed)
-    dataset = DATASETS[_config["dataset_name"]](**_config["dataset_kwargs"])
+    dataset = DATASETS[_config["dataset_name"]](**_config["dataset_kwargs"],num_samples=_config["num_samples"])
+
+    # Defining metrics to track 
+    metric = load_metric("accuracy", cache_dir="./metric_cache")
+    def compute_metrics(eval_pred):
+        # Checks for an exact match of the sequence (a little hacky at the moment)
+        if _config["seq2seq"]:
+            logits, labels = eval_pred 
+            logits, losses = logits 
+            predictions = np.argmax(logits, axis=-1)
+            predictions = (predictions == labels).all(axis=-1)
+            labels = np.ones(labels.shape[0])
+        else:
+            logits, labels = eval_pred
+            predictions = np.argmax(logits, axis=-1)
+        return metric.compute(predictions=predictions, references=labels)
+
     # Local file case, not on the HF hub
     if _config["pretrained_model_config"].endswith(".json"):
-        pt_model_config = AutoConfig.from_pretrained(_config["pretrained_model_config"])
-        model = MODELS[_config["pretrained_model_name"]](pt_model_config)
+        pt_model_config = AutoConfig.from_pretrained(_config["pretrained_model_config"], num_labels=_config["num_labels"], tie_word_embeddings=_config["tie_word_embeddings"] if "tie_word_embeddings" in _config else True)
+        if "max_length" in _config:
+            pt_model_config.max_length = _config["max_length"]
+            model = MODELS[_config["pretrained_model_name"]](pt_model_config)
+        else:
+            model = MODELS[_config["pretrained_model_name"]](pt_model_config)
     else:
-        model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["pretrained_model_config"])
-    task_model = TASKS[_config["task"]](pretrained_model=model,**_config["task_kwargs"])
-    tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_name"])
-    train_loader = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split="train")
-    val_loader = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split="val")
-    test_loader = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split=_config["test_split"])
-    if _config["use_early_stopping"]:
-        callbacks = [pl.callbacks.EarlyStopping(_config["early_stopping_metric"], patience=_config["early_stopping_patience"], min_delta=_config["early_stopping_min_delta"], mode=_config["early_stopping_mode"])]
+        # The embedding tying is important here to initialize the language model head untied from the embeddings 
+        if "max_length":
+            model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["pretrained_model_config"], cache_dir="./cached_models", num_labels=_config["num_labels"], tie_word_embeddings=_config["tie_word_embeddings"] if "tie_word_embeddings" in _config else True, max_length=_config["max_length"])
+        else:
+            model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["pretrained_model_config"], cache_dir="./cached_models", num_labels=_config["num_labels"], tie_word_embeddings=_config["tie_word_embeddings"] if "tie_word_embeddings" in _config else True)
+    if not _config["finetuning"]:
+        for name, param in model.named_parameters():
+            if name in _config["trained_layers"]:
+                continue 
+            else:
+                param.requires_grad = False
+    if "pad_token" in _config:
+        tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=model.config.max_length, pad_token=_config["pad_token"])
+        model.config.pad_token_id = tokenizer.pad_token_id
     else:
-        callbacks = []
-    trainer = pl.Trainer(max_epochs=_config["num_epochs"],gpus=_config["num_gpus"],logger=SacredLogger(ex), callbacks=callbacks, enable_checkpointing=_config["enable_checkpointing"])
-    trainer.fit(task_model, train_loader, val_loader)
-    trainer.test(task_model, test_loader)
+        tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=model.config.max_length)
 
-    
+    if _config["seq2seq"]:
+        collator = DataCollatorForSeq2Seq(tokenizer, model=model,padding="longest",max_length=model.config.max_length)
+    else:
+        collator = DataCollatorWithPadding(tokenizer,"longest",max_length=model.config.max_length)
+        model.classifier = CLASSIFICATION_HEADS[_config["head"]](model.config)
+    transformers.logging.set_verbosity_error()
+    train_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split="train")
+    val_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split="val")
+    test_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split=_config["test_split"])
+    transformers.logging.set_verbosity_warning()
+    training_args = TrainingArguments(**_config["hf_trainer_args"], save_strategy=_config["save_strategy"])
+    trainer = Trainer(model=model,data_collator=collator,args=training_args,train_dataset=train_set,eval_dataset=val_set,compute_metrics=compute_metrics)
+    # TODO: This is currently quite inefficient, as it does a separate pass to compute training metrics after each epoch. 
+    # Kind of tricky to do a general version within compute_loss though. 
+    if _config["track_train_metrics"]:
+        trainer.add_callback(TrainMetricCallback(trainer)) 
+    if _config["use_early_stopping"]:
+        trainer.add_callback(EarlyStoppingCallback(early_stopping_patience=_config["early_stopping_patience"],early_stopping_threshold=_config["early_stopping_threshold"]))
+    trainer.train()
+    test_outs = trainer.predict(test_set)
+    trainer.log_metrics("test",test_outs.metrics)

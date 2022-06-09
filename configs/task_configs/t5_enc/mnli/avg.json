@@ -1,0 +1,13 @@
+{
+    "dataset_name":"multinli",
+    "dataset_kwargs":{"cache_dir":"./cached_datasets","text_to_text":false},
+    "finetuning":false,
+    "pretrained_model_name":"t5_enc-seq-cls",
+    "pretrained_model_config":"t5-small",
+    "tokenizer_config_name":"t5-small",
+    "seq2seq":false,
+    "trained_layers":["classifier.dense.weight", "classifier.dense.bias", "classifier.out_proj.weight", "classifier.out_proj.bias"],
+    "num_labels":3,
+    "test_split":"test_match",
+    "head":"t5-avg-pool"
+}
