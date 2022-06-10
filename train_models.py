@@ -64,6 +64,7 @@ def config():
     # report_to = "none"
     track_train_metrics = True
     load_best_model_at_end = True 
+    disable_tqdm = False
     hf_trainer_args = {
         "output_dir": output_dir + "/" + run_name,
         "evaluation_strategy":"epoch",
@@ -84,7 +85,7 @@ def config():
         "save_total_limit":1,
         "seed":seed,
         "run_name":run_name,
-        "disable_tqdm":False,
+        "disable_tqdm":disable_tqdm,
         "report_to":report_to,
         "metric_for_best_model":"eval_accuracy",
         "load_best_model_at_end": load_best_model_at_end
