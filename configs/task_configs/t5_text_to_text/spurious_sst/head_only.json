@@ -1,6 +1,6 @@
 {
     "dataset_name":"spurious_sst",
-    "dataset_kwargs":{"cache_dir":"./cached_datasets","text_to_text":true},
+    "dataset_kwargs":{"text_to_text":true},
     "finetuning":false,
     "pretrained_model_name":"t5_text_to_text",
     "pretrained_model_config":"t5-small",

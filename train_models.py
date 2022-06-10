@@ -45,15 +45,18 @@ requires backpropping all the way to the inputs though, which kind of defeats th
 @ex.config
 def config():
     seed = 12345
-    run_name = "gpt2/mnli/avg-finetune"
+    run_name = "roberta/mnli/avg-finetune"
     num_samples = None 
+    data_cache_dir = "./cached_datasets"
+    model_cache_dir = "./cached_models"
+    output_dir = "./model_outputs"
     # Can be overridden in task-specific configs for multiple test sets (e.g. mnli match and mismatch)
     test_split = "test"
     # HF Trainer arguments
     batch_size = 32
     lr = .00005
     weight_decay = 0.0
-    num_epochs =5
+    num_epochs =10
     use_early_stopping = True 
     early_stopping_patience = 5
     early_stopping_threshold = 0.0
@@ -62,7 +65,7 @@ def config():
     track_train_metrics = True
     load_best_model_at_end = True 
     hf_trainer_args = {
-        "output_dir":"model_outputs/"+run_name,
+        "output_dir": output_dir + "/" + run_name,
         "evaluation_strategy":"epoch",
         "per_device_train_batch_size":batch_size,
         "per_device_eval_batch_size":batch_size,
@@ -114,7 +117,7 @@ def train_model(_seed, _config):
     torch.cuda.manual_seed(_seed)
     np.random.seed(_seed)
     random.seed(_seed)
-    dataset = DATASETS[_config["dataset_name"]](**_config["dataset_kwargs"],num_samples=_config["num_samples"])
+    dataset = DATASETS[_config["dataset_name"]](**_config["dataset_kwargs"],num_samples=_config["num_samples"], cache_dir=_config["data_cache_dir"])
 
     # Defining metrics to track 
     metric = load_metric("accuracy", cache_dir="./metric_cache")
@@ -141,10 +144,10 @@ def train_model(_seed, _config):
             model = MODELS[_config["pretrained_model_name"]](pt_model_config)
     else:
         # The embedding tying is important here to initialize the language model head untied from the embeddings 
-        if "max_length":
-            model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["pretrained_model_config"], cache_dir="./cached_models", num_labels=_config["num_labels"], tie_word_embeddings=_config["tie_word_embeddings"] if "tie_word_embeddings" in _config else True, max_length=_config["max_length"])
+        if "max_length" in _config:
+            model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["pretrained_model_config"], cache_dir=_config["model_cache_dir"], num_labels=_config["num_labels"], tie_word_embeddings=_config["tie_word_embeddings"] if "tie_word_embeddings" in _config else True, max_length=_config["max_length"])
         else:
-            model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["pretrained_model_config"], cache_dir="./cached_models", num_labels=_config["num_labels"], tie_word_embeddings=_config["tie_word_embeddings"] if "tie_word_embeddings" in _config else True)
+            model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["pretrained_model_config"], cache_dir=_config["model_cache_dir"], num_labels=_config["num_labels"], tie_word_embeddings=_config["tie_word_embeddings"] if "tie_word_embeddings" in _config else True)
     if not _config["finetuning"]:
         for name, param in model.named_parameters():
             if name in _config["trained_layers"]:

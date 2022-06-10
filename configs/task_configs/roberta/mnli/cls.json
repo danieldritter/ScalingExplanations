@@ -1,6 +1,6 @@
 {
     "dataset_name":"multinli",
-    "dataset_kwargs":{"cache_dir":"./cached_datasets"},
+    "dataset_kwargs":{},
     "finetuning":false,
     "pretrained_model_name":"roberta-seq-cls",
     "pretrained_model_config":"roberta-base",

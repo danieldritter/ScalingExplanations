@@ -1,6 +1,6 @@
-MODELS=( 'roberta/mnli/finetune-avg' 'roberta/mnli/finetune-cls' 'roberta/mnli/avg' 'roberta/mnli/cls' \
-        'roberta/sst/avg' 'roberta/sst/cls' 'roberta/sst/finetune-avg' 'roberta/sst/finetune-cls' \
-        'roberta/spurious_sst/avg' 'roberta/spurious_sst/cls' 'roberta/spurious_sst/finetune-avg' 'roberta/spurious_sst/finetune-cls' )
+MODELS=( 'roberta/mnli/avg-finetune' 'roberta/mnli/cls-finetune' 'roberta/mnli/avg' 'roberta/mnli/cls' \
+        'roberta/sst/avg' 'roberta/sst/cls' 'roberta/sst/avg-finetune' 'roberta/sst/cls-finetune' \
+        'roberta/spurious_sst/avg' 'roberta/spurious_sst/cls' 'roberta/spurious_sst/avg-finetune' 'roberta/spurious_sst/cls-finetune' )
 
 for i in "${MODELS[@]}"
 do

@@ -1,6 +1,6 @@
 {
     "dataset_name":"spurious_sst",
-    "dataset_kwargs":{"cache_dir":"./cached_datasets"},
+    "dataset_kwargs":{},
     "finetuning":true,
     "pretrained_model_name":"gpt2-seq-cls",
     "pretrained_model_config":"gpt2",
