@@ -60,11 +60,12 @@ def config():
     use_early_stopping = True 
     early_stopping_patience = 5
     early_stopping_threshold = 0.0
-    report_to = "wandb"
-    # report_to = "none"
+    # report_to = "wandb"
+    report_to = "none"
     track_train_metrics = True
     load_best_model_at_end = True 
     disable_tqdm = False
+    eval_accumulation_steps = 50
     hf_trainer_args = {
         "output_dir": output_dir + "/" + run_name,
         "evaluation_strategy":"epoch",
@@ -81,7 +82,7 @@ def config():
         "warmup_ratio":.06,
         "logging_strategy":"steps",
         "logging_steps":500,
-        "eval_accumulation_steps":100,
+        "eval_accumulation_steps":eval_accumulation_steps,
         "save_total_limit":1,
         "seed":seed,
         "run_name":run_name,
@@ -90,10 +91,11 @@ def config():
         "metric_for_best_model":"eval_accuracy",
         "load_best_model_at_end": load_best_model_at_end
     }
-    ex.add_config(f"./configs/task_configs/{run_name}.json")
     # Checkpoint params 
     save_strategy = "epoch"
     save_total_limit = 1
+    ex.add_config(f"./configs/task_configs/{run_name}.json")
+
 
 class TrainMetricCallback(TrainerCallback):
     
@@ -122,17 +124,24 @@ def train_model(_seed, _config):
 
     # Defining metrics to track 
     metric = load_metric("accuracy", cache_dir="./metric_cache")
+
+    # This preprocessing ensures that only the predictions for each step are cached 
+    # Otherwise the memory use blows up real quick (particularly for seq2seq models)
+    def metric_preprocessing(logits, labels):
+        if _config["seq2seq"]:
+            return torch.argmax(logits[0], dim=-1)
+        else:
+            return torch.argmax(logits, dim=-1)
+
     def compute_metrics(eval_pred):
+        # logits here should already be predictions from preprocessing 
         # Checks for an exact match of the sequence (a little hacky at the moment)
         if _config["seq2seq"]:
-            logits, labels = eval_pred 
-            logits, losses = logits 
-            predictions = np.argmax(logits, axis=-1)
-            predictions = (predictions == labels).all(axis=-1)
-            labels = np.ones(labels.shape[0])
+            preds, labels = eval_pred 
+            predictions = (preds == labels).all(axis=-1)
+            labels = torch.ones(labels.shape[0])
         else:
-            logits, labels = eval_pred
-            predictions = np.argmax(logits, axis=-1)
+            predictions, labels = eval_pred
         return metric.compute(predictions=predictions, references=labels)
 
     # Local file case, not on the HF hub
@@ -172,7 +181,7 @@ def train_model(_seed, _config):
     test_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split=_config["test_split"])
     transformers.logging.set_verbosity_warning()
     training_args = TrainingArguments(**_config["hf_trainer_args"], save_strategy=_config["save_strategy"])
-    trainer = Trainer(model=model,data_collator=collator,args=training_args,train_dataset=train_set,eval_dataset=val_set,compute_metrics=compute_metrics)
+    trainer = Trainer(model=model,data_collator=collator,args=training_args,train_dataset=train_set,eval_dataset=val_set,compute_metrics=compute_metrics, preprocess_logits_for_metrics=metric_preprocessing)
     # TODO: This is currently quite inefficient, as it does a separate pass to compute training metrics after each epoch. 
     # Kind of tricky to do a general version within compute_loss though. 
     if _config["track_train_metrics"]:

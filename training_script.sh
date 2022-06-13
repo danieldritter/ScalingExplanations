@@ -1,5 +1,5 @@
 # MODELS=( 'gpt2/mnli/avg' 'gpt2/sst/avg' 'roberta/mnli/avg' 'roberta/sst/avg' 't5_enc/mnli/avg' 't5_enc/sst/avg' 't5_text_to_text/mnli/avg' 't5_text_to_text/sst/avg' )
-MODELS=( 'roberta/mnli/avg' )
+MODELS=( 'roberta/sst/avg-finetune' )
 
 for i in "${MODELS[@]}"
 do

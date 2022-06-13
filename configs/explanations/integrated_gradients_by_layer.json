@@ -1,6 +1,6 @@
 {
     "explanation_kwargs": {
-        "multiply_by_inputs":false
+        "multiply_by_inputs":true
     },
     "uses_layers":true
 }

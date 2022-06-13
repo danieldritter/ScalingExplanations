@@ -32,8 +32,9 @@ def config():
     run_name = "roberta/sst/cls-finetune"
     checkpoint_folder = "./model_outputs/" + run_name + "/checkpoint-20208"
     explanation_type = "integrated_gradients_by_layer"
-    num_examples = 1 
-    layers = ["roberta.embeddings"]
+    output_file = "./test_grads.html"
+    num_examples = 5
+    layer = "roberta.embeddings"
     # Model params (set later)
     pretrained_model_name = None
     pretrained_model_config = None
@@ -64,8 +65,8 @@ def get_explanations(_seed, _config):
     dataset = DATASETS[_config["dataset_name"]](**_config["dataset_kwargs"])
     tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"])
     if _config["uses_layers"]:
-        layers = [attrgetter(layer)(model) for layer in _config["layers"]]
-        explainer = EXPLANATIONS[_config["explanation_type"]](model, tokenizer, layers, **_config["explanation_kwargs"])
+        layer = attrgetter(_config["layer"])(model)
+        explainer = EXPLANATIONS[_config["explanation_type"]](model, tokenizer, layer, **_config["explanation_kwargs"])
     else:
         explainer = EXPLANATIONS[_config["explanation_type"]](model, tokenizer, **_config["explanation_kwargs"])
 
@@ -80,29 +81,14 @@ def get_explanations(_seed, _config):
     else:
         collator = DataCollatorWithPadding(tokenizer,"longest",max_length=model.config.max_length)    
     examples = train_set[:_config["num_examples"]]
-    # for example in examples:
-    #     print(example)
-    #     print(examples[example])
+    for example in examples:
+        print(example)
+        print(examples[example])
     if _config["num_examples"]> 1:
         attributions = explainer.get_explanations(collator(examples))
     else:
         attributions = explainer.get_explanations(examples)
 
-    examples = train_set[1:2]
-    # for example in examples:
-    #     print(example)
-    #     print(examples[example])
-    attributions3 = explainer.get_explanations(examples)
-
-    examples = train_set[:2]
-    # for example in examples:
-    #     print(example)
-    #     print(examples[example])
-    attributions2 = explainer.get_explanations(collator(examples))
-    print(torch.unique(attributions2[0][0] - attributions[0]))
-    print(attributions2[0][0])
-    print(attributions[0])
-    print(attributions2[0][1])
-    print(attributions3[0])
-    print(attributions3[0].shape)
-    print(attributions2[0][1].shape)
+    viz = explainer.visualize_examples(attributions)
+    with open(_config["output_file"], "w") as file:
+        file.write(viz.data)
