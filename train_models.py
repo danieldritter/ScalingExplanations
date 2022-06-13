@@ -56,7 +56,7 @@ def config():
     batch_size = 32
     lr = .00005
     weight_decay = 0.0
-    num_epochs =10
+    num_epochs = 20
     use_early_stopping = True 
     early_stopping_patience = 5
     early_stopping_threshold = 0.0
