@@ -5,7 +5,7 @@ for i in "${MODELS[@]}"
 do
     echo "TRAINING ${i}"
     echo "**************"
-    python train_models.py with "run_name=${i}" "batch_size=4"
+    python train_models.py with "run_name=${i}" "batch_size=4" "num_samples=50" 'report_to="none"'
     if [ "$?" -ne 0 ]; then
         echo "TRAINING FAILED FOR ${i}"
         exit $?

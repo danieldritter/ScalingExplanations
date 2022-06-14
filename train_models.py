@@ -48,7 +48,7 @@ def config():
     data_cache_dir = "./cached_datasets"
     model_cache_dir = "./cached_models"
     output_dir = "./model_outputs"
-    #NOTE: All of these can be overridden in task-specific configs, so that hyperparameters aren't fixed per-task/dataset 
+    #NOTE: All of these are just defaults and can be overridden in task-specific configs, so that hyperparameters aren't fixed per-task/dataset 
     test_split = "test"
     # HF Trainer arguments
     batch_size = 32
@@ -170,9 +170,8 @@ def train_model(_seed, _config):
         # Checks for an exact match of the sequence (a little hacky at the moment)
         if _config["seq2seq"]:
             preds, labels = eval_pred 
-            labels_good_vals = np.where(labels == -100, 1, labels)
             # -100 is the default value ignored by the loss in label padding. Have to account for it here otherwise there will almost never be exact matches 
-            predictions = np.logical_or(preds == labels, preds == -100).all(axis=-1)
+            predictions = np.logical_or(preds == labels, labels == -100).all(axis=-1)
             labels = torch.ones(labels.shape[0])
         else:
             predictions, labels = eval_pred
