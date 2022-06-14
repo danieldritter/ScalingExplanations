@@ -63,7 +63,7 @@ def config():
     logging_strategy = "steps"
     metric_for_best_model = "eval_accuracy"
     weight_decay = 0.0
-    num_epochs = 20
+    num_epochs = 50
     use_early_stopping = True 
     early_stopping_patience = 5
     early_stopping_threshold = 0.0
