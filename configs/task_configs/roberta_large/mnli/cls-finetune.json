@@ -1,0 +1,18 @@
+{
+        "dataset_name":"multinli",
+        "dataset_kwargs":{},
+        "finetuning":true,
+        "pretrained_model_name":"roberta-seq-cls",
+        "pretrained_model_config":"roberta-large",
+        "tokenizer_config_name":"roberta-large",
+        "seq2seq":false,
+        "test_split":"test_match",
+        "num_labels":3,
+        "head":"bert-cls",
+        "lr":2e-5,
+        "batch_size":32,
+        "num_epochs":10,
+        "warmup_ratio":0.06,
+        "lr_scheduler_type":"linear",
+        "use_early_stopping":true 
+}

@@ -19,7 +19,6 @@ from torchsummary import summary
 ex = Experiment("model_training")
 """
 TODO:
-Solve stupid GPT test config bug 
 
 Figure out how to control number of gpus and parallelize large models 
 
@@ -31,12 +30,12 @@ test randomized RoBERTa-base sized model, to see if it can reach 100% on the sim
 
 Figure out mnli label issue for text-to-text
 
-Write test script to run quick (but complete) training pass for all models and datasets. Can add to it as you go. 
-
 Currently, for the non-finetuning T5 case, we have to untie the embedding and output weights (randomly initialize the LM head),
 which isn't generally how it's trained or finetuned. Keeping them tied and then only updating the embedding and output weights 
 requires backpropping all the way to the inputs though, which kind of defeats the purpose of only tuning the head. 
 
+
+Finish converting rest of roberta-large configs (only mnli cls finetune works right now)
 """
 
 @ex.config
@@ -63,7 +62,7 @@ def config():
     logging_strategy = "steps"
     metric_for_best_model = "eval_accuracy"
     weight_decay = 0.0
-    num_epochs = 50
+    num_epochs = 10
     use_early_stopping = True 
     early_stopping_patience = 5
     early_stopping_threshold = 0.0
