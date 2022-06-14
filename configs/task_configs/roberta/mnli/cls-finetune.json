@@ -8,5 +8,11 @@
         "seq2seq":false,
         "test_split":"test_match",
         "num_labels":3,
-        "head":"bert-cls"
+        "head":"bert-cls",
+        "lr":1e-5,
+        "batch_size":32,
+        "weight_decay":0.1,
+        "warmup_ratio":0.06,
+        "lr_scheduler_type":"linear",
+        "num_epochs":10
 }
