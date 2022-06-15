@@ -27,14 +27,15 @@ but could improve by searching through set of tokens that appear in datasets, an
 
 test randomized RoBERTa-base sized model, to see if it can reach 100% on the simple spurious task 
 
-Figure out mnli label issue for text-to-text
-
 Currently, for the non-finetuning T5 case, we have to untie the embedding and output weights (randomly initialize the LM head),
 which isn't generally how it's trained or finetuned. Keeping them tied and then only updating the embedding and output weights 
 requires backpropping all the way to the inputs though, which kind of defeats the purpose of only tuning the head. 
 
 
 Finish converting rest of roberta-large configs (only mnli cls finetune works right now)
+
+Need to change datasets to use all of training data to replicate original results. Add a check to make sure 
+you don't try to use early stopping when doing this as well. 
 """
 
 @ex.config
@@ -144,7 +145,8 @@ def train_model(_seed, _config):
             model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["pretrained_model_config"], cache_dir=_config["model_cache_dir"], num_labels=_config["num_labels"], tie_word_embeddings=_config["tie_word_embeddings"] if "tie_word_embeddings" in _config else True, max_length=_config["max_length"])
         else:
             model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["pretrained_model_config"], cache_dir=_config["model_cache_dir"], num_labels=_config["num_labels"], tie_word_embeddings=_config["tie_word_embeddings"] if "tie_word_embeddings" in _config else True)
-
+    # Prints a summary of model shape, number of parameters, etc. 
+    summary(model)
 
     if "pad_token" in _config:
         tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=model.config.max_length, pad_token=_config["pad_token"])
@@ -191,6 +193,7 @@ def train_model(_seed, _config):
     train_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split="train")
     val_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split="val")
     test_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split=_config["test_split"])
+    print(len(val_set))
     transformers.logging.set_verbosity_warning()
     training_args = TrainingArguments(**hf_trainer_args)
     trainer = Trainer(model=model,data_collator=collator,args=training_args,train_dataset=train_set,eval_dataset=val_set,compute_metrics=compute_metrics, preprocess_logits_for_metrics=metric_preprocessing)
@@ -201,5 +204,8 @@ def train_model(_seed, _config):
     if _config["use_early_stopping"]:
         trainer.add_callback(EarlyStoppingCallback(early_stopping_patience=_config["early_stopping_patience"],early_stopping_threshold=_config["early_stopping_threshold"]))
     trainer.train()
-    test_outs = trainer.predict(test_set)
-    trainer.log_metrics("test",test_outs.metrics)
+    if test_set != None:
+        test_outs = trainer.predict(test_set)
+        trainer.log_metrics("test",test_outs.metrics)
+    else:
+        print(f"No Test Set Available for {_config['dataset_name']}")

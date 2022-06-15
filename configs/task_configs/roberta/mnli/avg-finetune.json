@@ -6,6 +6,6 @@
         "pretrained_model_config":"roberta-base",
         "tokenizer_config_name":"roberta-base",
         "seq2seq":false,
-        "test_split":"test_match",
+        "test_split":"test",
         "num_labels":3
 }
