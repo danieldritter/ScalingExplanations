@@ -2,17 +2,17 @@ from transformers import GPT2PreTrainedModel, GPT2Model
 from transformers.modeling_outputs import SequenceClassifierOutputWithPast
 from typing import Optional, Tuple, Union
 import torch 
-from .classification_heads import GPT2AvgPoolingClassificationHead, GPT2CLSClassificationHead
+from ..classification_heads import GPT2AvgPoolingClassificationHead, GPT2CLSClassificationHead
 from torch.nn import MSELoss, CrossEntropyLoss, BCEWithLogitsLoss
 
-class GPT2ForSequenceClassificationCustomPooling(GPT2PreTrainedModel):
+class GPT2ForSequenceClassificationAvg(GPT2PreTrainedModel):
     _keys_to_ignore_on_load_missing = [r"h\.\d+\.attn\.masked_bias", r"lm_head\.weight"]
 
     def __init__(self, config):
         super().__init__(config)
         self.num_labels = config.num_labels
         self.transformer = GPT2Model(config)
-        self.classifier = GPT2CLSClassificationHead(config)
+        self.classifier = GPT2AvgPoolingClassificationHead(config)
 
         # Model parallel
         self.model_parallel = False

@@ -11,7 +11,6 @@ from copy import deepcopy
 from datasets import load_metric
 from dataset_registry import DATASETS
 from model_registry import MODELS, TOKENIZERS
-from classification_head_registry import CLASSIFICATION_HEADS
 from constants import WANDB_KEY, WANDB_ENTITY, PROJECT_NAME
 from utils.custom_trainer import CustomTrainer
 from torchsummary import summary 
@@ -40,7 +39,7 @@ Finish converting rest of roberta-large configs (only mnli cls finetune works ri
 
 @ex.config
 def config():
-    seed = 12345
+    seed = 127895
     run_name = "roberta/mnli/avg-finetune"
     ex.add_config(f"./configs/task_configs/{run_name}.json")
     num_samples = None 
@@ -183,12 +182,11 @@ def train_model(_seed, _config):
             else:
                 param.requires_grad = False
 
-
     if _config["seq2seq"]:
         collator = DataCollatorForSeq2Seq(tokenizer, model=model,padding="longest",max_length=model.config.max_length)
     else:
         collator = DataCollatorWithPadding(tokenizer,"longest",max_length=model.config.max_length)
-        model.classifier = CLASSIFICATION_HEADS[_config["head"]](model.config)
+
     transformers.logging.set_verbosity_error()
     train_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split="train")
     val_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split="val")

@@ -6,11 +6,11 @@ from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 from transformers.modeling_outputs import SequenceClassifierOutput
 from transformers.models.t5.modeling_t5 import T5Config, T5PreTrainedModel, T5Stack
 from transformers.utils.model_parallel_utils import assert_device_map, get_device_map
-from .classification_heads import T5CLSClassificationHead
+from ..classification_heads import T5CLSClassificationHead
 
 
 
-class T5EncoderForSequenceClassification(T5PreTrainedModel):
+class T5EncoderForSequenceClassificationCLS(T5PreTrainedModel):
     # _keys_to_ignore_on_load_missing = [
     #     r"encoder\.embed_tokens\.weight",
     # ]
