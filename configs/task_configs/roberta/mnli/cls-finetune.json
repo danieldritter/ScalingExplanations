@@ -10,7 +10,7 @@
         "num_labels":3,
         "lr":2e-5,
         "batch_size":16,
-        "weight_decay":0.1,
+        "weight_decay":0.0,
         "warmup_ratio":0.06,
         "lr_scheduler_type":"linear",
         "num_epochs":10

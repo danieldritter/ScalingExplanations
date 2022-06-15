@@ -16,25 +16,41 @@ from constants import PROJECT_NAME, WANDB_KEY, WANDB_ENTITY
 ex = Experiment("explanation-generation")
 
 """
-Figure out how to deal with tokenization issue (need to get special tokens so you only override original tokens in baseline generation for IG)
-
 Test and adjust to fix the text-to-text
 
-Not sure if generating multiple examples at the same time is valid yet (need to check how underlying gradients are computed to make 
-sure multiple examples doesn't mess things). Use with a single example at a time for now. 
+How to deal with text-to-text: 
+It's sequence generation, so it's multiple steps of classification. Not immediately clear 
+how to apply feature attribution methods in that context. 
 
-Get it to work with one example for now 
+In seq2seq case, we get a distribution over the vocabulary for each timestep. So output is 
+
+(len_labels, vocab_size)
+
+If label fits into one token, then we're fine, and it just reduces to the single class case. 
+If not, then it's more complicated. Could average attributions over the whole sentence (E.g. compute 
+for each token in label sequence, and then average the attributions per input token).
+
+Best option: Leave capacity to compute for individual tokens in the same way you compute for the regular case (albeit with more dimensions)
+    then add a separate version to loop that computation and average. These label sequences shouldn't be crazy long, so we're looking 
+    at a low constant multiplicative factor in terms of complexity. 
+
+There's something wrong with the input ids and padding in mnli. The input ids are converted into one large tensor, 
+while the labels are not. And every input id list appears to be the same length. Something's wack there, so compare
+to the output in the roberta case. 
+
+
 """
 
 @ex.config 
 def config():
     seed = 12345
-    run_name = "roberta/sst/cls-finetune"
-    checkpoint_folder = "./model_outputs/" + run_name + "/checkpoint-20208"
+    run_name = "t5_text_to_text/mnli/finetune"
+    checkpoint_folder = "./model_outputs/" + run_name + "/checkpoint-7000"
     explanation_type = "integrated_gradients_by_layer"
     output_file = "./test_grads.html"
-    num_examples = 5
-    layer = "roberta.embeddings"
+    num_samples = None
+    num_examples = 25
+    layer = "shared"
     # Model params (set later)
     pretrained_model_name = None
     pretrained_model_config = None
@@ -43,7 +59,7 @@ def config():
     dataset_name = None
     dataset_kwargs = None
     num_labels = None 
-    test_split = "test"
+    test_split = "test_match"
     batch_size = 32
     # report_to = "wandb"
     report_to = "none"
@@ -62,8 +78,8 @@ def get_explanations(_seed, _config):
     np.random.seed(_seed)
     random.seed(_seed)
     model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["checkpoint_folder"])
-    dataset = DATASETS[_config["dataset_name"]](**_config["dataset_kwargs"])
-    tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"])
+    dataset = DATASETS[_config["dataset_name"]](**_config["dataset_kwargs"], num_samples=_config["num_samples"])
+    tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=model.config.max_length)
     if _config["uses_layers"]:
         layer = attrgetter(_config["layer"])(model)
         explainer = EXPLANATIONS[_config["explanation_type"]](model, tokenizer, layer, **_config["explanation_kwargs"])
@@ -84,11 +100,12 @@ def get_explanations(_seed, _config):
     for example in examples:
         print(example)
         print(examples[example])
+    print(collator(examples))
     if _config["num_examples"]> 1:
-        attributions = explainer.get_explanations(collator(examples))
+        attributions = explainer.get_explanations(collator([examples]))
     else:
         attributions = explainer.get_explanations(examples)
 
-    viz = explainer.visualize_examples(attributions)
+    viz = explainer.visualize_explanations(attributions)
     with open(_config["output_file"], "w") as file:
         file.write(viz.data)

@@ -9,3 +9,7 @@ class Explainer(ABC):
     @abstractmethod 
     def get_explanations(self,inputs):
         pass 
+
+    @abstractmethod
+    def visualize_explanations(self, explanations):
+        pass 
