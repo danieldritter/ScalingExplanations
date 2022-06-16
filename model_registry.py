@@ -1,7 +1,7 @@
 from transformers import RobertaModel, RobertaTokenizer, GPT2Model, GPT2Tokenizer, T5Model, T5Tokenizer, RobertaForSequenceClassification, T5ForConditionalGeneration, GPT2ForSequenceClassification
 from custom_models.t5_enc.t5_enc_cls_seq_classification import T5EncoderForSequenceClassificationCLS
 from custom_models.t5_enc.t5_enc_avg_seq_classification import T5EncoderForSequenceClassificationAvg
-from custom_models.gpt.gpt2_cls_seq_classification import GPT2ForSequenceClassificationAvg
+from custom_models.gpt.gpt2_avg_seq_classification import GPT2ForSequenceClassificationAvg
 from custom_models.roberta.roberta_avg_seq_classification import RobertaForSequenceClassificationAvg
 
 MODELS = {
@@ -26,5 +26,6 @@ TOKENIZERS = {
     "gpt2-avg-seq-class":GPT2Tokenizer,
     "t5":T5Tokenizer,
     "t5_text_to_text":T5Tokenizer,
-    "t5_enc-seq-cls":T5Tokenizer
+    "t5_enc-avg-seq-class":T5Tokenizer,
+    "t5_enc-cls-seq-class":T5Tokenizer
 }

@@ -12,18 +12,14 @@ examples have the same structure, though, so they could still be used.
 class HansDataset:
     
     def __init__(self, cache_dir: str = "./cached_datasets", num_samples: int = None, text_to_text: bool = False, hypothesis_prefix: str = "hypothesis: ", premise_prefix: str = "mnli premise: "):
-        self.full_dataset = datasets.load_dataset("hans", split="train",cache_dir=cache_dir).shuffle()
-        split_dataset = self.full_dataset.train_test_split(test_size=0.2, shuffle=True)
-        self.train_dataset = split_dataset["train"]
-        self.val_dataset = split_dataset["test"]
-        self.test_dataset = datasets.load_dataset("hans", split="validation", cache_dir=cache_dir)
+        self.train_dataset = datasets.load_dataset("hans", split="train",cache_dir=cache_dir).shuffle()
+        self.val_dataset = datasets.load_dataset("hans", split="validation", cache_dir=cache_dir)
         self.hypothesis_prefix = hypothesis_prefix 
         self.premise_prefix = premise_prefix 
         self.text_to_text = text_to_text
         if num_samples != None:
             self.train_dataset = self.train_dataset.filter(lambda e,idx: idx < num_samples, with_indices=True)
             self.val_dataset = self.val_dataset.filter(lambda e,idx: idx < num_samples, with_indices=True)
-            self.test_dataset = self.test_dataset.filter(lambda e,idx: idx < num_samples, with_indices=True)
 
         def text_to_text_conversion(example):
             """
@@ -42,27 +38,22 @@ class HansDataset:
             example["hypothesis"] = [hypothesis_prefix  + example["hypothesis"][i] for i in range(len(example["hypothesis"]))]
             return example
     
-        split_dataset = self.full_dataset.train_test_split(test_size=0.2, shuffle=True)
-        self.train_dataset = split_dataset["train"]
-        self.val_dataset = split_dataset["test"]
         if self.text_to_text:
             self.train_dataset = self.train_dataset.map(text_to_text_conversion, batched=True)
             self.val_dataset = self.val_dataset.map(text_to_text_conversion, batched=True)
-            self.test_dataset = self.test_dataset.map(text_to_text_conversion, batched=True)
         self.train_dataset = self.train_dataset.rename_column("label","labels")
         self.val_dataset = self.val_dataset.rename_column("label","labels")
-        self.test_dataset = self.test_dataset.rename_column("label","labels")
     
-    def get_dataloader(self, pretrained_model: PreTrainedModel, tokenizer: PreTrainedTokenizer, batch_size: int, split: str = "train", format: bool = False):
+    def get_dataloader(self, pretrained_model: PreTrainedModel, tokenizer: PreTrainedTokenizer, max_length: int = 512, batch_size: int = 32, split: str = "train", format: bool = False):
         def tokenization(example):
             if self.text_to_text:
-                token_out = tokenizer(example["premise"],example["hypothesis"],truncation="longest_first",max_length=pretrained_model.config.max_length)
-                label_out = tokenizer(example["labels"],truncation=True,max_length=pretrained_model.config.max_length)
+                token_out = tokenizer(example["premise"],example["hypothesis"],truncation="longest_first",max_length=max_length)
+                label_out = tokenizer(example["labels"],truncation=True,max_length=max_length)
                 example.update(token_out)
                 example["labels"] = label_out["input_ids"]
                 return example 
             else:
-                token_out = tokenizer(example["premise"],example["hypothesis"],truncation="longest_first",max_length=pretrained_model.config.max_length)
+                token_out = tokenizer(example["premise"],example["hypothesis"],truncation="longest_first",max_length=max_length)
                 example.update(token_out)
                 return token_out 
         if split == "train":
@@ -70,7 +61,7 @@ class HansDataset:
         elif split == "val":
             tokenized_set = self.val_dataset.map(tokenization, batched=True)
         elif split == "test":
-            tokenized_set = self.test_dataset.map(tokenization, batched=True)
+            return None 
         if format:
             non_input_cols = set(["premise", "hypothesis","idx"])
             keep_cols = list(set(tokenized_set.column_names) - non_input_cols)

@@ -2,7 +2,7 @@
     "dataset_name":"sst",
     "dataset_kwargs":{},
     "finetuning":true,
-    "pretrained_model_name":"roberta-seq-cls",
+    "pretrained_model_name":"roberta-cls-seq-class",
     "pretrained_model_config":"roberta-base",
     "tokenizer_config_name":"roberta-base",
     "seq2seq":false,

@@ -38,19 +38,23 @@ There's something wrong with the input ids and padding in mnli. The input ids ar
 while the labels are not. And every input id list appears to be the same length. Something's wack there, so compare
 to the output in the roberta case. 
 
+Issue above has to do with the lengths of attention masks all being 20. Seen this before, somewhere we have to change the config 
+to allow for a longer length. Not sure where yet though. 
+
 
 """
 
 @ex.config 
 def config():
     seed = 12345
-    run_name = "t5_text_to_text/mnli/finetune"
-    checkpoint_folder = "./model_outputs/" + run_name + "/checkpoint-7000"
+    run_name = "roberta/mnli/cls-finetune"
+    checkpoint_folder = "./model_outputs/" + run_name + "/checkpoint-196352"
     explanation_type = "integrated_gradients_by_layer"
     output_file = "./test_grads.html"
     num_samples = None
     num_examples = 25
-    layer = "shared"
+    # layer = "shared"
+    layer = "roberta.embeddings"
     # Model params (set later)
     pretrained_model_name = None
     pretrained_model_config = None
@@ -59,7 +63,7 @@ def config():
     dataset_name = None
     dataset_kwargs = None
     num_labels = None 
-    test_split = "test_match"
+    test_split = "test"
     batch_size = 32
     # report_to = "wandb"
     report_to = "none"
@@ -78,6 +82,8 @@ def get_explanations(_seed, _config):
     np.random.seed(_seed)
     random.seed(_seed)
     model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["checkpoint_folder"])
+    print(model.config.max_length)
+    exit()
     dataset = DATASETS[_config["dataset_name"]](**_config["dataset_kwargs"], num_samples=_config["num_samples"])
     tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=model.config.max_length)
     if _config["uses_layers"]:
@@ -87,19 +93,25 @@ def get_explanations(_seed, _config):
         explainer = EXPLANATIONS[_config["explanation_type"]](model, tokenizer, **_config["explanation_kwargs"])
 
     transformers.logging.set_verbosity_error()
-    train_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split="train", format=True)
+    train_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split="train", format=False)
     val_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split="val", format=True)
     test_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split=_config["test_split"], format=True)
     transformers.logging.set_verbosity_warning()
+
     # Need data collator here to handle padding of batches and turning into tensors 
     if _config["seq2seq"]:
         collator = DataCollatorForSeq2Seq(tokenizer, model=model,padding="longest",max_length=model.config.max_length)
     else:
-        collator = DataCollatorWithPadding(tokenizer,"longest",max_length=model.config.max_length)    
+        collator = DataCollatorWithPadding(tokenizer,"longest",max_length=model.config.max_length)  
+    outs = model(**collator(train_set[:10]))
+    print(outs)
+    exit()  
     examples = train_set[:_config["num_examples"]]
     for example in examples:
         print(example)
         print(examples[example])
+    print(examples)
+    print([len(examples["attention_mask"][i]) for i in range(len(examples["attention_mask"]))])
     print(collator(examples))
     if _config["num_examples"]> 1:
         attributions = explainer.get_explanations(collator([examples]))

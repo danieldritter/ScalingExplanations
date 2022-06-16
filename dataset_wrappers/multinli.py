@@ -13,8 +13,8 @@ class MultiNLIDataset:
         self.text_to_text = text_to_text
         if num_samples != None:
             self.train_dataset = self.train_dataset.filter(lambda e,idx: idx < num_samples, with_indices=True)
-            self.val_dataset_match = self.val_dataset_match.filter(lambda e,idx: idx < num_samples, with_indices=True)
-            self.val_dataset_mismatch = self.val_dataset_mismatch.filter(lambda e,idx: idx < num_samples, with_indices=True)
+            self.val_dataset_match = self.val_dataset_match.filter(lambda e,idx: idx < num_samples//2, with_indices=True)
+            self.val_dataset_mismatch = self.val_dataset_mismatch.filter(lambda e,idx: idx < num_samples - num_samples//2, with_indices=True)
 
         def text_to_text_conversion(example):
             """
@@ -44,16 +44,16 @@ class MultiNLIDataset:
 
 
     
-    def get_dataloader(self, pretrained_model: PreTrainedModel, tokenizer: PreTrainedTokenizer, batch_size: int, split: str = "train", format=False):
+    def get_dataloader(self, pretrained_model: PreTrainedModel, tokenizer: PreTrainedTokenizer, max_length: int = 512, batch_size: int = 32, split: str = "train", format=False):
         def tokenization(example):
             if self.text_to_text:
-                token_out = tokenizer(example["premise"],example["hypothesis"],truncation="longest_first",max_length=pretrained_model.config.max_length)
-                label_out = tokenizer(example["labels"],truncation=True,max_length=pretrained_model.config.max_length)
+                token_out = tokenizer(example["premise"],example["hypothesis"],truncation="longest_first",max_length=max_length)
+                label_out = tokenizer(example["labels"],truncation=True,max_length=max_length)
                 example.update(token_out)
                 example["labels"] = label_out["input_ids"]
                 return example 
             else:
-                token_out = tokenizer(example["premise"],example["hypothesis"],truncation="longest_first",max_length=pretrained_model.config.max_length)
+                token_out = tokenizer(example["premise"],example["hypothesis"],truncation="longest_first",max_length=max_length)
                 example.update(token_out)
                 return token_out 
         if split == "train":

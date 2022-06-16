@@ -3,6 +3,7 @@ from transformers.modeling_outputs import SequenceClassifierOutput
 from ..classification_heads import BERTAvgPoolingClassificationHead
 from typing import Optional, Union, Tuple
 import torch 
+from torch.nn import CrossEntropyLoss, MSELoss, BCEWithLogitsLoss
 
 class RobertaForSequenceClassificationAvg(RobertaPreTrainedModel):
     _keys_to_ignore_on_load_missing = [r"position_ids"]

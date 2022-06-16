@@ -12,6 +12,7 @@
     "is_encoder_decoder": true,
     "layer_norm_epsilon": 1e-06,
     "model_type": "t5",
+    "n_positions":512,
     "num_heads": 2,
     "num_layers": 2,
     "output_past": true,

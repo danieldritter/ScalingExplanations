@@ -2,7 +2,7 @@
     "dataset_name":"sst",
     "dataset_kwargs":{"text_to_text":false},
     "finetuning":false,
-    "pretrained_model_name":"t5_enc-seq-cls",
+    "pretrained_model_name":"t5_enc-cls-seq-class",
     "pretrained_model_config":"t5-small",
     "tokenizer_config_name":"t5-small",
     "seq2seq":false,

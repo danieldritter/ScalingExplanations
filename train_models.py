@@ -36,6 +36,9 @@ Finish converting rest of roberta-large configs (only mnli cls finetune works ri
 
 Need to change datasets to use all of training data to replicate original results. Add a check to make sure 
 you don't try to use early stopping when doing this as well. 
+
+The issue is max length truncation here and in explanations. Need to find a way to set it to actually be the max length of the model 
+
 """
 
 @ex.config
@@ -134,29 +137,29 @@ def train_model(_seed, _config):
     # Local file case, not on the HF hub
     if _config["pretrained_model_config"].endswith(".json"):
         pt_model_config = AutoConfig.from_pretrained(_config["pretrained_model_config"], num_labels=_config["num_labels"], tie_word_embeddings=_config["tie_word_embeddings"] if "tie_word_embeddings" in _config else True)
-        if "max_length" in _config:
-            pt_model_config.max_length = _config["max_length"]
-            model = MODELS[_config["pretrained_model_name"]](pt_model_config)
-        else:
-            model = MODELS[_config["pretrained_model_name"]](pt_model_config)
+        model = MODELS[_config["pretrained_model_name"]](pt_model_config)
     else:
         # The embedding tying is important here to initialize the language model head untied from the embeddings 
-        if "max_length" in _config:
-            model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["pretrained_model_config"], cache_dir=_config["model_cache_dir"], num_labels=_config["num_labels"], tie_word_embeddings=_config["tie_word_embeddings"] if "tie_word_embeddings" in _config else True, max_length=_config["max_length"])
-        else:
-            model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["pretrained_model_config"], cache_dir=_config["model_cache_dir"], num_labels=_config["num_labels"], tie_word_embeddings=_config["tie_word_embeddings"] if "tie_word_embeddings" in _config else True)
-    # Prints a summary of model shape, number of parameters, etc. 
-    summary(model)
+        model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["pretrained_model_config"], cache_dir=_config["model_cache_dir"], num_labels=_config["num_labels"], tie_word_embeddings=_config["tie_word_embeddings"] if "tie_word_embeddings" in _config else True)
+
+    # Different models have different attributes determining maximum sequence length. Just checking for the ones used in T5, RoBERTa and GPT2 here 
+    if hasattr(model.config,"max_position_embeddings"):
+        max_length = model.config.max_position_embeddings
+    elif hasattr(model.config, "n_positions"):
+        max_length = model.config.n_positions
+    else:
+        print("Model max sequence length not determined by max_position_embeddings or n_positions. Using 512 as default")
+        max_length = 512 
 
     if "pad_token" in _config:
-        tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=model.config.max_length, pad_token=_config["pad_token"])
+        tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=max_length, pad_token=_config["pad_token"])
         model.config.pad_token_id = tokenizer.pad_token_id
     else:
-        tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=model.config.max_length)
+        tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=max_length)
 
     # Defining metrics to track 
     metric = load_metric("accuracy", cache_dir="./metric_cache")
-
+    
     # This preprocessing ensures that only the predictions for each step are cached 
     # Otherwise the memory use blows up real quick (particularly for seq2seq models)
     def metric_preprocessing(logits, labels):
@@ -185,15 +188,14 @@ def train_model(_seed, _config):
                 param.requires_grad = False
 
     if _config["seq2seq"]:
-        collator = DataCollatorForSeq2Seq(tokenizer, model=model,padding="longest",max_length=model.config.max_length)
+        collator = DataCollatorForSeq2Seq(tokenizer, model=model,padding="longest",max_length=max_length)
     else:
-        collator = DataCollatorWithPadding(tokenizer,"longest",max_length=model.config.max_length)
+        collator = DataCollatorWithPadding(tokenizer,"longest",max_length=max_length)
 
     transformers.logging.set_verbosity_error()
-    train_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split="train")
-    val_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split="val")
-    test_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split=_config["test_split"])
-    print(len(val_set))
+    train_set = dataset.get_dataloader(model,tokenizer,max_length,_config["batch_size"],split="train")
+    val_set = dataset.get_dataloader(model,tokenizer,max_length,_config["batch_size"],split="val")
+    test_set = dataset.get_dataloader(model,tokenizer,max_length,_config["batch_size"],split=_config["test_split"])
     transformers.logging.set_verbosity_warning()
     training_args = TrainingArguments(**hf_trainer_args)
     trainer = Trainer(model=model,data_collator=collator,args=training_args,train_dataset=train_set,eval_dataset=val_set,compute_metrics=compute_metrics, preprocess_logits_for_metrics=metric_preprocessing)
@@ -202,7 +204,7 @@ def train_model(_seed, _config):
     if _config["track_train_metrics"]:
         trainer.add_callback(TrainMetricCallback(trainer)) 
     if _config["use_early_stopping"]:
-        trainer.add_callback(EarlyStoppingCallback(early_stopping_patience=_config["early_stopping_patience"],early_stopping_threshold=_config["early_stopping_threshold"]))
+        trainer.add_callback(EarlyStoppingCallback(early_stopping_patience=_config["early_stopping_patience"], early_stopping_threshold=_config["early_stopping_threshold"]))
     trainer.train()
     if test_set != None:
         test_outs = trainer.predict(test_set)

@@ -2,7 +2,7 @@
     "dataset_name":"sst",
     "dataset_kwargs":{},
     "finetuning":true,
-    "pretrained_model_name":"gpt2-seq-cls",
+    "pretrained_model_name":"gpt2-cls-seq-class",
     "pretrained_model_config":"gpt2",
     "tokenizer_config_name":"gpt2",
     "seq2seq":false,

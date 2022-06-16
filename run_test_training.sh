@@ -1,51 +1,51 @@
-MODELS=( 'roberta/mnli/avg-finetune' 'roberta/mnli/cls-finetune' 'roberta/mnli/avg' 'roberta/mnli/cls' \
-        'roberta/sst/avg' 'roberta/sst/cls' 'roberta/sst/avg-finetune' 'roberta/sst/cls-finetune' \
-        'roberta/spurious_sst/avg' 'roberta/spurious_sst/cls' 'roberta/spurious_sst/avg-finetune' 'roberta/spurious_sst/cls-finetune' )
+# MODELS=( 'roberta/mnli/avg-finetune' 'roberta/mnli/cls-finetune' 'roberta/mnli/avg' 'roberta/mnli/cls' \
+#         'roberta/sst/avg' 'roberta/sst/cls' 'roberta/sst/avg-finetune' 'roberta/sst/cls-finetune' \
+#         'roberta/spurious_sst/avg' 'roberta/spurious_sst/cls' 'roberta/spurious_sst/avg-finetune' 'roberta/spurious_sst/cls-finetune' )
 
-for i in "${MODELS[@]}"
-do
-    echo "TESTING ${i}"
-    echo "**************"
-    python train_models.py with "run_name=${i}" 'num_samples=500' 'num_epochs=3' 'report_to="none"' \
-        'track_train_metrics=True' 'save_strategy="no"' 'pretrained_model_config="./configs/tests/roberta_test.json"' \
-        'load_best_model_at_end=False' 'use_early_stopping=False'
-    if [ "$?" -ne 0 ]; then
-        echo "TESTING FAILED FOR ${i}"
-        exit $?
-    fi
-done
+# for i in "${MODELS[@]}"
+# do
+#     echo "TESTING ${i}"
+#     echo "**************"
+#     python train_models.py with "run_name=${i}" 'num_samples=500' 'num_epochs=3' 'report_to="none"' \
+#         'track_train_metrics=True' 'save_strategy="no"' 'pretrained_model_config="./configs/tests/roberta_test.json"' \
+#         'load_best_model_at_end=False' 'use_early_stopping=False'
+#     if [ "$?" -ne 0 ]; then
+#         echo "TESTING FAILED FOR ${i}"
+#         exit $?
+#     fi
+# done
 
-MODELS=( 't5_text_to_text/mnli/head_only' 't5_text_to_text/mnli/finetune' 't5_text_to_text/sst/head_only' \
-        't5_text_to_text/sst/finetune' 't5_text_to_text/spurious_sst/head_only' 't5_text_to_text/spurious_sst/finetune' )
-for i in "${MODELS[@]}"
-do
-    echo "TESTING ${i}"
-    echo "**************"
-    python train_models.py with "run_name=${i}" 'num_samples=500' 'num_epochs=3' 'report_to="none"' \
-        'track_train_metrics=True' 'save_strategy="no"' 'pretrained_model_config="./configs/tests/t5_test.json"' \
-        'load_best_model_at_end=False' 'use_early_stopping=False'
-    if [ "$?" -ne 0 ]; then
-        echo "TESTING FAILED FOR ${i}"
-        exit $?
-    fi
-done
+# MODELS=( 't5_text_to_text/mnli/head_only' 't5_text_to_text/mnli/finetune' 't5_text_to_text/sst/head_only' \
+#         't5_text_to_text/sst/finetune' 't5_text_to_text/spurious_sst/head_only' 't5_text_to_text/spurious_sst/finetune' )
+# for i in "${MODELS[@]}"
+# do
+#     echo "TESTING ${i}"
+#     echo "**************"
+#     python train_models.py with "run_name=${i}" 'num_samples=500' 'num_epochs=3' 'report_to="none"' \
+#         'track_train_metrics=True' 'save_strategy="no"' 'pretrained_model_config="./configs/tests/t5_test.json"' \
+#         'load_best_model_at_end=False' 'use_early_stopping=False'
+#     if [ "$?" -ne 0 ]; then
+#         echo "TESTING FAILED FOR ${i}"
+#         exit $?
+#     fi
+# done
 
-MODELS=( 't5_enc/mnli/avg-finetune' 't5_enc/mnli/avg' 't5_enc/mnli/cls-finetune' 't5_enc/mnli/cls' 't5_enc/spurious_sst/avg-finetune' \
-        't5_enc/spurious_sst/avg' 't5_enc/spurious_sst/cls-finetune' 't5_enc/spurious_sst/cls' 't5_enc/sst/avg-finetune' \
-        't5_enc/sst/avg' 't5_enc/sst/cls-finetune' 't5_enc/sst/cls')
+# MODELS=( 't5_enc/mnli/avg-finetune' 't5_enc/mnli/avg' 't5_enc/mnli/cls-finetune' 't5_enc/mnli/cls' 't5_enc/spurious_sst/avg-finetune' \
+#         't5_enc/spurious_sst/avg' 't5_enc/spurious_sst/cls-finetune' 't5_enc/spurious_sst/cls' 't5_enc/sst/avg-finetune' \
+#         't5_enc/sst/avg' 't5_enc/sst/cls-finetune' 't5_enc/sst/cls')
 
-for i in "${MODELS[@]}"
-do
-    echo "TESTING ${i}"
-    echo "**************"
-    python train_models.py with "run_name=${i}" 'num_samples=500' 'num_epochs=3' 'report_to="none"' \
-        'track_train_metrics=True' 'save_strategy="no"' 'pretrained_model_config="./configs/tests/t5_test.json"' \
-        'load_best_model_at_end=False' 'use_early_stopping=False'
-    if [ "$?" -ne 0 ]; then
-        echo "TESTING FAILED FOR ${i}"
-        exit $?
-    fi
-done
+# for i in "${MODELS[@]}"
+# do
+#     echo "TESTING ${i}"
+#     echo "**************"
+#     python train_models.py with "run_name=${i}" 'num_samples=500' 'num_epochs=3' 'report_to="none"' \
+#         'track_train_metrics=True' 'save_strategy="no"' 'pretrained_model_config="./configs/tests/t5_test.json"' \
+#         'load_best_model_at_end=False' 'use_early_stopping=False'
+#     if [ "$?" -ne 0 ]; then
+#         echo "TESTING FAILED FOR ${i}"
+#         exit $?
+#     fi
+# done
 
 MODELS=( 'gpt2/mnli/avg-finetune' 'gpt2/mnli/avg' 'gpt2/mnli/cls-finetune' 'gpt2/mnli/cls' 'gpt2/spurious_sst/avg-finetune' \
         'gpt2/spurious_sst/avg' 'gpt2/spurious_sst/cls-finetune' 'gpt2/spurious_sst/cls' 'gpt2/sst/avg-finetune' 'gpt2/sst/avg' \
