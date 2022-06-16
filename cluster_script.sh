@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --cpus-per-task=4
-#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=10
+#SBATCH --gres=gpu:titanrtx:1
 
 #SBATCH --output=slurm-%j.out
 #SBATCH --error=slurm-%j.err
