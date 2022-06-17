@@ -17,6 +17,7 @@ class IntegratedGradientsByLayer(Explainer):
         
         def predict_helper(input_ids, model_kwargs, seq_index=None):
             # For multistep attribution batches, have to expand attention mask and labels to match input_ids 
+            print(self.model.shared(input_ids).shape)
             if input_ids.shape != model_kwargs["attention_mask"].shape:
                 num_copies = int(input_ids.shape[0] / model_kwargs["attention_mask"].shape[0])
                 copies = [torch.clone(model_kwargs["attention_mask"]) for i in range(num_copies)]
@@ -26,6 +27,11 @@ class IntegratedGradientsByLayer(Explainer):
                     label_copies = torch.cat(label_copies)
                     old_labels = model_kwargs["labels"]
                     model_kwargs["labels"] = label_copies
+                if "decoder_input_ids" in model_kwargs:
+                    dec_id_copies = [torch.clone(model_kwargs["decoder_input_ids"]) for i in range(num_copies)]
+                    dec_id_copies = torch.cat(dec_id_copies)
+                    old_dec_ids = model_kwargs["decoder_input_ids"]
+                    model_kwargs["decoder_input_ids"] = dec_id_copies
                 old_mask = model_kwargs["attention_mask"]
                 model_kwargs["attention_mask"] = copies
                 out = self.model(input_ids=input_ids, **model_kwargs)
@@ -38,6 +44,8 @@ class IntegratedGradientsByLayer(Explainer):
                 model_kwargs["attention_mask"] = old_mask
                 if "labels" in model_kwargs:
                     model_kwargs["labels"] = old_labels
+                if "decoder_input_ids" in model_kwargs:
+                    model_kwargs["decoder_input_ids"] = old_dec_ids
                 return out
             else:
                 return self.model(input_ids=input_ids, **model_kwargs).logits
@@ -67,11 +75,14 @@ class IntegratedGradientsByLayer(Explainer):
         else:
             return_dict["pred_prob"], targets = torch.softmax(logits,dim=-1).max(dim=-1)
             return_dict["pred_class"] = targets 
-            return_dict["attr_class"] = targets 
+            return_dict["attr_class"] = targets
+            targets = targets[:,0] 
             if "labels" in inputs:
                 return_dict["true_class"] = inputs["labels"] 
             baselines = self.construct_baselines(inputs)
             print(baselines.shape)
+            print(targets)
+            print(inputs["input_ids"].shape)
             non_input_forward_args = {key:inputs[key] for key in inputs if key != "input_ids"}
             attributions, deltas = self.explainer.attribute(inputs=inputs["input_ids"],baselines=baselines,
                                     additional_forward_args=non_input_forward_args, return_convergence_delta=True,
