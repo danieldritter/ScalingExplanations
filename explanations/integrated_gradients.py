@@ -4,9 +4,19 @@ from functools import reduce, wraps
 from inspect import signature
 from captum.attr import LayerIntegratedGradients
 from captum.attr import visualization as viz 
-# def predict_helper(inputs):
-#     input_ids = inputs["input_ids"]
-#     outs = 
+
+
+def compute_sequence_likelihood(dec_ids, logits, model):
+    probs = [torch.nn.functional.log_softmax(item,dim=1) for item in logits]    
+    likelihoods = []
+    for example_ind in range(dec_ids.shape[0]):
+        total_likelihood = 1.0
+        for i, position_probs in enumerate(probs):
+            total_likelihood += position_probs[example_ind][dec_ids[example_ind][i+1]]
+            if dec_ids[example_ind][i+1] == model.config.eos_token_id:
+                break 
+        likelihoods.append(total_likelihood)
+    return torch.tensor(likelihoods)
 
 class IntegratedGradientsByLayer(Explainer):
 
@@ -15,48 +25,46 @@ class IntegratedGradientsByLayer(Explainer):
         self.layers = layers 
         self.tokenizer = tokenizer
         
-        def predict_helper(input_ids, model_kwargs, seq_index=None):
+        
+        def predict_helper(input_ids, model_kwargs, seq2seq=False):
             # For multistep attribution batches, have to expand attention mask and labels to match input_ids 
-            print(self.model.shared(input_ids).shape)
-            if input_ids.shape != model_kwargs["attention_mask"].shape:
-                num_copies = int(input_ids.shape[0] / model_kwargs["attention_mask"].shape[0])
-                copies = [torch.clone(model_kwargs["attention_mask"]) for i in range(num_copies)]
-                copies = torch.cat(copies,dim=0)
-                if "labels" in model_kwargs:
-                    label_copies = [torch.clone(model_kwargs["labels"]) for i in range(num_copies)]
-                    label_copies = torch.cat(label_copies)
-                    old_labels = model_kwargs["labels"]
-                    model_kwargs["labels"] = label_copies
-                if "decoder_input_ids" in model_kwargs:
-                    dec_id_copies = [torch.clone(model_kwargs["decoder_input_ids"]) for i in range(num_copies)]
-                    dec_id_copies = torch.cat(dec_id_copies)
-                    old_dec_ids = model_kwargs["decoder_input_ids"]
-                    model_kwargs["decoder_input_ids"] = dec_id_copies
-                old_mask = model_kwargs["attention_mask"]
-                model_kwargs["attention_mask"] = copies
-                out = self.model(input_ids=input_ids, **model_kwargs)
-                # For seq2seq, takes particular index of the output, then computes it's gradient. We repeat for each position 
-                # in the sequence output, and then average them for the final result. 
-                if seq_index != None:
-                    out = out.logits
+            if not seq2seq:
+                if input_ids.shape != model_kwargs["attention_mask"].shape:
+                    num_copies = int(input_ids.shape[0] / model_kwargs["attention_mask"].shape[0])
+                    copies = [torch.clone(model_kwargs["attention_mask"]) for i in range(num_copies)]
+                    copies = torch.cat(copies,dim=0)
+                    if "labels" in model_kwargs:
+                        label_copies = [torch.clone(model_kwargs["labels"]) for i in range(num_copies)]
+                        label_copies = torch.cat(label_copies)
+                        old_labels = model_kwargs["labels"]
+                        model_kwargs["labels"] = label_copies
+                    old_mask = model_kwargs["attention_mask"]
+                    model_kwargs["attention_mask"] = copies
+                    out = self.model(input_ids=input_ids, **model_kwargs)
+                    model_kwargs["attention_mask"] = old_mask
+                    if "labels" in model_kwargs:
+                        model_kwargs["labels"] = old_labels
+                    return out
                 else:
-                    out = out.logits
-                model_kwargs["attention_mask"] = old_mask
-                if "labels" in model_kwargs:
-                    model_kwargs["labels"] = old_labels
-                if "decoder_input_ids" in model_kwargs:
-                    model_kwargs["decoder_input_ids"] = old_dec_ids
-                return out
+                    return self.model(input_ids=input_ids, **model_kwargs).logits
             else:
-                return self.model(input_ids=input_ids, **model_kwargs).logits
+                if input_ids.shape != model_kwargs["attention_mask"].shape:
+                    num_copies = int(input_ids.shape[0] / model_kwargs["attention_mask"].shape[0])
+                    copies = [torch.clone(model_kwargs["attention_mask"]) for i in range(num_copies)]
+                    copies = torch.cat(copies,dim=0)
+                    gen_out = model.generate(input_ids, attention_mask=copies, output_scores=True, do_sample=False, return_dict_in_generate=True)
+                    dec_ids = gen_out["sequences"]
+                    logits = gen_out["scores"]
+                    likelihoods = compute_sequence_likelihood(dec_ids, logits, self.model)
+                    return likelihoods
         self.predict_helper = predict_helper
         self.explainer = LayerIntegratedGradients(self.predict_helper, layers, multiply_by_inputs=multiply_by_inputs)
 
     
     def get_explanations(self, inputs, seq2seq=False, return_all_seq2seq=False):
         return_dict = {} 
-        logits = self.model(**inputs).logits 
         if not seq2seq:
+            logits = self.model(**inputs).logits 
             return_dict["pred_prob"], targets = torch.softmax(logits,dim=1).max(dim=1)
             return_dict["pred_class"] = targets
             return_dict["attr_class"] = targets 
@@ -73,20 +81,18 @@ class IntegratedGradientsByLayer(Explainer):
             return_dict["raw_input_ids"] = [self.tokenizer.convert_ids_to_tokens(inputs["input_ids"][i], skip_special_tokens=True) for i in range(inputs["input_ids"].shape[0])]
             return_dict["convergence_score"] = deltas 
         else:
-            return_dict["pred_prob"], targets = torch.softmax(logits,dim=-1).max(dim=-1)
-            return_dict["pred_class"] = targets 
-            return_dict["attr_class"] = targets
-            targets = targets[:,0] 
+            outputs = self.model.generate(inputs["input_ids"], return_dict_in_generate=True, output_scores=True)
+            pred_classes = self.tokenizer.batch_decode(outputs["sequences"])
+            pred_probs = compute_sequence_likelihood(outputs["sequences"],outputs["scores"], self.model)
+            return_dict["pred_prob"] = pred_probs
+            return_dict["pred_class"] = pred_classes
+            return_dict["attr_class"] = pred_classes
             if "labels" in inputs:
                 return_dict["true_class"] = inputs["labels"] 
             baselines = self.construct_baselines(inputs)
-            print(baselines.shape)
-            print(targets)
-            print(inputs["input_ids"].shape)
             non_input_forward_args = {key:inputs[key] for key in inputs if key != "input_ids"}
             attributions, deltas = self.explainer.attribute(inputs=inputs["input_ids"],baselines=baselines,
-                                    additional_forward_args=non_input_forward_args, return_convergence_delta=True,
-                                    target=targets)
+                                    additional_forward_args=(non_input_forward_args, True), return_convergence_delta=True)
             end_indices = (targets == self.model.eos_token_id).nonzero()
             print(end_indices)
             print(attributions.shape)

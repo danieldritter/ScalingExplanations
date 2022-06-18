@@ -66,6 +66,7 @@ def config():
     # report_to = "wandb"
     report_to = "none"
     return_all_seq2seq = True 
+    tie_word_embeddings = False
     ex.add_config(f"./configs/task_configs/{run_name}.json")
     ex.add_config(f"./configs/explanations/{explanation_type}.json")
 
