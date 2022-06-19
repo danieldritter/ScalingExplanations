@@ -50,8 +50,8 @@ def config():
     explanation_type = "integrated_gradients_by_layer"
     output_file = "./test_grads.html"
     num_samples = None
-    num_examples = 6
-    layer = "shared"
+    num_examples = 4
+    layer = "encoder.embed_tokens"
     # layer = "roberta.embeddings"
     # Model params (set later)
     pretrained_model_name = None
@@ -92,23 +92,33 @@ def get_explanations(_seed, _config):
         max_length = 512 
     dataset = DATASETS[_config["dataset_name"]](**_config["dataset_kwargs"], num_samples=_config["num_samples"])
     tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=max_length)
+
+    transformers.logging.set_verbosity_error()
+    train_set = dataset.get_dataloader(model,tokenizer,batch_size=_config["batch_size"], max_length=max_length, split="train", format=True)
+    val_set = dataset.get_dataloader(model,tokenizer, batch_size=_config["batch_size"], max_length=max_length, split="val", format=True)
+    test_set = dataset.get_dataloader(model,tokenizer,batch_size=_config["batch_size"], max_length=max_length, split=_config["test_split"], format=True)
+    transformers.logging.set_verbosity_warning()
+    # Need data collator here to handle padding of batches and turning into tensors 
+    if _config["seq2seq"]:
+        collator = DataCollatorForSeq2Seq(tokenizer, model=model,padding="longest",max_length=max_length)
+        # There's some weird behavior with gradient attribution when using shared embeddings. Here we just untie the embeddings by making two copies. Doesn't affect the attribution 
+        # itself since the weights are fixed. 
+        new_enc_embeds = torch.nn.Embedding(model.shared.num_embeddings, model.shared.embedding_dim)
+        new_dec_embeds = torch.nn.Embedding(model.shared.num_embeddings, model.shared.embedding_dim)
+        new_enc_embeds.weight = torch.nn.Parameter(model.shared.weight.clone())
+        new_dec_embeds.weight = torch.nn.Parameter(model.shared.weight.clone())
+        model.encoder.set_input_embeddings(new_enc_embeds)
+        model.decoder.set_input_embeddings(new_dec_embeds)
+        model.shared = new_enc_embeds
+    else:
+        collator = DataCollatorWithPadding(tokenizer,"longest",max_length=max_length)  
+
     if _config["uses_layers"]:
         layer = attrgetter(_config["layer"])(model)
         explainer = EXPLANATIONS[_config["explanation_type"]](model, tokenizer, layer, **_config["explanation_kwargs"])
     else:
         explainer = EXPLANATIONS[_config["explanation_type"]](model, tokenizer, **_config["explanation_kwargs"])
-
-    transformers.logging.set_verbosity_error()
-    train_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split="train", format=True)
-    val_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split="val", format=True)
-    test_set = dataset.get_dataloader(model,tokenizer,_config["batch_size"],split=_config["test_split"], format=True)
-    transformers.logging.set_verbosity_warning()
-
-    # Need data collator here to handle padding of batches and turning into tensors 
-    if _config["seq2seq"]:
-        collator = DataCollatorForSeq2Seq(tokenizer, model=model,padding="longest",max_length=max_length)
-    else:
-        collator = DataCollatorWithPadding(tokenizer,"longest",max_length=max_length)  
+    
     examples = train_set.filter(lambda e,idx: idx < _config["num_examples"], with_indices=True)
     example_loader = torch.utils.data.DataLoader(examples, batch_size=_config["num_examples"], collate_fn=collator)
     # Sort of hacky way to pad, but works for now 

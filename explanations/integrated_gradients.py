@@ -1,22 +1,49 @@
 from .base import Explainer
 import torch 
 from functools import reduce, wraps 
+import copy 
 from inspect import signature
 from captum.attr import LayerIntegratedGradients
 from captum.attr import visualization as viz 
 
 
-def compute_sequence_likelihood(dec_ids, logits, model):
-    probs = [torch.nn.functional.log_softmax(item,dim=1) for item in logits]    
-    likelihoods = []
-    for example_ind in range(dec_ids.shape[0]):
-        total_likelihood = 1.0
-        for i, position_probs in enumerate(probs):
-            total_likelihood += position_probs[example_ind][dec_ids[example_ind][i+1]]
-            if dec_ids[example_ind][i+1] == model.config.eos_token_id:
-                break 
-        likelihoods.append(total_likelihood)
-    return torch.tensor(likelihoods)
+def compute_sequence_likelihood(dec_ids, logits, model, is_tuple=True):
+    if is_tuple:
+        probs = [torch.nn.functional.log_softmax(item,dim=1) for item in logits]    
+        likelihoods = []
+        for example_ind in range(dec_ids.shape[0]):
+            total_likelihood = 0.0
+            for i, position_probs in enumerate(probs):
+                total_likelihood += position_probs[example_ind][dec_ids[example_ind][i+1]]
+                if dec_ids[example_ind][i+1] == model.config.eos_token_id:
+                    break 
+            likelihoods.append(total_likelihood)
+        return torch.tensor(likelihoods)
+    else:
+        probs = torch.nn.functional.log_softmax(logits, dim=-1)
+        likelihoods = torch.zeros(logits.shape[0])
+        for example_ind in range(logits.shape[0]):
+            for i in range(logits.shape[1]):
+                likelihoods[example_ind] += probs[example_ind][i][dec_ids[example_ind][i]]
+                if dec_ids[example_ind][i] == model.config.eos_token_id:
+                    break
+        return likelihoods
+
+def get_attention_mask(dec_ids, eos_token_id):
+    """
+    NOTE: This is used for getting attention masks for generated seq2seq text outputs. Assumes a defined eos token 
+    and left padding 
+    """
+    attention_mask = []
+    for example in dec_ids:
+        mask_vals = [] 
+        curr_token = 1 
+        for val in example:
+            mask_vals.append(curr_token)
+            if val == eos_token_id:
+                curr_token = 0 
+        attention_mask.append(torch.tensor(mask_vals))
+    return torch.stack(attention_mask)
 
 class IntegratedGradientsByLayer(Explainer):
 
@@ -52,10 +79,18 @@ class IntegratedGradientsByLayer(Explainer):
                     num_copies = int(input_ids.shape[0] / model_kwargs["attention_mask"].shape[0])
                     copies = [torch.clone(model_kwargs["attention_mask"]) for i in range(num_copies)]
                     copies = torch.cat(copies,dim=0)
-                    gen_out = model.generate(input_ids, attention_mask=copies, output_scores=True, do_sample=False, return_dict_in_generate=True)
+                    gen_out = self.model.generate(input_ids, attention_mask=copies, output_scores=True, do_sample=False, return_dict_in_generate=True)
                     dec_ids = gen_out["sequences"]
-                    logits = gen_out["scores"]
-                    likelihoods = compute_sequence_likelihood(dec_ids, logits, self.model)
+                    dec_attention_mask = get_attention_mask(dec_ids, self.model.config.eos_token_id)
+                    outs = self.model(input_ids=input_ids, decoder_input_ids=dec_ids, decoder_attention_mask=dec_attention_mask, attention_mask=copies)
+                    likelihoods = compute_sequence_likelihood(dec_ids, outs.logits, self.model, is_tuple=False)
+                    return likelihoods
+                else:
+                    gen_out = self.model.generate(input_ids, attention_mask=model_kwargs["attention_mask"], output_scores=True, do_sample=False, return_dict_in_generate=True)
+                    dec_ids = gen_out["sequences"]
+                    dec_attention_mask = get_attention_mask(dec_ids, self.model.config.eos_token_id)
+                    outs = self.model(input_ids=input_ids, decoder_input_ids=dec_ids, decoder_attention_mask=dec_attention_mask, attention_mask=model_kwargs["attention_mask"])   
+                    likelihoods = compute_sequence_likelihood(dec_ids, outs.logits, self.model, is_tuple=False)
                     return likelihoods
         self.predict_helper = predict_helper
         self.explainer = LayerIntegratedGradients(self.predict_helper, layers, multiply_by_inputs=multiply_by_inputs)
@@ -83,19 +118,18 @@ class IntegratedGradientsByLayer(Explainer):
         else:
             outputs = self.model.generate(inputs["input_ids"], return_dict_in_generate=True, output_scores=True)
             pred_classes = self.tokenizer.batch_decode(outputs["sequences"])
-            pred_probs = compute_sequence_likelihood(outputs["sequences"],outputs["scores"], self.model)
+            pred_probs = torch.exp(compute_sequence_likelihood(outputs["sequences"],outputs["scores"], self.model, is_tuple=True))
             return_dict["pred_prob"] = pred_probs
             return_dict["pred_class"] = pred_classes
             return_dict["attr_class"] = pred_classes
             if "labels" in inputs:
-                return_dict["true_class"] = inputs["labels"] 
+                pad_inputs = inputs["labels"].clone()
+                pad_inputs[pad_inputs == -100] = self.model.config.pad_token_id
+                return_dict["true_class"] = self.tokenizer.batch_decode(pad_inputs)
             baselines = self.construct_baselines(inputs)
             non_input_forward_args = {key:inputs[key] for key in inputs if key != "input_ids"}
             attributions, deltas = self.explainer.attribute(inputs=inputs["input_ids"],baselines=baselines,
                                     additional_forward_args=(non_input_forward_args, True), return_convergence_delta=True)
-            end_indices = (targets == self.model.eos_token_id).nonzero()
-            print(end_indices)
-            print(attributions.shape)
             return_dict["full_attributions"] = attributions
             return_dict["word_attributions"] = attributions.sum(dim=-1)
             return_dict["attr_score"] = attributions.sum(dim=1).sum(dim=1)

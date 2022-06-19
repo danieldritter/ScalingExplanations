@@ -7,5 +7,10 @@
     "tokenizer_config_name":"roberta-base",
     "seq2seq":false,
     "num_labels":2,
-    "head":"bert-cls"
+    "lr":2e-5,
+    "batch_size":16,
+    "weight_decay":0.0,
+    "warmup_ratio":0.06,
+    "lr_scheduler_type":"linear",
+    "num_epochs":10
 }
