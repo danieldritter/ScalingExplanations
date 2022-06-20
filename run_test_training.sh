@@ -47,19 +47,19 @@
 #     fi
 # done
 
-MODELS=( 'gpt2/mnli/avg-finetune' 'gpt2/mnli/avg' 'gpt2/mnli/cls-finetune' 'gpt2/mnli/cls' 'gpt2/spurious_sst/avg-finetune' \
-        'gpt2/spurious_sst/avg' 'gpt2/spurious_sst/cls-finetune' 'gpt2/spurious_sst/cls' 'gpt2/sst/avg-finetune' 'gpt2/sst/avg' \
-        'gpt2/sst/cls-finetune' 'gpt2/sst/cls' )
+# MODELS=( 'gpt2/mnli/avg-finetune' 'gpt2/mnli/avg' 'gpt2/mnli/cls-finetune' 'gpt2/mnli/cls' 'gpt2/spurious_sst/avg-finetune' \
+#         'gpt2/spurious_sst/avg' 'gpt2/spurious_sst/cls-finetune' 'gpt2/spurious_sst/cls' 'gpt2/sst/avg-finetune' 'gpt2/sst/avg' \
+#         'gpt2/sst/cls-finetune' 'gpt2/sst/cls' )
 
-for i in "${MODELS[@]}"
-do
-    echo "TESTING ${i}"
-    echo "**************"
-    python train_models.py with "run_name=${i}" 'num_samples=500' 'num_epochs=3' 'report_to="none"' \
-        'track_train_metrics=True' 'save_strategy="no"' 'pretrained_model_config="./configs/tests/gpt2_test.json"' \
-        'load_best_model_at_end=False' 'use_early_stopping=False'
-    if [ "$?" -ne 0 ]; then
-        echo "TESTING FAILED FOR ${i}"
-        exit $?
-    fi
-done
+# for i in "${MODELS[@]}"
+# do
+#     echo "TESTING ${i}"
+#     echo "**************"
+#     python train_models.py with "run_name=${i}" 'num_samples=500' 'num_epochs=3' 'report_to="none"' \
+#         'track_train_metrics=True' 'save_strategy="no"' 'pretrained_model_config="./configs/tests/gpt2_test.json"' \
+#         'load_best_model_at_end=False' 'use_early_stopping=False'
+#     if [ "$?" -ne 0 ]; then
+#         echo "TESTING FAILED FOR ${i}"
+#         exit $?
+#     fi
+# done

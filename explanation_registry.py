@@ -1,5 +1,7 @@
-from explanations.integrated_gradients import IntegratedGradientsByLayer
+from explanations.integrated_gradients import IntegratedGradients
+from explanations.gradients import Gradients
 
 EXPLANATIONS = {
-    "integrated_gradients_by_layer":IntegratedGradientsByLayer
+    "integrated_gradients":IntegratedGradients,
+    "gradients": Gradients,
 }

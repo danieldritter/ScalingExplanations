@@ -1,0 +1,7 @@
+{
+    "explanation_name":"gradients",
+    "explanation_kwargs": {
+        "multiply_by_inputs":true
+    },
+    "uses_layers":true
+}

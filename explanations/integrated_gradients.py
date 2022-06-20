@@ -5,52 +5,16 @@ import copy
 from inspect import signature
 from captum.attr import LayerIntegratedGradients
 from captum.attr import visualization as viz 
+from .utils import compute_sequence_likelihood, get_attention_mask
 
+class IntegratedGradients(Explainer):
 
-def compute_sequence_likelihood(dec_ids, logits, model, is_tuple=True):
-    if is_tuple:
-        probs = [torch.nn.functional.log_softmax(item,dim=1) for item in logits]    
-        likelihoods = []
-        for example_ind in range(dec_ids.shape[0]):
-            total_likelihood = 0.0
-            for i, position_probs in enumerate(probs):
-                total_likelihood += position_probs[example_ind][dec_ids[example_ind][i+1]]
-                if dec_ids[example_ind][i+1] == model.config.eos_token_id:
-                    break 
-            likelihoods.append(total_likelihood)
-        return torch.tensor(likelihoods)
-    else:
-        probs = torch.nn.functional.log_softmax(logits, dim=-1)
-        likelihoods = torch.zeros(logits.shape[0])
-        for example_ind in range(logits.shape[0]):
-            for i in range(logits.shape[1]):
-                likelihoods[example_ind] += probs[example_ind][i][dec_ids[example_ind][i]]
-                if dec_ids[example_ind][i] == model.config.eos_token_id:
-                    break
-        return likelihoods
-
-def get_attention_mask(dec_ids, eos_token_id):
-    """
-    NOTE: This is used for getting attention masks for generated seq2seq text outputs. Assumes a defined eos token 
-    and left padding 
-    """
-    attention_mask = []
-    for example in dec_ids:
-        mask_vals = [] 
-        curr_token = 1 
-        for val in example:
-            mask_vals.append(curr_token)
-            if val == eos_token_id:
-                curr_token = 0 
-        attention_mask.append(torch.tensor(mask_vals))
-    return torch.stack(attention_mask)
-
-class IntegratedGradientsByLayer(Explainer):
-
-    def __init__(self, model:torch.nn.Module, tokenizer, layers, multiply_by_inputs=False):
+    def __init__(self, model:torch.nn.Module, tokenizer, layer, multiply_by_inputs=False, normalize_attributions=False):
         super().__init__(model)
-        self.layers = layers 
+        self.layer = layer
         self.tokenizer = tokenizer
+        self.normalize_attributions = normalize_attributions
+        self.multiply_by_inputs = multiply_by_inputs
         
         
         def predict_helper(input_ids, model_kwargs, seq2seq=False):
@@ -71,7 +35,7 @@ class IntegratedGradientsByLayer(Explainer):
                     model_kwargs["attention_mask"] = old_mask
                     if "labels" in model_kwargs:
                         model_kwargs["labels"] = old_labels
-                    return out
+                    return out.logits
                 else:
                     return self.model(input_ids=input_ids, **model_kwargs).logits
             else:
@@ -93,10 +57,10 @@ class IntegratedGradientsByLayer(Explainer):
                     likelihoods = compute_sequence_likelihood(dec_ids, outs.logits, self.model, is_tuple=False)
                     return likelihoods
         self.predict_helper = predict_helper
-        self.explainer = LayerIntegratedGradients(self.predict_helper, layers, multiply_by_inputs=multiply_by_inputs)
+        self.explainer = LayerIntegratedGradients(self.predict_helper, layer, multiply_by_inputs=multiply_by_inputs)
 
     
-    def get_explanations(self, inputs, seq2seq=False, return_all_seq2seq=False):
+    def get_explanations(self, inputs, seq2seq=False):
         return_dict = {} 
         if not seq2seq:
             logits = self.model(**inputs).logits 
@@ -110,11 +74,6 @@ class IntegratedGradientsByLayer(Explainer):
             attributions, deltas = self.explainer.attribute(inputs=inputs["input_ids"],baselines=baselines,
                                     additional_forward_args=non_input_forward_args, return_convergence_delta=True,
                                     target=targets)
-            return_dict["full_attributions"] = attributions
-            return_dict["word_attributions"] = attributions.sum(dim=-1)
-            return_dict["attr_score"] = attributions.sum(dim=1).sum(dim=1)
-            return_dict["raw_input_ids"] = [self.tokenizer.convert_ids_to_tokens(inputs["input_ids"][i], skip_special_tokens=True) for i in range(inputs["input_ids"].shape[0])]
-            return_dict["convergence_score"] = deltas 
         else:
             outputs = self.model.generate(inputs["input_ids"], return_dict_in_generate=True, output_scores=True)
             pred_classes = self.tokenizer.batch_decode(outputs["sequences"])
@@ -130,11 +89,14 @@ class IntegratedGradientsByLayer(Explainer):
             non_input_forward_args = {key:inputs[key] for key in inputs if key != "input_ids"}
             attributions, deltas = self.explainer.attribute(inputs=inputs["input_ids"],baselines=baselines,
                                     additional_forward_args=(non_input_forward_args, True), return_convergence_delta=True)
-            return_dict["full_attributions"] = attributions
-            return_dict["word_attributions"] = attributions.sum(dim=-1)
-            return_dict["attr_score"] = attributions.sum(dim=1).sum(dim=1)
-            return_dict["raw_input_ids"] = [self.tokenizer.convert_ids_to_tokens(inputs["input_ids"][i], skip_special_tokens=True) for i in range(inputs["input_ids"].shape[0])]
-            return_dict["convergence_score"] = deltas         
+        return_dict["full_attributions"] = attributions
+        return_dict["word_attributions"] = attributions.sum(dim=-1) 
+        if self.normalize_attributions:
+            return_dict["word_attributions"] = return_dict["word_attributions"] / torch.linalg.norm(return_dict["word_attributions"], ord=1, dim=1, keepdims=True)
+        return_dict["attr_score"] = return_dict["word_attributions"].sum(dim=1)
+        return_dict["raw_input_ids"] = [self.tokenizer.convert_ids_to_tokens(inputs["input_ids"][i]) for i in range(inputs["input_ids"].shape[0])]
+        return_dict["raw_input_ids"] = [[val for val in id_list if val != self.tokenizer.pad_token] for id_list in return_dict["raw_input_ids"]]
+        return_dict["convergence_score"] = deltas         
         return return_dict 
 
     def construct_baselines(self, inputs, ref_type="input", ref_token=None):

@@ -1,4 +1,5 @@
 {
+    "explanation_name":"integrated_gradients",
     "explanation_kwargs": {
         "multiply_by_inputs":true
     },

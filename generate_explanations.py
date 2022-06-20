@@ -16,39 +16,28 @@ from constants import PROJECT_NAME, WANDB_KEY, WANDB_ENTITY
 ex = Experiment("explanation-generation")
 
 """
-Test and adjust to fix the text-to-text
+Check on summations and masking when computing overall attributions. Make sure padded sections aren't included
 
-How to deal with text-to-text: 
-It's sequence generation, so it's multiple steps of classification. Not immediately clear 
-how to apply feature attribution methods in that context. 
+Currently integrated gradients and layer gradients both have basically zero attributions for all tokens (after normalizing correctly). Need to figure 
+out why that is. 
 
-In seq2seq case, we get a distribution over the vocabulary for each timestep. So output is 
-
-(len_labels, vocab_size)
-
-If label fits into one token, then we're fine, and it just reduces to the single class case. 
-If not, then it's more complicated. Could average attributions over the whole sentence (E.g. compute 
-for each token in label sequence, and then average the attributions per input token).
-
-Best option: Leave capacity to compute for individual tokens in the same way you compute for the regular case (albeit with more dimensions)
-    then add a separate version to loop that computation and average. These label sequences shouldn't be crazy long, so we're looking 
-    at a low constant multiplicative factor in terms of complexity. 
-
-Integrated gradients not working well with text to text. Somehow the embedding output shape changes from the baseline and 
-original inputs to the large batch of intermediate examples. Truly makes zero sense. 
-
-Need to use greedy decoding for inference, and not pass in labels 
-
-
+Need to work out normalization and visualization stuff for gradients. Captum clips values to between -1 and 1 behind the scenes, but that kind of fucks up a 
+lot of the relationships. 
 """
 
 @ex.config 
 def config():
     seed = 12345
-    run_name = "t5_text_to_text/mnli/finetune"
-    checkpoint_folder = "./model_outputs/" + run_name + "/checkpoint-7000"
-    explanation_type = "integrated_gradients_by_layer"
-    output_file = "./test_grads.html"
+    run_name = "t5_text_to_text/sst/finetune"
+    model_name = "t5_text_to_text_small"
+    checkpoint_folder = f"./model_outputs/{model_name}/sst_glue/finetune/checkpoint-42100"
+    # run_name = "roberta/mnli/cls-finetune"
+    # checkpoint_folder = "./model_outputs/roberta_base/mnli/cls-finetune/checkpoint-171808"
+    # run_name = "roberta/sst/cls-finetune"
+    # checkpoint_folder = "./model_outputs/roberta_base/sst_glue/cls-finetune/checkpoint-42100"
+    explanation_type = "gradients/gradients_x_input"
+    # explanation_type = "layer_gradient_x_activation"
+    output_file = f"./explanation_outputs/{model_name}/{explanation_type}.html"
     num_samples = None
     num_examples = 4
     layer = "encoder.embed_tokens"
@@ -65,13 +54,17 @@ def config():
     batch_size = 32
     # report_to = "wandb"
     report_to = "none"
-    return_all_seq2seq = True 
-    tie_word_embeddings = False
     ex.add_config(f"./configs/task_configs/{run_name}.json")
     ex.add_config(f"./configs/explanations/{explanation_type}.json")
 
 @ex.automain 
 def get_explanations(_seed, _config):
+    if not os.path.isdir(f"./explanation_outputs/{_config['model_name']}"):
+        os.mkdir(f"./explanation_outputs/{_config['model_name']}")
+    type_folder = _config["explanation_type"].split("/")[0]
+    if not os.path.isdir(f"./explanation_outputs/{_config['model_name']}/{type_folder}"):
+        os.mkdir(f"./explanation_outputs/{_config['model_name']}/{type_folder}")
+
     if _config["report_to"] == "wandb":
         os.environ["WANDB_API_KEY"] = WANDB_KEY
         # wandb.init(project=PROJECT_NAME, entity=WANDB_ENTITY, name=_config["run_name"])
@@ -115,20 +108,16 @@ def get_explanations(_seed, _config):
 
     if _config["uses_layers"]:
         layer = attrgetter(_config["layer"])(model)
-        explainer = EXPLANATIONS[_config["explanation_type"]](model, tokenizer, layer, **_config["explanation_kwargs"])
+        explainer = EXPLANATIONS[_config["explanation_name"]](model, tokenizer, layer, **_config["explanation_kwargs"])
     else:
-        explainer = EXPLANATIONS[_config["explanation_type"]](model, tokenizer, **_config["explanation_kwargs"])
+        explainer = EXPLANATIONS[_config["explanation_name"]](model, tokenizer, **_config["explanation_kwargs"])
     
     examples = train_set.filter(lambda e,idx: idx < _config["num_examples"], with_indices=True)
     example_loader = torch.utils.data.DataLoader(examples, batch_size=_config["num_examples"], collate_fn=collator)
     # Sort of hacky way to pad, but works for now 
     for batch in example_loader:
         example_inputs = batch 
-    if _config["num_examples"]> 1:
-        attributions = explainer.get_explanations(example_inputs, seq2seq=_config["seq2seq"], return_all_seq2seq=_config["return_all_seq2seq"])
-    else:
-        attributions = explainer.get_explanations(example_inputs)
-
+    attributions = explainer.get_explanations(example_inputs, seq2seq=_config["seq2seq"])
     viz = explainer.visualize_explanations(attributions)
-    with open(_config["output_file"], "w") as file:
+    with open(_config["output_file"], "w+") as file:
         file.write(viz.data)

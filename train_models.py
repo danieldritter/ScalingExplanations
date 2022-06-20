@@ -44,7 +44,7 @@ The issue is max length truncation here and in explanations. Need to find a way 
 @ex.config
 def config():
     seed = 127895
-    run_name = "roberta/mnli/avg-finetune"
+    run_name = "t5_text_to_text/spurious_sst/finetune"
     ex.add_config(f"./configs/task_configs/{run_name}.json")
     num_samples = None 
     data_cache_dir = "./cached_datasets"
@@ -156,7 +156,6 @@ def train_model(_seed, _config):
         model.config.pad_token_id = tokenizer.pad_token_id
     else:
         tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=max_length)
-
     # Defining metrics to track 
     metric = load_metric("accuracy", cache_dir="./metric_cache")
     
