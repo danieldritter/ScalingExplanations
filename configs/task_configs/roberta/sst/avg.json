@@ -7,6 +7,5 @@
     "tokenizer_config_name":"roberta-base",
     "seq2seq":false,
     "trained_layers": ["classifier.dense.weight", "classifier.dense.bias", "classifier.out_proj.weight", "classifier.out_proj.bias"],
-    "num_labels":2,
-    "head":"bert-avg-pool"
+    "num_labels":2
 }

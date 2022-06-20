@@ -9,7 +9,6 @@
     "num_labels":3,
     "test_split":"test",
     "trained_layers": ["score.weight"],
-    "head":"gpt2-cls",
     "pad_token":"!",
     "max_length":512
 }

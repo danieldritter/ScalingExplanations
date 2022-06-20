@@ -6,6 +6,5 @@
     "pretrained_model_config":"roberta-base",
     "tokenizer_config_name":"roberta-base",
     "seq2seq":false,
-    "num_labels":2,
-    "head":"bert-avg-pool"
+    "num_labels":2
 }

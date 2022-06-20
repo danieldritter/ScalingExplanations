@@ -9,7 +9,6 @@
     "num_labels":3,
     "test_split":"test",
     "trained_layers": ["classifier.dense.weight", "classifier.dense.bias"],
-    "head":"gpt2-avg-pool",
     "pad_token":"!",
     "max_length":512
 }

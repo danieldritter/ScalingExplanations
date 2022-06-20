@@ -7,6 +7,5 @@
     "tokenizer_config_name":"t5-small",
     "seq2seq":false,
     "trained_layers":["classifier.dense.weight", "classifier.dense.bias", "classifier.out_proj.weight", "classifier.out_proj.bias"],
-    "num_labels":2,
-    "head":"t5-avg-pool"
+    "num_labels":2
 }

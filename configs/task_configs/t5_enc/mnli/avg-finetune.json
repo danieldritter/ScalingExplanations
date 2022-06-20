@@ -6,7 +6,5 @@
     "pretrained_model_config":"t5-small",
     "tokenizer_config_name":"t5-small",
     "seq2seq":false,
-    "num_labels":3,
-    "test_split":"test",
-    "head":"t5-avg-pool"
+    "num_labels":3
 }

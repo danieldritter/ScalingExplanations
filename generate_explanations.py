@@ -75,6 +75,10 @@ def get_explanations(_seed, _config):
     np.random.seed(_seed)
     random.seed(_seed)
     model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["checkpoint_folder"])
+    # TODO: Will have to be adjusted for model-parallelism 
+    model.eval()
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model.to(device)
     # Different models have different attributes determining maximum sequence length. Just checking for the ones used in T5, RoBERTa and GPT2 here 
     if hasattr(model.config,"max_position_embeddings"):
         max_length = model.config.max_position_embeddings

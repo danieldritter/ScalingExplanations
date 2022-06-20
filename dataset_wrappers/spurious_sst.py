@@ -34,9 +34,6 @@ class SpuriousSSTDataset:
         if "spurious_sst" not in os.listdir(cache_dir):
             self.train_dataset = datasets.load_dataset("glue", "sst2", split="train",cache_dir=cache_dir).shuffle()
             self.val_dataset = datasets.load_dataset("glue","sst2",split="validation",cache_dir=cache_dir).shuffle()
-            if num_samples != None:
-                self.train_dataset = self.train_dataset.filter(lambda e,idx: idx < num_samples, with_indices=True)
-                self.val_dataset = self.val_dataset.filter(lambda e,idx: idx < num_samples, with_indices=True)
             self.spurious_token = "spurious"
 
             def add_spurious_feature(example):
@@ -63,6 +60,10 @@ class SpuriousSSTDataset:
             example["labels"] = ["positive" if example["labels"][i] == 1 else "negative" for i in range(len(example["labels"]))]
             example["sentence"] = [task_prefix + example["sentence"][i] for i in range(len(example["sentence"]))]
             return example
+
+        if num_samples != None:
+            self.train_dataset = self.train_dataset.filter(lambda e,idx: idx < num_samples, with_indices=True)
+            self.val_dataset = self.val_dataset.filter(lambda e,idx: idx < num_samples, with_indices=True)
 
         if self.text_to_text:
             self.train_dataset = self.train_dataset.map(text_to_text_conversion, batched=True)

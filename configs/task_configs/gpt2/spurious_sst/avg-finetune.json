@@ -6,8 +6,7 @@
         "pretrained_model_config":"gpt2",
         "tokenizer_config_name":"gpt2",
         "seq2seq":false,
-        "num_labels":3,
-        "head":"gpt2-avg-pool",
+        "num_labels":2,
         "pad_token":"!",
         "max_length":512
     }

@@ -84,6 +84,18 @@ class TrainMetricCallback(TrainerCallback):
             self._trainer.evaluate(eval_dataset=self._trainer.train_dataset, metric_key_prefix="train")
             return control_copy
 
+def numel(m: torch.nn.Module, only_trainable: bool = False):
+    """
+    returns the total number of parameters used by `m` (only counting
+    shared parameters once); if `only_trainable` is True, then only
+    includes parameters with `requires_grad = True`
+    """
+    parameters = list(m.parameters())
+    if only_trainable:
+        parameters = [p for p in parameters if p.requires_grad]
+    unique = {p.data_ptr(): p for p in parameters}.values()
+    return sum(p.numel() for p in unique)
+
 @ex.automain 
 def train_model(_seed, _config):
     # Defining trainer arguments 
@@ -131,6 +143,15 @@ def train_model(_seed, _config):
     else:
         # The embedding tying is important here to initialize the language model head untied from the embeddings 
         model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["pretrained_model_config"], cache_dir=_config["model_cache_dir"], num_labels=_config["num_labels"], tie_word_embeddings=_config["tie_word_embeddings"] if "tie_word_embeddings" in _config else True)
+    summary(model)
+    total_params = numel(model)
+    trainable_params = numel(model, only_trainable=True)
+    print(f"number of parameters (no double count): {total_params}")
+    print(f"number of trainable parameters (no double count): {trainable_params}")
+    if _config["report_to"] == "wandb":
+        total_params = numel(model)
+        trainable_params = numel(model, only_trainable=True)
+        wandb.config.update({"number of parameters":total_params, "number of trainable parameters":trainable_params})
 
     # Different models have different attributes determining maximum sequence length. Just checking for the ones used in T5, RoBERTa and GPT2 here 
     if hasattr(model.config,"max_position_embeddings"):

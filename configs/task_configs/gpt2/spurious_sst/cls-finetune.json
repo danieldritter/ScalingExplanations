@@ -7,8 +7,6 @@
     "tokenizer_config_name":"gpt2",
     "seq2seq":false,
     "num_labels":2,
-    "trained_layers": ["classifier.dense.weight", "classifier.dense.bias"],
-    "head":"gpt2-cls",
     "pad_token":"!",
     "max_length":512
 }
