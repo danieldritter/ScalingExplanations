@@ -28,9 +28,9 @@ lot of the relationships.
 @ex.config 
 def config():
     seed = 12345
-    run_name = "t5_text_to_text/sst/finetune"
-    model_name = "t5_text_to_text_small"
-    checkpoint_folder = f"./model_outputs/{model_name}/sst_glue/finetune/checkpoint-42100"
+    run_name = "roberta/spurious_sst/cls-finetune"
+    model_name = "roberta_base"
+    checkpoint_folder = f"./model_outputs/{model_name}/spurious_sst/cls-finetune/checkpoint-12630"
     # run_name = "roberta/mnli/cls-finetune"
     # checkpoint_folder = "./model_outputs/roberta_base/mnli/cls-finetune/checkpoint-171808"
     # run_name = "roberta/sst/cls-finetune"
@@ -40,8 +40,8 @@ def config():
     output_file = f"./explanation_outputs/{model_name}/{explanation_type}.html"
     num_samples = None
     num_examples = 4
-    layer = "encoder.embed_tokens"
-    # layer = "roberta.embeddings"
+    # layer = "encoder.embed_tokens"
+    layer = "roberta.embeddings"
     # Model params (set later)
     pretrained_model_name = None
     pretrained_model_config = None

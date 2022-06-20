@@ -12,5 +12,5 @@ export CONDA_PKGS_DIRS=/scratch-ssd/$USER/conda_pkgs
 /scratch-ssd/oatml/run_locked.sh /scratch-ssd/oatml/miniconda3/bin/conda-env update -f environment.yml
 source /scratch-ssd/oatml/miniconda3/bin/activate ms21ddr_llms
 
-srun python train_models.py with 'run_name="roberta/spurious_sst/cls-finetune' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets' 'disable_tqdm=True'
+srun python train_models.py with 'run_name="roberta/spurious_sst/cls-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets' 'disable_tqdm=True'
 srun python train_models.py with 'run_name="t5_text_to_text/spurious_sst/finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets' 'disable_tqdm=True'

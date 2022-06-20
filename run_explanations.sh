@@ -7,7 +7,7 @@ for i in "${EXPLANATIONS[@]}"
 do
     echo "TESTING ${i}"
     echo "**************"
-    python generate_explanations.py with "explanation_type=${i}" 'num_samples=200' output_file="explanation_outputs/${i}.html" seed=$SEED
+    python generate_explanations.py with "explanation_type=${i}" 'num_samples=200' seed=$SEED
     if [ "$?" -ne 0 ]; then
         echo "TESTING FAILED FOR ${i}"
         exit $?

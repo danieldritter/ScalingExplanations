@@ -21,29 +21,19 @@ TODO:
 
 Figure out how to control number of gpus and parallelize large models 
 
-Can make the spurious sst dataset better. Currently using UNK token at end of sentence, but it's possible 
-that that appears in non-positive examples (if a sentences ends in an OOV word). Probably a minor issue for now, 
-but could improve by searching through set of tokens that appear in datasets, and then choosing one that does not as spurious token. 
-
-test randomized RoBERTa-base sized model, to see if it can reach 100% on the simple spurious task 
-
 Currently, for the non-finetuning T5 case, we have to untie the embedding and output weights (randomly initialize the LM head),
 which isn't generally how it's trained or finetuned. Keeping them tied and then only updating the embedding and output weights 
 requires backpropping all the way to the inputs though, which kind of defeats the purpose of only tuning the head. 
 
+Be careful about GPU use and placement when you move to model-parallel setup. Currently trainer automatically places on 
+available gpu, but may not be the case with multiple gpus 
 
-Finish converting rest of roberta-large configs (only mnli cls finetune works right now)
-
-Need to change datasets to use all of training data to replicate original results. Add a check to make sure 
-you don't try to use early stopping when doing this as well. 
-
-The issue is max length truncation here and in explanations. Need to find a way to set it to actually be the max length of the model 
 
 """
 
 @ex.config
 def config():
-    seed = 127895
+    seed = 12345
     run_name = "t5_text_to_text/spurious_sst/finetune"
     ex.add_config(f"./configs/task_configs/{run_name}.json")
     num_samples = None 
