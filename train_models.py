@@ -13,7 +13,7 @@ from dataset_registry import DATASETS
 from model_registry import MODELS, TOKENIZERS
 from constants import WANDB_KEY, WANDB_ENTITY, PROJECT_NAME
 from utils.custom_trainer import CustomTrainer
-from torchsummary import summary 
+from torchinfo import summary 
 
 ex = Experiment("model_training")
 """
@@ -143,7 +143,7 @@ def train_model(_seed, _config):
     else:
         # The embedding tying is important here to initialize the language model head untied from the embeddings 
         model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["pretrained_model_config"], cache_dir=_config["model_cache_dir"], num_labels=_config["num_labels"], tie_word_embeddings=_config["tie_word_embeddings"] if "tie_word_embeddings" in _config else True)
-    summary(model)
+    summary(model, None)
     total_params = numel(model)
     trainable_params = numel(model, only_trainable=True)
     print(f"number of parameters (no double count): {total_params}")
