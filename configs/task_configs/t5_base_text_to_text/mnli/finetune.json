@@ -1,0 +1,10 @@
+{
+    "dataset_name":"multinli",
+    "dataset_kwargs":{"text_to_text":true},
+    "finetuning":true,
+    "pretrained_model_name":"t5_text_to_text",
+    "pretrained_model_config":"t5-base",
+    "tokenizer_config_name":"t5-base",
+    "seq2seq":true,
+    "num_labels":3
+}

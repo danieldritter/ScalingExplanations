@@ -28,18 +28,21 @@ lot of the relationships.
 @ex.config 
 def config():
     seed = 12345
-    run_name = "roberta/spurious_sst/cls-finetune"
+    run_name = "roberta/mnli/cls-finetune"
     model_name = "roberta_base"
-    checkpoint_folder = f"./model_outputs/{model_name}/spurious_sst/cls-finetune/checkpoint-12630"
+    # checkpoint_folder = f"./model_outputs/{model_name}/spurious_sst/cls-finetune/checkpoint-12630"
     # run_name = "roberta/mnli/cls-finetune"
-    # checkpoint_folder = "./model_outputs/roberta_base/mnli/cls-finetune/checkpoint-171808"
+    checkpoint_folder = "./model_outputs/roberta_base/mnli/cls-finetune/checkpoint-171808"
     # run_name = "roberta/sst/cls-finetune"
     # checkpoint_folder = "./model_outputs/roberta_base/sst_glue/cls-finetune/checkpoint-42100"
-    explanation_type = "gradients/gradients_x_input"
-    # explanation_type = "layer_gradient_x_activation"
-    output_file = f"./explanation_outputs/{model_name}/{explanation_type}.html"
+    explanation_type = "lime/lime"
+    process_as_batch = True
+    # explanation_type = "gradients/gradients_x_input"
+    output_folder = f"./explanation_outputs/{model_name}/{explanation_type}"
+    save_visuals = True 
+    save_metrics = True 
     num_samples = None
-    num_examples = 4
+    num_examples = 10
     # layer = "encoder.embed_tokens"
     layer = "roberta.embeddings"
     # Model params (set later)
@@ -61,9 +64,11 @@ def config():
 def get_explanations(_seed, _config):
     if not os.path.isdir(f"./explanation_outputs/{_config['model_name']}"):
         os.mkdir(f"./explanation_outputs/{_config['model_name']}")
-    type_folder = _config["explanation_type"].split("/")[0]
+    type_folder, variant = _config["explanation_type"].split("/")
     if not os.path.isdir(f"./explanation_outputs/{_config['model_name']}/{type_folder}"):
         os.mkdir(f"./explanation_outputs/{_config['model_name']}/{type_folder}")
+    if not os.path.isdir(f"./explanation_outputs/{_config['model_name']}/{type_folder}/{variant}"):
+        os.mkdir(f"./explanation_outputs/{_config['model_name']}/{type_folder}/{variant}")
 
     if _config["report_to"] == "wandb":
         os.environ["WANDB_API_KEY"] = WANDB_KEY
@@ -100,10 +105,10 @@ def get_explanations(_seed, _config):
         collator = DataCollatorForSeq2Seq(tokenizer, model=model,padding="longest",max_length=max_length)
         # There's some weird behavior with gradient attribution when using shared embeddings. Here we just untie the embeddings by making two copies. Doesn't affect the attribution 
         # itself since the weights are fixed. 
-        new_enc_embeds = torch.nn.Embedding(model.shared.num_embeddings, model.shared.embedding_dim)
-        new_dec_embeds = torch.nn.Embedding(model.shared.num_embeddings, model.shared.embedding_dim)
-        new_enc_embeds.weight = torch.nn.Parameter(model.shared.weight.clone())
-        new_dec_embeds.weight = torch.nn.Parameter(model.shared.weight.clone())
+        new_enc_embeds = torch.nn.Embedding(model.shared.num_embeddings, model.shared.embedding_dim).to(device)
+        new_dec_embeds = torch.nn.Embedding(model.shared.num_embeddings, model.shared.embedding_dim).to(device)
+        new_enc_embeds.weight = torch.nn.Parameter(model.shared.weight.clone()).to(device)
+        new_dec_embeds.weight = torch.nn.Parameter(model.shared.weight.clone()).to(device)
         model.encoder.set_input_embeddings(new_enc_embeds)
         model.decoder.set_input_embeddings(new_dec_embeds)
         model.shared = new_enc_embeds
@@ -112,16 +117,21 @@ def get_explanations(_seed, _config):
 
     if _config["uses_layers"]:
         layer = attrgetter(_config["layer"])(model)
-        explainer = EXPLANATIONS[_config["explanation_name"]](model, tokenizer, layer, **_config["explanation_kwargs"])
+        explainer = EXPLANATIONS[_config["explanation_name"]](model, tokenizer, layer, **_config["explanation_kwargs"], device=device)
     else:
-        explainer = EXPLANATIONS[_config["explanation_name"]](model, tokenizer, **_config["explanation_kwargs"])
+        explainer = EXPLANATIONS[_config["explanation_name"]](model, tokenizer, **_config["explanation_kwargs"], device=device)
     
     examples = train_set.filter(lambda e,idx: idx < _config["num_examples"], with_indices=True)
-    example_loader = torch.utils.data.DataLoader(examples, batch_size=_config["num_examples"], collate_fn=collator)
-    # Sort of hacky way to pad, but works for now 
-    for batch in example_loader:
-        example_inputs = batch 
+    if _config["process_as_batch"]:
+        example_loader = torch.utils.data.DataLoader(examples, batch_size=_config["num_examples"], collate_fn=collator)
+        # Sort of hacky way to pad, but works for now 
+        for batch in example_loader:
+            example_inputs = batch 
+    else:
+        example_inputs = examples 
     attributions = explainer.get_explanations(example_inputs, seq2seq=_config["seq2seq"])
-    viz = explainer.visualize_explanations(attributions)
-    with open(_config["output_file"], "w+") as file:
-        file.write(viz.data)
+    if _config["save_visuals"]:
+        viz = explainer.visualize_explanations(attributions)
+        with open(f"{_config['output_folder']}/visuals.html", "w+") as file:
+            file.write(viz.data)
+        

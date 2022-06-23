@@ -9,13 +9,13 @@ from .utils import compute_sequence_likelihood, get_attention_mask
 
 class IntegratedGradients(Explainer):
 
-    def __init__(self, model:torch.nn.Module, tokenizer, layer, multiply_by_inputs=False, normalize_attributions=False):
+    def __init__(self, model:torch.nn.Module, tokenizer, layer, multiply_by_inputs=False, normalize_attributions=False, device=None):
         super().__init__(model)
         self.layer = layer
         self.tokenizer = tokenizer
+        self.device = device 
         self.normalize_attributions = normalize_attributions
         self.multiply_by_inputs = multiply_by_inputs
-        
         
         def predict_helper(input_ids, model_kwargs, seq2seq=False):
             # For multistep attribution batches, have to expand attention mask and labels to match input_ids 
@@ -56,12 +56,17 @@ class IntegratedGradients(Explainer):
                     outs = self.model(input_ids=input_ids, decoder_input_ids=dec_ids, decoder_attention_mask=dec_attention_mask, attention_mask=model_kwargs["attention_mask"])   
                     likelihoods = compute_sequence_likelihood(dec_ids, outs.logits, self.model, is_tuple=False)
                     return likelihoods
+
         self.predict_helper = predict_helper
         self.explainer = LayerIntegratedGradients(self.predict_helper, layer, multiply_by_inputs=multiply_by_inputs)
 
     
     def get_explanations(self, inputs, seq2seq=False):
         return_dict = {} 
+        if self.device != None:
+            for key in inputs:
+                inputs[key] = inputs[key].to(self.device)
+                
         if not seq2seq:
             logits = self.model(**inputs).logits 
             return_dict["pred_prob"], targets = torch.softmax(logits,dim=1).max(dim=1)
@@ -72,7 +77,7 @@ class IntegratedGradients(Explainer):
             baselines = self.construct_baselines(inputs)
             non_input_forward_args = {key:inputs[key] for key in inputs if key != "input_ids"}
             attributions, deltas = self.explainer.attribute(inputs=inputs["input_ids"],baselines=baselines,
-                                    additional_forward_args=non_input_forward_args, return_convergence_delta=True,
+                                    additional_forward_args=(non_input_forward_args, False), return_convergence_delta=True,
                                     target=targets)
         else:
             outputs = self.model.generate(inputs["input_ids"], return_dict_in_generate=True, output_scores=True)

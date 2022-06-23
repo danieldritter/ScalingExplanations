@@ -43,7 +43,7 @@ def config():
     #NOTE: All of these are just defaults and can be overridden in task-specific configs, so that hyperparameters aren't fixed per-task/dataset 
     test_split = "test"
     # HF Trainer arguments
-    batch_size = 32
+    batch_size = 16
     lr = .00005
     gradient_accumulation_steps = 1 
     adam_beta1 = 0.9 

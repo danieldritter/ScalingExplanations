@@ -37,3 +37,5 @@ def get_attention_mask(dec_ids, eos_token_id):
                 curr_token = 0 
         attention_mask.append(torch.tensor(mask_vals))
     return torch.stack(attention_mask)
+
+

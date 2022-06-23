@@ -1,13 +1,12 @@
 import torch 
-from captum.attr import Lime 
+from captum.attr import KernelShap
 from captum.attr import visualization as viz
-from captum._utils.models.linear_model import SkLearnLinearRegression, SkLearnLasso
 from captum.attr._core.lime import get_exp_kernel_similarity_function
 from .base import Explainer
 from .utils import compute_sequence_likelihood, get_attention_mask
 
 
-class LIME(Explainer):
+class SHAPWithKernel(Explainer):
 
     def __init__(self, model:torch.nn.Module, tokenizer, baseline_token_id=None, normalize_attributions=False, device=None):
         super().__init__(model)
@@ -15,10 +14,10 @@ class LIME(Explainer):
         self.normalize_attributions = normalize_attributions
         self.device = device 
         if baseline_token_id == None:
-            if tokenizer.mask_token != None:
+            if tokenizer.mask_token_id != None:
                 self.baseline_token_id = tokenizer.mask_token_id
             else:
-                self.baseline_token_id = tokenizer.unk_token_id
+                self.baseline_token_id = tokenizer.unk_token_id 
         else:
             self.baseline_token_id = baseline_token_id 
         self.normalize_attributions 
@@ -36,7 +35,7 @@ class LIME(Explainer):
                 return likelihoods
 
         self.predict_helper = predict_helper 
-        self.explainer = Lime(self.predict_helper, interpretable_model=SkLearnLasso())
+        self.explainer = KernelShap(self.predict_helper)
     
     def get_explanations(self, inputs, seq2seq=False):
         return_dict = {"pred_prob":[],"pred_class":[],"attr_class":[],"true_class":[], "full_attributions":[]} 

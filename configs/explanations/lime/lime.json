@@ -1,0 +1,8 @@
+{
+    "explanation_name":"lime",
+    "explanation_kwargs":{
+        "normalize_attributions":false
+    },
+    "uses_layers":false,
+    "process_as_batch":false
+}

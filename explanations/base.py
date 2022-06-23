@@ -7,7 +7,7 @@ class Explainer(ABC):
         self.model = model 
     
     @abstractmethod 
-    def get_explanations(self,inputs):
+    def get_explanations(self,inputs, seq2seq=False):
         pass 
 
     @abstractmethod

@@ -6,12 +6,14 @@ from .utils import compute_sequence_likelihood, get_attention_mask
 
 class Gradients(Explainer):
 
-    def __init__(self, model:torch.nn.Module, tokenizer, layer, multiply_by_inputs=False, normalize_attributions=False):
+    def __init__(self, model:torch.nn.Module, tokenizer, layer, multiply_by_inputs=False, normalize_attributions=False, device=None):
         super().__init__(model)
         self.layer= layer
         self.tokenizer = tokenizer
         self.normalize_attributions = normalize_attributions
         self.multiply_by_inputs = multiply_by_inputs 
+        self.device = device 
+
         
         
         def predict_helper(input_ids, model_kwargs, seq2seq=False):
@@ -31,6 +33,9 @@ class Gradients(Explainer):
     
     def get_explanations(self, inputs, seq2seq=False):
         return_dict = {} 
+        if self.device != None:
+            for key in inputs:
+                inputs[key] = inputs[key].to(self.device)
         if not seq2seq:
             logits = self.model(**inputs).logits 
             return_dict["pred_prob"], targets = torch.softmax(logits,dim=1).max(dim=1)
@@ -40,7 +45,7 @@ class Gradients(Explainer):
                 return_dict['true_class'] = inputs["labels"]
             non_input_forward_args = {key:inputs[key] for key in inputs if key != "input_ids"}
             attributions = self.explainer.attribute(inputs=inputs["input_ids"],
-                                    additional_forward_args=non_input_forward_args, target=targets)
+                                    additional_forward_args=(non_input_forward_args, False), target=targets)
         else:
             outputs = self.model.generate(inputs["input_ids"], return_dict_in_generate=True, output_scores=True)
             pred_classes = self.tokenizer.batch_decode(outputs["sequences"])
