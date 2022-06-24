@@ -6,9 +6,5 @@
     "pretrained_model_config":"t5-small",
     "tokenizer_config_name":"t5-small",
     "seq2seq":true,
-    "num_labels":3,
-    "test_split":"test",
-    "lr":0.00005,
-    "lr_scheduler_type":"linear",
-    "batch_size":16
+    "num_labels":3
 }

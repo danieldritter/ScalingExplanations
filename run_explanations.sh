@@ -1,7 +1,10 @@
 SEED=765
 
-EXPLANATIONS=( 'gradients/gradients_normalized' 'gradients/gradients_x_input_normalized' 'gradients/gradients_x_input' 'gradients/gradients' \
-'gradients/integrated_gradients_normalized' 'gradients/integrated_gradients_x_input_normalized' 'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients')
+# EXPLANATIONS=( 'gradients/gradients_normalized' 'gradients/gradients_x_input_normalized' 'gradients/gradients_x_input' 'gradients/gradients' \
+# 'gradients/integrated_gradients_normalized' 'gradients/integrated_gradients_x_input_normalized' 'gradients/integrated_gradients_x_input' \
+# 'gradients/integrated_gradients' 'lime/lime' 'lime/lime_normalized' 'shap/shap' 'shap/shap_normalized')
+
+EXPLANATIONS=( 'lime/lime' 'lime/lime_normalized' 'shap/shap' 'shap/shap_normalized')
 
 for i in "${EXPLANATIONS[@]}"
 do

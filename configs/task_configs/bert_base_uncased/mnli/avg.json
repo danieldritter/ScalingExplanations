@@ -1,0 +1,12 @@
+{
+    "dataset_name":"multinli",
+    "dataset_kwargs":{},
+    "finetuning":false,
+    "pretrained_model_name":"bert-avg-seq-class",
+    "pretrained_model_config":"bert-base-uncased",
+    "tokenizer_config_name":"bert-base-uncased",
+    "seq2seq":false,
+    "num_labels":3,
+    "test_split":"test",
+    "trained_layers": ["classifier.dense.weight", "classifier.dense.bias", "classifier.out_proj.weight", "classifier.out_proj.bias"]
+}

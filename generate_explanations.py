@@ -23,28 +23,35 @@ out why that is.
 
 Need to work out normalization and visualization stuff for gradients. Captum clips values to between -1 and 1 behind the scenes, but that kind of fucks up a 
 lot of the relationships. 
+
+Need to add ground truth attribution masks to relevant datasets 
+
+Figure out why visualizations seem off 
+
+Set a clear set of deadlines to get this shit done by August 1st and then enjoy yourself a bit 
 """
 
 @ex.config 
 def config():
     seed = 12345
-    run_name = "roberta/mnli/cls-finetune"
-    model_name = "roberta_base"
-    # checkpoint_folder = f"./model_outputs/{model_name}/spurious_sst/cls-finetune/checkpoint-12630"
+    run_name = "t5_small_text_to_text/spurious_sst/finetune"
+    # checkpoint_folder = "./model_outputs/t5_small_text_to_text/mnli/finetune/checkpoint-220896"
+    checkpoint_folder = "./model_outputs/t5_small_text_to_text/spurious_sst/finetune/checkpoint-12630"
+    # checkpoint_folder = f"./model_outputs/roberta_base/spurious_sst/cls-finetune/checkpoint-12630"
     # run_name = "roberta/mnli/cls-finetune"
-    checkpoint_folder = "./model_outputs/roberta_base/mnli/cls-finetune/checkpoint-171808"
+    # checkpoint_folder = "./model_outputs/roberta_base/mnli/cls-finetune/checkpoint-171808"
     # run_name = "roberta/sst/cls-finetune"
     # checkpoint_folder = "./model_outputs/roberta_base/sst_glue/cls-finetune/checkpoint-42100"
-    explanation_type = "lime/lime"
+    explanation_type = "gradients/gradients"
     process_as_batch = True
     # explanation_type = "gradients/gradients_x_input"
-    output_folder = f"./explanation_outputs/{model_name}/{explanation_type}"
+    output_folder = f"./explanation_outputs/{run_name}/{explanation_type}"
     save_visuals = True 
     save_metrics = True 
     num_samples = None
     num_examples = 10
-    # layer = "encoder.embed_tokens"
-    layer = "roberta.embeddings"
+    layer = "encoder.embed_tokens"
+    # layer = "roberta.embeddings"
     # Model params (set later)
     pretrained_model_name = None
     pretrained_model_config = None
@@ -62,13 +69,8 @@ def config():
 
 @ex.automain 
 def get_explanations(_seed, _config):
-    if not os.path.isdir(f"./explanation_outputs/{_config['model_name']}"):
-        os.mkdir(f"./explanation_outputs/{_config['model_name']}")
-    type_folder, variant = _config["explanation_type"].split("/")
-    if not os.path.isdir(f"./explanation_outputs/{_config['model_name']}/{type_folder}"):
-        os.mkdir(f"./explanation_outputs/{_config['model_name']}/{type_folder}")
-    if not os.path.isdir(f"./explanation_outputs/{_config['model_name']}/{type_folder}/{variant}"):
-        os.mkdir(f"./explanation_outputs/{_config['model_name']}/{type_folder}/{variant}")
+    if not os.path.isdir(_config["output_folder"]):
+        os.makedirs(_config["output_folder"])
 
     if _config["report_to"] == "wandb":
         os.environ["WANDB_API_KEY"] = WANDB_KEY

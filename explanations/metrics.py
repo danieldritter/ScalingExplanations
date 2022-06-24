@@ -42,4 +42,8 @@ class TopKFeatureAblation:
             return likelihoods    
 
     def compute_metric(self, inputs, attributions, k=1):
-        
+        pass 
+
+
+def intersection_over_union(ground_truths, attributions):
+    

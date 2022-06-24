@@ -31,7 +31,7 @@ class MultiNLIDataset:
             example["label"] = new_labels
             example["premise"] = [premise_prefix  + example["premise"][i] for i in range(len(example["premise"]))]
             example["hypothesis"] = [hypothesis_prefix  + example["hypothesis"][i] for i in range(len(example["hypothesis"]))]
-            return example
+            return example            
 
         if self.text_to_text:
             self.train_dataset = self.train_dataset.map(text_to_text_conversion, batched=True)
@@ -48,6 +48,9 @@ class MultiNLIDataset:
         def tokenization(example):
             if self.text_to_text:
                 token_out = tokenizer(example["premise"],example["hypothesis"],truncation="longest_first",max_length=max_length)
+                # premise_tokens = tokenizer(example["premise"], max_length=max_length)
+                # hypothesis_tokens = tokenizer(example["hypothesis"], max_length=max_length)
+                # TODO: find intersection of premise and hypothesis tokens, then iterate through and build mask for attributions 
                 label_out = tokenizer(example["labels"],truncation=True,max_length=max_length)
                 example.update(token_out)
                 example["labels"] = label_out["input_ids"]
@@ -71,5 +74,6 @@ class MultiNLIDataset:
             keep_cols = list(set(tokenized_set.column_names) - non_input_cols)
             tokenized_set.set_format("torch",columns=keep_cols)
         return tokenized_set
+    
         
     

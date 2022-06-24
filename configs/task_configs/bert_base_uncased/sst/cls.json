@@ -1,0 +1,11 @@
+{
+    "dataset_name":"sst",
+    "dataset_kwargs":{},
+    "finetuning":false,
+    "pretrained_model_name":"bert-cls-seq-class",
+    "pretrained_model_config":"bert-base-uncased",
+    "tokenizer_config_name":"bert-base-uncased",
+    "seq2seq":false,
+    "trained_layers": ["classifier.dense.weight", "classifier.dense.bias", "classifier.out_proj.weight", "classifier.out_proj.bias"],
+    "num_labels":2
+}

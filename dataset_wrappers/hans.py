@@ -11,12 +11,18 @@ examples have the same structure, though, so they could still be used.
 
 class HansDataset:
     
-    def __init__(self, cache_dir: str = "./cached_datasets", num_samples: int = None, text_to_text: bool = False, hypothesis_prefix: str = "hypothesis: ", premise_prefix: str = "mnli premise: "):
+    def __init__(self, cache_dir: str = "./cached_datasets", num_samples: int = None, text_to_text: bool = False, hypothesis_prefix: str = "hypothesis: ", premise_prefix: str = "mnli premise: ", heuristic=None):
         self.train_dataset = datasets.load_dataset("hans", split="train",cache_dir=cache_dir).shuffle()
         self.val_dataset = datasets.load_dataset("hans", split="validation", cache_dir=cache_dir)
         self.hypothesis_prefix = hypothesis_prefix 
         self.premise_prefix = premise_prefix 
         self.text_to_text = text_to_text
+        self.heuristic = heuristic 
+
+        if self.heuristic != None:
+            self.train_dataset = self.train_dataset.filter(lambda e: e["heuristic"] == self.heuristic)
+            self.val_dataset = self.val_dataset.filter(lambda e: e["heuristic"] == self.heuristic)
+        
         if num_samples != None:
             self.train_dataset = self.train_dataset.filter(lambda e,idx: idx < num_samples, with_indices=True)
             self.val_dataset = self.val_dataset.filter(lambda e,idx: idx < num_samples, with_indices=True)
@@ -25,15 +31,6 @@ class HansDataset:
             """
             Added prefix here is taken from appendix D of the original T5 paper. Depending on which variant you use, you may need different prefixes. 
             """
-            new_labels = []
-            for i in range(len(example["label"])):
-                if example["label"][i] == 0:
-                    new_labels.append("entailment")
-                elif example["label"][i] == 1:
-                    new_labels.append("neutral")
-                elif example["label"][i] == 2:
-                    new_labels.append("contradiction")
-            example["label"] = new_labels
             example["premise"] = [premise_prefix  + example["premise"][i] for i in range(len(example["premise"]))]
             example["hypothesis"] = [hypothesis_prefix  + example["hypothesis"][i] for i in range(len(example["hypothesis"]))]
             return example
@@ -48,9 +45,7 @@ class HansDataset:
         def tokenization(example):
             if self.text_to_text:
                 token_out = tokenizer(example["premise"],example["hypothesis"],truncation="longest_first",max_length=max_length)
-                label_out = tokenizer(example["labels"],truncation=True,max_length=max_length)
                 example.update(token_out)
-                example["labels"] = label_out["input_ids"]
                 return example 
             else:
                 token_out = tokenizer(example["premise"],example["hypothesis"],truncation="longest_first",max_length=max_length)
@@ -63,7 +58,7 @@ class HansDataset:
         elif split == "test":
             return None 
         if format:
-            non_input_cols = set(["premise", "hypothesis","idx"])
+            non_input_cols = set(["premise", "hypothesis","idx", "parse_premise", "parse_hypothesis", "binary_parse_premise", "binary_parse_hypothesis", "heuristic", "subcase", "template"])
             keep_cols = list(set(tokenized_set.column_names) - non_input_cols)
             tokenized_set.set_format("torch",columns=keep_cols)
         return tokenized_set

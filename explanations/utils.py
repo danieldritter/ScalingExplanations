@@ -1,8 +1,11 @@
 import torch 
 
-def compute_sequence_likelihood(dec_ids, logits, model, is_tuple=True):
+def compute_sequence_sum(dec_ids, logits, model, is_tuple=True, return_probs=False):
     if is_tuple:
-        probs = [torch.nn.functional.log_softmax(item,dim=1) for item in logits]    
+        if return_probs:
+            probs = [torch.nn.functional.log_softmax(item,dim=1) for item in logits]    
+        else:
+            probs = logits
         likelihoods = []
         for example_ind in range(dec_ids.shape[0]):
             total_likelihood = 0.0
@@ -13,8 +16,11 @@ def compute_sequence_likelihood(dec_ids, logits, model, is_tuple=True):
             likelihoods.append(total_likelihood)
         return torch.tensor(likelihoods)
     else:
-        probs = torch.nn.functional.log_softmax(logits, dim=-1)
-        likelihoods = torch.zeros(logits.shape[0])
+        if return_probs:
+            probs = torch.nn.functional.log_softmax(logits, dim=-1)
+        else:
+            probs = logits 
+        likelihoods = torch.zeros(logits.shape[0]).to(probs.device)
         for example_ind in range(logits.shape[0]):
             for i in range(logits.shape[1]):
                 likelihoods[example_ind] += probs[example_ind][i][dec_ids[example_ind][i]]

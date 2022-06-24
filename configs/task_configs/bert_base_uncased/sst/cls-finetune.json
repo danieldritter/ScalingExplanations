@@ -1,0 +1,10 @@
+{
+    "dataset_name":"sst",
+    "dataset_kwargs":{},
+    "finetuning":true,
+    "pretrained_model_name":"bert-cls-seq-class",
+    "pretrained_model_config":"bert-base-uncased",
+    "tokenizer_config_name":"bert-base-uncased",
+    "seq2seq":false,
+    "num_labels":2
+}
