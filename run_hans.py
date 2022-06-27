@@ -35,8 +35,10 @@ def config():
     seed = 12345
     run_name = "t5_small_text_to_text/mnli/finetune"
     # run_name = "roberta_base/mnli/cls-finetune"
+    # run_name = "bert_base_uncased/mnli/cls-finetune"
     # checkpoint_folder = f"./model_outputs/{run_name}/checkpoint-171808"
     checkpoint_folder = f"./model_outputs/{run_name}/checkpoint-220896"
+    # checkpoint_folder = f"./model_outputs/{run_name}/checkpoint-73632"
     ex.add_config(f"./configs/task_configs/{run_name}.json")
     num_samples = None 
     data_cache_dir = "./cached_datasets"

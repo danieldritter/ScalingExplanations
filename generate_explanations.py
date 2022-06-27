@@ -24,8 +24,6 @@ out why that is.
 Need to work out normalization and visualization stuff for gradients. Captum clips values to between -1 and 1 behind the scenes, but that kind of fucks up a 
 lot of the relationships. 
 
-Need to add ground truth attribution masks to relevant datasets 
-
 Figure out why visualizations seem off 
 
 Set a clear set of deadlines to get this shit done by August 1st and then enjoy yourself a bit 
@@ -35,14 +33,17 @@ Set a clear set of deadlines to get this shit done by August 1st and then enjoy 
 def config():
     seed = 12345
     run_name = "t5_small_text_to_text/spurious_sst/finetune"
+    # run_name = "bert_base_uncased/mnli/cls-finetune"
+    # run_name = "roberta_base/mnli/cls-finetune"
     # checkpoint_folder = "./model_outputs/t5_small_text_to_text/mnli/finetune/checkpoint-220896"
     checkpoint_folder = "./model_outputs/t5_small_text_to_text/spurious_sst/finetune/checkpoint-12630"
-    # checkpoint_folder = f"./model_outputs/roberta_base/spurious_sst/cls-finetune/checkpoint-12630"
+    # checkpoint_folder = f"./model_outputs/roberta_base/spurious_sst/cls-finetune/checkpoint-2105"
     # run_name = "roberta/mnli/cls-finetune"
     # checkpoint_folder = "./model_outputs/roberta_base/mnli/cls-finetune/checkpoint-171808"
+    # checkpoint_folder = "./model_outputs/bert_base_uncased/mnli/cls-finetune/checkpoint-73632"
     # run_name = "roberta/sst/cls-finetune"
     # checkpoint_folder = "./model_outputs/roberta_base/sst_glue/cls-finetune/checkpoint-42100"
-    explanation_type = "gradients/gradients"
+    explanation_type = "gradients/integrated_gradients_x_input"
     process_as_batch = True
     # explanation_type = "gradients/gradients_x_input"
     output_folder = f"./explanation_outputs/{run_name}/{explanation_type}"
@@ -52,6 +53,7 @@ def config():
     num_examples = 10
     layer = "encoder.embed_tokens"
     # layer = "roberta.embeddings"
+    # layer = "bert.embeddings"
     # Model params (set later)
     pretrained_model_name = None
     pretrained_model_config = None
@@ -132,6 +134,7 @@ def get_explanations(_seed, _config):
     else:
         example_inputs = examples 
     attributions = explainer.get_explanations(example_inputs, seq2seq=_config["seq2seq"])
+
     if _config["save_visuals"]:
         viz = explainer.visualize_explanations(attributions)
         with open(f"{_config['output_folder']}/visuals.html", "w+") as file:

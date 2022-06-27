@@ -10,7 +10,7 @@ from .utils import compute_sequence_sum, get_attention_mask
 class IntegratedGradients(FeatureImportanceExplainer):
 
     def __init__(self, model:torch.nn.Module, tokenizer, layer, multiply_by_inputs=False, 
-                normalize_attributions=False, device=None, internal_batch_size=16, process_as_batch=True):
+                normalize_attributions=False, device=None, internal_batch_size=16, process_as_batch=True, n_steps=200):
         super().__init__(model, process_as_batch=process_as_batch, normalize_attributions=normalize_attributions)
         self.layer = layer
         self.tokenizer = tokenizer
@@ -60,6 +60,7 @@ class IntegratedGradients(FeatureImportanceExplainer):
 
         self.predict_helper = predict_helper
         self.internal_batch_size = internal_batch_size
+        self.n_steps = n_steps
         self.explainer = LayerIntegratedGradients(self.predict_helper, layer, multiply_by_inputs=multiply_by_inputs)
 
     def get_feature_importances(self, inputs, seq2seq=False, targets=None):
@@ -75,7 +76,7 @@ class IntegratedGradients(FeatureImportanceExplainer):
             baselines = self.construct_baselines(inputs)
             non_input_forward_args = {key:inputs[key] for key in inputs if key != "input_ids"}
             attributions, deltas = self.explainer.attribute(inputs=inputs["input_ids"],baselines=baselines,
-                                    additional_forward_args=(non_input_forward_args, True), return_convergence_delta=True, internal_batch_size=self.internal_batch_size)            
+                                    additional_forward_args=(non_input_forward_args, True), return_convergence_delta=True, internal_batch_size=self.internal_batch_size, n_steps=self.n_steps)            
         attribution_dict["attributions"] = torch.sum(attributions, dim=-1)
         attribution_dict["deltas"] = deltas 
         return attribution_dict 

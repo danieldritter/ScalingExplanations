@@ -50,7 +50,7 @@ class HansDataset:
             else:
                 token_out = tokenizer(example["premise"],example["hypothesis"],truncation="longest_first",max_length=max_length)
                 example.update(token_out)
-                return token_out 
+                return example
         if split == "train":
             tokenized_set = self.train_dataset.map(tokenization, batched=True)
         elif split == "val":

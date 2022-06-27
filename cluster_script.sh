@@ -13,5 +13,6 @@ export CONDA_PKGS_DIRS=/scratch-ssd/$USER/conda_pkgs
 source /scratch-ssd/oatml/miniconda3/bin/activate ms21ddr_llms
 
 
-srun python train_models.py with 'run_name="bert_base/mnli/cls-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True'
-srun python train_models.py with 'run_name="t5_base_text_to_text/mnli/finetune' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True'
+srun python train_models.py with 'run_name="dn_t5_tiny_enc/spurious_sst/cls-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True'
+srun python train_models.py with 'run_name="dn_t5_mini_enc/spurious_sst/cls-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True'
+srun python train_models.py with 'run_name="dn_t5_small_enc/spurious_sst/cls-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True'

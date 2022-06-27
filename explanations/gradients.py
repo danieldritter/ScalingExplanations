@@ -16,7 +16,8 @@ class Gradients(FeatureImportanceExplainer):
         def predict_helper(input_ids, model_kwargs, seq2seq=False):
             # For multistep attribution batches, have to expand attention mask and labels to match input_ids 
             if not seq2seq:
-                return self.model(input_ids=input_ids, **model_kwargs).logits
+                out = self.model(input_ids=input_ids, **model_kwargs).logits
+                return out
             else:
                 gen_out = self.model.generate(input_ids, attention_mask=model_kwargs["attention_mask"], output_scores=True, do_sample=False, return_dict_in_generate=True)
                 dec_ids = gen_out["sequences"].to(self.device)
@@ -29,7 +30,7 @@ class Gradients(FeatureImportanceExplainer):
 
     def get_feature_importances(self, inputs, seq2seq=False, targets=None):
         non_input_forward_args = {key:inputs[key] for key in inputs if key != "input_ids"}
-        attributions = self.explainer.attribute(inputs=inputs["input_ids"],additional_forward_args=(non_input_forward_args, seq2seq))  
+        attributions = self.explainer.attribute(inputs=inputs["input_ids"],additional_forward_args=(non_input_forward_args, seq2seq), target=targets)  
         attributions = torch.sum(attributions, dim=-1)
         attributions_dict = {"attributions":attributions, "deltas":[None for i in range(len(inputs["input_ids"]))]}
         return attributions_dict
