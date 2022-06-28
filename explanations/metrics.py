@@ -1,4 +1,5 @@
-from .utils import get_attention_mask, compute_sequence_likelihood
+import torch 
+from .utils import get_attention_mask, compute_sequence_sum
 
 class TopKFeatureAblation:
 
@@ -23,7 +24,7 @@ class TopKFeatureAblation:
                 dec_ids = gen_out["sequences"]
                 dec_attention_mask = get_attention_mask(dec_ids, self.model.config.eos_token_id)
                 outs = self.model(input_ids=input_ids, decoder_input_ids=dec_ids, decoder_attention_mask=dec_attention_mask, attention_mask=model_kwargs["attention_mask"])   
-                likelihoods = compute_sequence_likelihood(dec_ids, outs.logits, self.model, is_tuple=False)
+                likelihoods = compute_sequence_sum(dec_ids, outs.logits, self.model, is_tuple=False)
                 return likelihoods
         self.predict_helper = predict_helper
     
@@ -38,12 +39,23 @@ class TopKFeatureAblation:
             dec_ids = gen_out["sequences"]
             dec_attention_mask = get_attention_mask(dec_ids, self.model.config.eos_token_id)
             outs = self.model(input_ids=input_ids, decoder_input_ids=dec_ids, decoder_attention_mask=dec_attention_mask, attention_mask=model_kwargs["attention_mask"])   
-            likelihoods = compute_sequence_likelihood(label_indices, outs.logits, self.model, is_tuple=False)
+            likelihoods = compute_sequence_sum(label_indices, outs.logits, self.model, is_tuple=False)
             return likelihoods    
 
     def compute_metric(self, inputs, attributions, k=1):
         pass 
 
 
-def intersection_over_union(ground_truths, attributions):
+
+
+def precision_at_k(self, attributions, ground_truth, k=1):
+    """
+    Technically these two input tensors aren't the same shape all the time, as the attributions may have been padded. 
+    But the attribution to the padding tokens is always zero, and we're only compared with a comparison of the topk positions,
+    so it still works. 
+    """
+    topk_attr = torch.topk(attributions, k=k, dim=-1)
+    topk_gt = torch.topk(ground_truth, k=k, dim=-1)
+    print(topk_attr)
+    print(topk_gt)
     

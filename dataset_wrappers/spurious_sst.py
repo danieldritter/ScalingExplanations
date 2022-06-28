@@ -5,42 +5,25 @@ import os
 from torch.utils.data import DataLoader
 from collections import defaultdict
 
-
-# def find_unused_token(train_dataset, val_dataset, tokenizer, tokenization_func):
-#     all_vocab = tokenizer.get_vocab()
-#     tokenized_train = train_dataset.map(tokenization_func, batched=True)
-#     tokenized_val = val_dataset.map(tokenization_func, batched=True)
-#     special_tokens = tokenizer.all_special_tokens
-#     freq_dict = defaultdict(int)
-#     for example in tokenized_train:
-#         for input_id in example["input_ids"]:
-#             freq_dict[input_id] += 1
-#     for example in tokenized_val:
-#         for input_id in example["input_ids"]:
-#             freq_dict[input_id] += 1
-#     for key in sorted(all_vocab.keys()):
-#         if freq_dict[all_vocab[key]] == 0 and key not in special_tokens:
-#             print(f"Found token {key} that appears zero times in corpus")
-#             return key 
-#     print(f"No unused token in vocabulary found. Defaulting to unknown token")
-#     return tokenizer.unk_token
-
 class SpuriousSSTDataset:
 
     def __init__(self, cache_dir: str = "./cached_datasets", num_samples: int = None, 
-                text_to_text: bool = False, task_prefix: str = "sst2 sentence: ", add_ground_truth_attributions=False):
+                text_to_text: bool = False, task_prefix: str = "sst2 sentence: ", add_ground_truth_attributions=True):
         self.text_to_text = text_to_text
         self.task_prefix = task_prefix
         self.add_ground_truth_attributions = add_ground_truth_attributions
         if "spurious_sst" not in os.listdir(cache_dir):
+            print("No Spurious Dataset Cached. Constructing and saving new one.")
             self.train_dataset = datasets.load_dataset("glue", "sst2", split="train",cache_dir=cache_dir).shuffle()
             self.val_dataset = datasets.load_dataset("glue","sst2",split="validation",cache_dir=cache_dir).shuffle()
-            self.spurious_token = "spurious"
+            self.spurious_pos_token = "positive"
+            self.spurious_neg_token = "negative"
 
             def add_spurious_feature(example):
                 example["label"] = np.random.binomial(1, 0.5, size=len(example["label"]))
-                example["sentence"] = [example["sentence"][i] + " " + self.spurious_token if example["label"][i] == 1 else example["sentence"][i] for i in range(len(example["sentence"]))]
-                example["spurious_token"] = [self.spurious_token for i in range(len(example["sentence"]))]
+                example["sentence"] = [example["sentence"][i] + " " + self.spurious_pos_token if example["label"][i] == 1 else example["sentence"][i] + " " + self.spurious_neg_token for i in range(len(example["sentence"]))]
+                example["spurious_pos_token"] = [self.spurious_pos_token for i in range(len(example["sentence"]))]
+                example["spurious_neg_token"] = [self.spurious_neg_token for i in range(len(example["sentence"]))]
                 return example 
 
             self.train_dataset = self.train_dataset.map(add_spurious_feature, batched=True)
@@ -52,9 +35,10 @@ class SpuriousSSTDataset:
             self.train_dataset.save_to_disk(f"{cache_dir}/spurious_sst/spurious_sst_train")
             self.val_dataset.save_to_disk(f"{cache_dir}/spurious_sst/spurious_sst_val")
         else:
-            self.train_dataset = datasets.load_from_disk(f"{cache_dir}/spurious_sst/spurious_sst_train")
-            self.val_dataset = datasets.load_from_disk(f"{cache_dir}/spurious_sst/spurious_sst_val")
-            self.spurious_token = self.train_dataset["spurious_token"][0]
+            self.train_dataset = datasets.load_from_disk(f"{cache_dir}/spurious_sst/spurious_sst_train").shuffle()
+            self.val_dataset = datasets.load_from_disk(f"{cache_dir}/spurious_sst/spurious_sst_val").shuffle()
+            self.spurious_pos_token = self.train_dataset["spurious_pos_token"][0]
+            self.spurious_neg_token = self.train_dataset["spurious_neg_token"][0]
                 
         def text_to_text_conversion(example):
             """
@@ -72,25 +56,40 @@ class SpuriousSSTDataset:
             self.train_dataset = self.train_dataset.map(text_to_text_conversion, batched=True)
             self.val_dataset = self.val_dataset.map(text_to_text_conversion, batched=True)
     
-    def get_spurious_token_mask(self, token_ids, spurious_token_ids):
+    def get_spurious_token_mask(self, token_ids, spurious_pos_token_ids, spurious_neg_token_ids, labels):
         spurious_token_masks = [] 
-        spurious_id_set = set(spurious_token_ids)
-        for token_id_seq in token_ids:
-            spurious_token_mask = [0 if val_id not in spurious_id_set else 1 for val_id in token_id_seq]
+        # Assumes token is added to end of sentence 
+        for i, token_id_seq in enumerate(token_ids):
+            if not self.text_to_text:
+                if labels[i] != 1:
+                    spurious_token_ids = spurious_neg_token_ids 
+                else:
+                    spurious_token_ids = spurious_pos_token_ids 
+            else:
+                if labels[i] != "positive":
+                    spurious_token_ids = spurious_neg_token_ids 
+                else:
+                    spurious_token_ids = spurious_pos_token_ids 
+            spur_start_positions = [index for index, item in enumerate(token_id_seq) if item == spurious_token_ids[0]]
+            spurious_start_index = max(index for index, item in enumerate(token_id_seq) if item == spurious_token_ids[0])
+            spurious_token_mask = [0 for i in range(len(token_id_seq))]
+            for j in range(len(spurious_token_ids)):
+                if token_id_seq[spurious_start_index + j] == spurious_token_ids[j]:
+                    spurious_token_mask[spurious_start_index + j] = 1
             spurious_token_masks.append(spurious_token_mask)
         return spurious_token_masks 
 
 
     def get_dataloader(self, pretrained_model: PreTrainedModel, tokenizer: PreTrainedTokenizer, max_length: int = 512, batch_size: int = 32, split: str = "train", format: bool = True):
         if self.add_ground_truth_attributions:
-            spurious_token_ids = tokenizer(self.spurious_token, add_special_tokens=False)["input_ids"]
-
+            spurious_pos_token_ids = tokenizer(self.spurious_pos_token, add_special_tokens=False)["input_ids"]
+            spurious_neg_token_ids = tokenizer(self.spurious_neg_token, add_special_tokens=False)["input_ids"]
         def tokenization(example):
             if self.text_to_text:
                 token_out = tokenizer(example["sentence"], truncation=True, max_length=max_length)
                 label_out = tokenizer(example["labels"], truncation=True, max_length=max_length)
                 if self.add_ground_truth_attributions:
-                    ground_truth_masks = self.get_spurious_token_mask(token_out["input_ids"], spurious_token_ids)
+                    ground_truth_masks = self.get_spurious_token_mask(token_out["input_ids"], spurious_pos_token_ids, spurious_neg_token_ids, example["labels"])
                     example.update({"ground_truth_attributions":ground_truth_masks})
                 example.update(token_out)
                 example["labels"] = label_out["input_ids"]
@@ -98,7 +97,7 @@ class SpuriousSSTDataset:
             else:
                 token_out = tokenizer(example["sentence"], truncation=True, max_length=max_length)
                 if self.add_ground_truth_attributions:
-                    ground_truth_masks = self.get_spurious_token_mask(token_out["input_ids"], spurious_token_ids)
+                    ground_truth_masks = self.get_spurious_token_mask(token_out["input_ids"], spurious_pos_token_ids, spurious_neg_token_ids, example["labels"])
                     example.update({"ground_truth_attributions":ground_truth_masks})            
                 example.update(token_out)
                 return example

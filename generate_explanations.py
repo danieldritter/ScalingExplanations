@@ -12,6 +12,7 @@ from model_registry import MODELS, TOKENIZERS
 from dataset_registry import DATASETS 
 from explanation_registry import EXPLANATIONS
 from constants import PROJECT_NAME, WANDB_KEY, WANDB_ENTITY
+from explanations.metrics import precision_at_k
 
 ex = Experiment("explanation-generation")
 
@@ -32,11 +33,13 @@ Set a clear set of deadlines to get this shit done by August 1st and then enjoy 
 @ex.config 
 def config():
     seed = 12345
-    run_name = "t5_small_text_to_text/spurious_sst/finetune"
+    # run_name = "t5_small_text_to_text/spurious_sst/finetune"
     # run_name = "bert_base_uncased/mnli/cls-finetune"
+    run_name = "dn_t5_tiny_enc/spurious_sst/cls-finetune"
     # run_name = "roberta_base/mnli/cls-finetune"
+    checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/spurious_sst/cls-finetune/checkpoint-4210"
     # checkpoint_folder = "./model_outputs/t5_small_text_to_text/mnli/finetune/checkpoint-220896"
-    checkpoint_folder = "./model_outputs/t5_small_text_to_text/spurious_sst/finetune/checkpoint-12630"
+    # checkpoint_folder = "./model_outputs/t5_small_text_to_text/spurious_sst/finetune/checkpoint-12630"
     # checkpoint_folder = f"./model_outputs/roberta_base/spurious_sst/cls-finetune/checkpoint-2105"
     # run_name = "roberta/mnli/cls-finetune"
     # checkpoint_folder = "./model_outputs/roberta_base/mnli/cls-finetune/checkpoint-171808"
@@ -127,7 +130,7 @@ def get_explanations(_seed, _config):
     
     examples = train_set.filter(lambda e,idx: idx < _config["num_examples"], with_indices=True)
     if _config["process_as_batch"]:
-        example_loader = torch.utils.data.DataLoader(examples, batch_size=_config["num_examples"], collate_fn=collator)
+        example_loader = torch.utils.data.DataLoader(examples, batch_size=_config["num_examples"], collate_fn=collator, shuffle=False)
         # Sort of hacky way to pad, but works for now 
         for batch in example_loader:
             example_inputs = batch 
@@ -139,4 +142,9 @@ def get_explanations(_seed, _config):
         viz = explainer.visualize_explanations(attributions)
         with open(f"{_config['output_folder']}/visuals.html", "w+") as file:
             file.write(viz.data)
+    
+    if _config["save_metrics"]:
+        print(examples["ground_truth_attributions"][0])
+        print(examples["ground_truth_attributions"])
+        precision_at_k(attributions["word_attributions"], examples.features["ground_truth_attributions"], k=2)
         

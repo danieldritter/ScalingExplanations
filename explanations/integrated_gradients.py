@@ -68,10 +68,9 @@ class IntegratedGradients(FeatureImportanceExplainer):
         if not seq2seq:
             baselines = self.construct_baselines(inputs)
             non_input_forward_args = {key:inputs[key] for key in inputs if key != "input_ids"}
-            attributions, deltas = self.explainer.attribute(inputs=inputs["input_ids"],baselines=baselines,
+            attributions, deltas = self.explainer.attribute(inputs=inputs["input_ids"], baselines=baselines,
                                     additional_forward_args=(non_input_forward_args, False), return_convergence_delta=True,
                                     target=targets, internal_batch_size=self.internal_batch_size)
-
         else:
             baselines = self.construct_baselines(inputs)
             non_input_forward_args = {key:inputs[key] for key in inputs if key != "input_ids"}
