@@ -48,14 +48,26 @@ class TopKFeatureAblation:
 
 
 
-def precision_at_k(self, attributions, ground_truth, k=1):
+def precision_at_k(attributions, ground_truth, k=1):
     """
     Technically these two input tensors aren't the same shape all the time, as the attributions may have been padded. 
     But the attribution to the padding tokens is always zero, and we're only compared with a comparison of the topk positions,
     so it still works. 
     """
-    topk_attr = torch.topk(attributions, k=k, dim=-1)
-    topk_gt = torch.topk(ground_truth, k=k, dim=-1)
-    print(topk_attr)
-    print(topk_gt)
-    
+    topk_attr = set(torch.topk(attributions, k=k).indices.tolist())
+    topk_gt = set(torch.topk(ground_truth, k=k).indices.tolist())
+    overlap = len(topk_gt.intersection(topk_attr))/len(topk_gt)
+    return overlap 
+
+def ground_truth_overlap(attributions, ground_truths):
+    ground_truths = [torch.tensor(mask) for mask in ground_truths]
+    k_vals = [torch.sum(mask) for mask in ground_truths] 
+    overlaps = []
+    for i in range(len(attributions)):
+        percent_overlap = precision_at_k(attributions[i], ground_truths[i], k=k_vals[i])
+        overlaps.append(percent_overlap)
+    return sum(overlaps)/len(overlaps)
+
+def mean_rank(attributions, ground_truth):
+    ground_truths = [torch.tensor(mask).to(attributions[0].device) for mask in ground_truths]
+    k_vals = [torch.sum(mask) for mask in ground_truths]     

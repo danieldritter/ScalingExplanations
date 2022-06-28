@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from tqdm import tqdm 
 from .utils import compute_sequence_sum  
 import torch 
 from captum.attr import visualization as viz
@@ -19,10 +20,11 @@ class Explainer(ABC):
 
 class FeatureImportanceExplainer(Explainer):
 
-    def __init__(self, model: torch.nn.Module, process_as_batch=False, normalize_attributions=False):
+    def __init__(self, model: torch.nn.Module, process_as_batch=False, normalize_attributions=False, show_progress=False):
         super().__init__(model)
         self.process_as_batch = process_as_batch 
         self.normalize_attributions = normalize_attributions
+        self.show_progress = show_progress
     
     def get_explanations(self, inputs, seq2seq=False):
         if self.process_as_batch:
@@ -44,16 +46,17 @@ class FeatureImportanceExplainer(Explainer):
         if not seq2seq:
             logits = self.model(**inputs).logits 
             return_dict["pred_prob"], targets = torch.softmax(logits,dim=1).max(dim=1)
-            return_dict["pred_class"] = targets
-            return_dict["attr_class"] = targets 
+            return_dict["pred_prob"] = return_dict["pred_prob"].detach().cpu()
+            return_dict["pred_class"] = targets.detach().cpu()
+            return_dict["attr_class"] = targets.detach().cpu() 
             if "labels" in inputs:
-                return_dict['true_class'] = inputs["labels"]
+                return_dict['true_class'] = inputs["labels"].cpu()
             attribution_dict = self.get_feature_importances(inputs, seq2seq=False, targets=targets)
         else:
             outputs = self.model.generate(inputs["input_ids"], return_dict_in_generate=True, output_scores=True)
             pred_classes = self.tokenizer.batch_decode(outputs["sequences"])
             pred_probs = torch.exp(compute_sequence_sum(outputs["sequences"],outputs["scores"], self.model, is_tuple=True, return_probs=True))
-            return_dict["pred_prob"] = pred_probs
+            return_dict["pred_prob"] = pred_probs.detach().cpu()
             return_dict["pred_class"] = pred_classes
             return_dict["attr_class"] = pred_classes
             if "labels" in inputs:
@@ -61,19 +64,23 @@ class FeatureImportanceExplainer(Explainer):
                 pad_inputs[pad_inputs == -100] = self.model.config.pad_token_id
                 return_dict["true_class"] = self.tokenizer.batch_decode(pad_inputs)
             attribution_dict = self.get_feature_importances(inputs, seq2seq=True)
-        return_dict["word_attributions"] = attribution_dict["attributions"]
+        return_dict["word_attributions"] = attribution_dict["attributions"].detach().cpu()
         if self.normalize_attributions:
             return_dict["word_attributions"] = return_dict["word_attributions"] / torch.sum(return_dict["word_attributions"], dim=1, keepdims=True)
         return_dict["attr_score"] = return_dict["word_attributions"].sum(dim=1)
         return_dict["raw_input_ids"] = [self.tokenizer.convert_ids_to_tokens(inputs["input_ids"][i]) for i in range(inputs["input_ids"].shape[0])]
         return_dict["raw_input_ids"] = [[val for val in id_list if val != self.tokenizer.pad_token] for id_list in return_dict["raw_input_ids"]]
-        return_dict["convergence_score"] = attribution_dict["deltas"]         
+        return_dict["convergence_score"] = attribution_dict["deltas"].detach().cpu()         
         return return_dict 
     
     def get_unbatch_explanations(self, inputs, seq2seq=False):
         return_dict = {"pred_prob":[],"pred_class":[],"attr_class":[],"true_class":[], "word_attributions":[], "convergence_score":[]} 
         if not seq2seq:
-            for example in inputs:
+            if self.show_progress:
+                input_loader = tqdm(inputs)
+            else:
+                input_loader = inputs 
+            for example in input_loader:
                 # Adding batch dimension
                 if self.device == None:
                     example = {key:example[key].unsqueeze(0) for key in example}
@@ -87,10 +94,14 @@ class FeatureImportanceExplainer(Explainer):
                 if "labels" in example:
                     return_dict['true_class'].append(example["labels"].item())
                 attribution_dict = self.get_feature_importances(example, seq2seq=False, targets=target)
-                return_dict["word_attributions"].append(attribution_dict["attributions"].squeeze())
+                return_dict["word_attributions"].append(attribution_dict["attributions"].squeeze().detach().cpu())
                 return_dict["convergence_score"].append(attribution_dict["deltas"][0].item() if attribution_dict["deltas"][0] != None else None)
         else:
-            for example in inputs:
+            if self.show_progress:
+                input_loader = tqdm(inputs)
+            else:
+                input_loader = inputs 
+            for example in input_loader:
                 if self.device == None:
                     example = {key:example[key].unsqueeze(0) for key in example}
                 else:
@@ -104,7 +115,7 @@ class FeatureImportanceExplainer(Explainer):
                 if "labels" in example:
                     return_dict["true_class"].append(" ".join(self.tokenizer.batch_decode(example["labels"])))
                 attribution_dict = self.get_feature_importances(example, seq2seq=True)
-                return_dict["word_attributions"].append(attribution_dict["attributions"].squeeze())
+                return_dict["word_attributions"].append(attribution_dict["attributions"].squeeze().detach().cpu())
                 return_dict["convergence_score"].append(attribution_dict["deltas"][0].item() if attribution_dict["deltas"][0] != None else None)
         if self.normalize_attributions:
             return_dict["word_attributions"] = [return_dict["word_attributions"][i] / torch.linalg.norm(return_dict["word_attributions"][i], ord=1, keepdims=True) for i in range(len(return_dict["word_attributions"]))]

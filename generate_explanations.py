@@ -6,13 +6,14 @@ import wandb
 import numpy as np  
 import random 
 import transformers
+from tqdm import tqdm 
 from operator import attrgetter
 from transformers import DataCollatorWithPadding, DataCollatorForSeq2Seq
 from model_registry import MODELS, TOKENIZERS
 from dataset_registry import DATASETS 
 from explanation_registry import EXPLANATIONS
 from constants import PROJECT_NAME, WANDB_KEY, WANDB_ENTITY
-from explanations.metrics import precision_at_k
+from explanations.metrics import ground_truth_overlap
 
 ex = Experiment("explanation-generation")
 
@@ -34,29 +35,31 @@ Set a clear set of deadlines to get this shit done by August 1st and then enjoy 
 def config():
     seed = 12345
     # run_name = "t5_small_text_to_text/spurious_sst/finetune"
-    # run_name = "bert_base_uncased/mnli/cls-finetune"
-    run_name = "dn_t5_tiny_enc/spurious_sst/cls-finetune"
+    run_name = "bert_base_uncased/mnli/cls-finetune"
+    # run_name = "dn_t5_tiny_enc/spurious_sst/cls-finetune"
     # run_name = "roberta_base/mnli/cls-finetune"
-    checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/spurious_sst/cls-finetune/checkpoint-4210"
+    # checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/spurious_sst/cls-finetune/checkpoint-4210"
     # checkpoint_folder = "./model_outputs/t5_small_text_to_text/mnli/finetune/checkpoint-220896"
     # checkpoint_folder = "./model_outputs/t5_small_text_to_text/spurious_sst/finetune/checkpoint-12630"
     # checkpoint_folder = f"./model_outputs/roberta_base/spurious_sst/cls-finetune/checkpoint-2105"
     # run_name = "roberta/mnli/cls-finetune"
     # checkpoint_folder = "./model_outputs/roberta_base/mnli/cls-finetune/checkpoint-171808"
-    # checkpoint_folder = "./model_outputs/bert_base_uncased/mnli/cls-finetune/checkpoint-73632"
+    checkpoint_folder = "./model_outputs/bert_base_uncased/mnli/cls-finetune/checkpoint-73632"
     # run_name = "roberta/sst/cls-finetune"
     # checkpoint_folder = "./model_outputs/roberta_base/sst_glue/cls-finetune/checkpoint-42100"
-    explanation_type = "gradients/integrated_gradients_x_input"
-    process_as_batch = True
+    # explanation_type = "gradients/integrated_gradients_x_input"
+    explanation_type = "lime/lime"
+    process_as_batches = True
     # explanation_type = "gradients/gradients_x_input"
     output_folder = f"./explanation_outputs/{run_name}/{explanation_type}"
     save_visuals = True 
     save_metrics = True 
     num_samples = None
     num_examples = 10
-    layer = "encoder.embed_tokens"
+    show_progress = True 
+    # layer = "encoder.embed_tokens"
     # layer = "roberta.embeddings"
-    # layer = "bert.embeddings"
+    layer = "bert.embeddings"
     # Model params (set later)
     pretrained_model_name = None
     pretrained_model_config = None
@@ -124,27 +127,39 @@ def get_explanations(_seed, _config):
 
     if _config["uses_layers"]:
         layer = attrgetter(_config["layer"])(model)
-        explainer = EXPLANATIONS[_config["explanation_name"]](model, tokenizer, layer, **_config["explanation_kwargs"], device=device)
+        explainer = EXPLANATIONS[_config["explanation_name"]](model, tokenizer, layer, **_config["explanation_kwargs"], device=device, process_as_batch=_config["process_as_batches"])
     else:
-        explainer = EXPLANATIONS[_config["explanation_name"]](model, tokenizer, **_config["explanation_kwargs"], device=device)
+        explainer = EXPLANATIONS[_config["explanation_name"]](model, tokenizer, **_config["explanation_kwargs"], device=device, process_as_batch=_config["process_as_batches"])
     
     examples = train_set.filter(lambda e,idx: idx < _config["num_examples"], with_indices=True)
-    if _config["process_as_batch"]:
-        example_loader = torch.utils.data.DataLoader(examples, batch_size=_config["num_examples"], collate_fn=collator, shuffle=False)
+    if _config["process_as_batches"]:
+        example_loader = torch.utils.data.DataLoader(examples, batch_size=_config["batch_size"], collate_fn=collator, shuffle=False)
         # Sort of hacky way to pad, but works for now 
-        for batch in example_loader:
-            example_inputs = batch 
+        all_attributions = {"pred_prob":[],"pred_class":[],"attr_class":[],"true_class":[], "word_attributions":[], "convergence_score":[], "attr_score":[], "raw_input_ids":[]} 
+        if _config["show_progress"]:
+            loader = tqdm(example_loader)
+        else:
+            loader = example_loader
+        for batch in loader:
+            attributions = explainer.get_explanations(batch, seq2seq=_config["seq2seq"])
+            all_attributions["pred_prob"].extend([prob for prob in attributions["pred_prob"]])
+            all_attributions["pred_class"].extend([pred_class for pred_class in attributions["pred_class"]])
+            all_attributions["attr_class"].extend([attr_class for attr_class in attributions["attr_class"]])
+            all_attributions["true_class"].extend([true_class for true_class in attributions["true_class"]])
+            all_attributions["word_attributions"].extend([attribution for attribution in attributions["word_attributions"]])
+            all_attributions["convergence_score"].extend([convergence_score for convergence_score in attributions["convergence_score"]])
+            all_attributions["attr_score"].extend([attr_score for attr_score in attributions["attr_score"]])
+            all_attributions["raw_input_ids"].extend([input_ids for input_ids in attributions["raw_input_ids"]])
+        attributions = all_attributions 
     else:
-        example_inputs = examples 
-    attributions = explainer.get_explanations(example_inputs, seq2seq=_config["seq2seq"])
+        attributions = explainer.get_explanations(examples, seq2seq=_config["seq2seq"])
 
     if _config["save_visuals"]:
         viz = explainer.visualize_explanations(attributions)
         with open(f"{_config['output_folder']}/visuals.html", "w+") as file:
             file.write(viz.data)
-    
+
     if _config["save_metrics"]:
-        print(examples["ground_truth_attributions"][0])
-        print(examples["ground_truth_attributions"])
-        precision_at_k(attributions["word_attributions"], examples.features["ground_truth_attributions"], k=2)
+        gt_overlap = ground_truth_overlap(attributions["word_attributions"], examples["ground_truth_attributions"])
+        print(gt_overlap)
         

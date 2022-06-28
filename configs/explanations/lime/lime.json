@@ -4,5 +4,5 @@
         "normalize_attributions":false
     },
     "uses_layers":false,
-    "process_as_batch":false
+    "process_as_batches":false
 }

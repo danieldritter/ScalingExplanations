@@ -9,8 +9,8 @@ from .utils import compute_sequence_sum, get_attention_mask
 
 class LIME(FeatureImportanceExplainer):
 
-    def __init__(self, model:torch.nn.Module, tokenizer, baseline_token_id=None, normalize_attributions=False, device=None, n_samples=200):
-        super().__init__(model, process_as_batch=False, normalize_attributions=normalize_attributions)
+    def __init__(self, model:torch.nn.Module, tokenizer, baseline_token_id=None, normalize_attributions=False, device=None, n_samples=50, process_as_batch=False, show_progress=True):
+        super().__init__(model, process_as_batch=process_as_batch, normalize_attributions=normalize_attributions, show_progress=show_progress)
         self.tokenizer = tokenizer
         self.normalize_attributions = normalize_attributions
         self.device = device 
@@ -46,7 +46,8 @@ class LIME(FeatureImportanceExplainer):
         attribution_dict = {}
         non_input_forward_args = {key:inputs[key] for key in inputs if key != "input_ids"}
         attributions = self.explainer.attribute(inputs=inputs["input_ids"],baselines=self.baseline_token_id,
-                            additional_forward_args=(non_input_forward_args, seq2seq), target=targets, n_samples=self.n_samples)
+                            additional_forward_args=(non_input_forward_args, seq2seq), target=targets.unsqueeze(0), n_samples=self.n_samples)
+        print(attributions)
         attribution_dict["attributions"] = attributions 
         attribution_dict["deltas"] = [None for i in range(len(inputs))] 
         return attribution_dict 

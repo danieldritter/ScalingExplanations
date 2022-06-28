@@ -6,8 +6,8 @@ from .utils import compute_sequence_sum, get_attention_mask
 
 class Gradients(FeatureImportanceExplainer):
 
-    def __init__(self, model:torch.nn.Module, tokenizer, layer, multiply_by_inputs=False, normalize_attributions=False, device=None, process_as_batch=True):
-        super().__init__(model, process_as_batch=process_as_batch, normalize_attributions=normalize_attributions)
+    def __init__(self, model:torch.nn.Module, tokenizer, layer, multiply_by_inputs=False, normalize_attributions=False, device=None, process_as_batch=True, show_progress=False):
+        super().__init__(model, process_as_batch=process_as_batch, normalize_attributions=normalize_attributions, show_progress=show_progress)
         self.layer= layer
         self.tokenizer = tokenizer
         self.multiply_by_inputs = multiply_by_inputs 
