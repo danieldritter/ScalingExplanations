@@ -1,0 +1,10 @@
+{
+    "dataset_name":"spurious_sst",
+    "dataset_kwargs":{"text_to_text":false},
+    "finetuning":true,
+    "pretrained_model_name":"t5_enc-cls-seq-class",
+    "pretrained_model_config":"google/t5-efficient-base",
+    "tokenizer_config_name":"google/t5-efficient-base",
+    "seq2seq":false,
+    "num_labels":2
+}
