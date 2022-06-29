@@ -36,6 +36,7 @@ def config():
     seed = 765
     run_name = "dn_t5_small_enc/spurious_sst/cls-finetune"
     checkpoint_folder = "./model_outputs/dn_t5_small_enc/spurious_sst/cls-finetune/checkpoint-25260"
+    data_cache_dir = "./cached_datasets"
     explanation_type = "gradients/integrated_gradients_x_input"
     # explanation_type = "lime/lime"
     output_folder = "./test_explanation_outputs"
@@ -87,7 +88,7 @@ def get_explanations(_seed, _config):
     else:
         print("Model max sequence length not determined by max_position_embeddings or n_positions. Using 512 as default")
         max_length = 512 
-    dataset = DATASETS[_config["dataset_name"]](**_config["dataset_kwargs"], num_samples=_config["num_samples"])
+    dataset = DATASETS[_config["dataset_name"]](**_config["dataset_kwargs"], num_samples=_config["num_samples"], cache_dir=_config["data_cache_dir"])
     tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=max_length)
 
     transformers.logging.set_verbosity_error()
