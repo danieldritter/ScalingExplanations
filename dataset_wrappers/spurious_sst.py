@@ -8,7 +8,7 @@ from collections import defaultdict
 class SpuriousSSTDataset:
 
     def __init__(self, cache_dir: str = "./cached_datasets", num_samples: int = None, 
-                text_to_text: bool = False, task_prefix: str = "sst2 sentence: ", add_ground_truth_attributions=True):
+                text_to_text: bool = False, task_prefix: str = "sst2 sentence: ", add_ground_truth_attributions=False):
         self.text_to_text = text_to_text
         self.task_prefix = task_prefix
         self.add_ground_truth_attributions = add_ground_truth_attributions
