@@ -6,14 +6,14 @@ import wandb
 import numpy as np  
 import random 
 import transformers
+import pickle 
 from tqdm import tqdm 
 from operator import attrgetter
 from transformers import DataCollatorWithPadding, DataCollatorForSeq2Seq
 from model_registry import MODELS, TOKENIZERS
 from dataset_registry import DATASETS 
 from explanation_registry import EXPLANATIONS
-from constants import PROJECT_NAME, WANDB_KEY, WANDB_ENTITY
-from explanations.metrics import ground_truth_overlap
+from explanations.metrics import ground_truth_overlap, mean_rank, ground_truth_mass
 
 ex = Experiment("explanation-generation")
 
@@ -33,33 +33,22 @@ Set a clear set of deadlines to get this shit done by August 1st and then enjoy 
 
 @ex.config 
 def config():
-    seed = 12345
-    # run_name = "t5_small_text_to_text/spurious_sst/finetune"
-    run_name = "bert_base_uncased/mnli/cls-finetune"
-    # run_name = "dn_t5_tiny_enc/spurious_sst/cls-finetune"
-    # run_name = "roberta_base/mnli/cls-finetune"
-    # checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/spurious_sst/cls-finetune/checkpoint-4210"
-    # checkpoint_folder = "./model_outputs/t5_small_text_to_text/mnli/finetune/checkpoint-220896"
-    # checkpoint_folder = "./model_outputs/t5_small_text_to_text/spurious_sst/finetune/checkpoint-12630"
-    # checkpoint_folder = f"./model_outputs/roberta_base/spurious_sst/cls-finetune/checkpoint-2105"
-    # run_name = "roberta/mnli/cls-finetune"
-    # checkpoint_folder = "./model_outputs/roberta_base/mnli/cls-finetune/checkpoint-171808"
-    checkpoint_folder = "./model_outputs/bert_base_uncased/mnli/cls-finetune/checkpoint-73632"
-    # run_name = "roberta/sst/cls-finetune"
-    # checkpoint_folder = "./model_outputs/roberta_base/sst_glue/cls-finetune/checkpoint-42100"
-    # explanation_type = "gradients/integrated_gradients_x_input"
-    explanation_type = "lime/lime"
+    seed = 765
+    run_name = "dn_t5_small_enc/spurious_sst/cls-finetune"
+    checkpoint_folder = "./model_outputs/dn_t5_small_enc/spurious_sst/cls-finetune/checkpoint-25260"
+    explanation_type = "gradients/integrated_gradients_x_input"
+    # explanation_type = "lime/lime"
+    output_folder = "./test_explanation_outputs"
     process_as_batches = True
-    # explanation_type = "gradients/gradients_x_input"
-    output_folder = f"./explanation_outputs/{run_name}/{explanation_type}"
-    save_visuals = True 
-    save_metrics = True 
+    full_output_folder = f"{output_folder}/{run_name}/{explanation_type}"
+    save_visuals = False
+    save_values = True 
     num_samples = None
-    num_examples = 10
+    num_examples = 100
     show_progress = True 
-    # layer = "encoder.embed_tokens"
+    layer = "encoder.embed_tokens"
     # layer = "roberta.embeddings"
-    layer = "bert.embeddings"
+    # layer = "bert.embeddings"
     # Model params (set later)
     pretrained_model_name = None
     pretrained_model_config = None
@@ -68,8 +57,8 @@ def config():
     dataset_name = None
     dataset_kwargs = None
     num_labels = None 
-    test_split = "test"
-    batch_size = 32
+    example_split = "train"
+    batch_size = 16
     # report_to = "wandb"
     report_to = "none"
     ex.add_config(f"./configs/task_configs/{run_name}.json")
@@ -77,13 +66,9 @@ def config():
 
 @ex.automain 
 def get_explanations(_seed, _config):
-    if not os.path.isdir(_config["output_folder"]):
-        os.makedirs(_config["output_folder"])
+    if not os.path.isdir(_config["full_output_folder"]):
+        os.makedirs(_config["full_output_folder"])
 
-    if _config["report_to"] == "wandb":
-        os.environ["WANDB_API_KEY"] = WANDB_KEY
-        # wandb.init(project=PROJECT_NAME, entity=WANDB_ENTITY, name=_config["run_name"])
-        # wandb.config.update(_config)
     # Setting manual seeds 
     torch.manual_seed(_seed)
     torch.cuda.manual_seed(_seed)
@@ -106,9 +91,7 @@ def get_explanations(_seed, _config):
     tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=max_length)
 
     transformers.logging.set_verbosity_error()
-    train_set = dataset.get_dataloader(model,tokenizer,batch_size=_config["batch_size"], max_length=max_length, split="train", format=True)
-    val_set = dataset.get_dataloader(model,tokenizer, batch_size=_config["batch_size"], max_length=max_length, split="val", format=True)
-    test_set = dataset.get_dataloader(model,tokenizer,batch_size=_config["batch_size"], max_length=max_length, split=_config["test_split"], format=True)
+    train_set = dataset.get_dataloader(model,tokenizer,batch_size=_config["batch_size"], max_length=max_length, split=_config["example_split"], format=True)
     transformers.logging.set_verbosity_warning()
     # Need data collator here to handle padding of batches and turning into tensors 
     if _config["seq2seq"]:
@@ -130,8 +113,10 @@ def get_explanations(_seed, _config):
         explainer = EXPLANATIONS[_config["explanation_name"]](model, tokenizer, layer, **_config["explanation_kwargs"], device=device, process_as_batch=_config["process_as_batches"])
     else:
         explainer = EXPLANATIONS[_config["explanation_name"]](model, tokenizer, **_config["explanation_kwargs"], device=device, process_as_batch=_config["process_as_batches"])
-    
-    examples = train_set.filter(lambda e,idx: idx < _config["num_examples"], with_indices=True)
+
+    if _config["num_examples"] != None:
+        examples = train_set.filter(lambda e,idx: idx < _config["num_examples"], with_indices=True)
+
     if _config["process_as_batches"]:
         example_loader = torch.utils.data.DataLoader(examples, batch_size=_config["batch_size"], collate_fn=collator, shuffle=False)
         # Sort of hacky way to pad, but works for now 
@@ -153,13 +138,10 @@ def get_explanations(_seed, _config):
         attributions = all_attributions 
     else:
         attributions = explainer.get_explanations(examples, seq2seq=_config["seq2seq"])
-
-    if _config["save_visuals"]:
-        viz = explainer.visualize_explanations(attributions)
-        with open(f"{_config['output_folder']}/visuals.html", "w+") as file:
-            file.write(viz.data)
-
-    if _config["save_metrics"]:
-        gt_overlap = ground_truth_overlap(attributions["word_attributions"], examples["ground_truth_attributions"])
-        print(gt_overlap)
-        
+    
+    if _config["save_values"]:
+        with open(f"{_config['full_output_folder']}/explanations.pkl", "wb+") as file:
+            if "ground_truth_attributions" in examples.features:
+                pickle.dump({"attributions": attributions, "ground_truth_attributions":examples["ground_truth_attributions"]}, file)
+            else:
+                pickle.dump({"attributions": attributions}, file)

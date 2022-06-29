@@ -66,11 +66,11 @@ class FeatureImportanceExplainer(Explainer):
             attribution_dict = self.get_feature_importances(inputs, seq2seq=True)
         return_dict["word_attributions"] = attribution_dict["attributions"].detach().cpu()
         if self.normalize_attributions:
-            return_dict["word_attributions"] = return_dict["word_attributions"] / torch.sum(return_dict["word_attributions"], dim=1, keepdims=True)
+            return_dict["word_attributions"] = return_dict["word_attributions"] / torch.linalg.norm(return_dict["word_attributions"], ord=1, dim=1, keepdims=True)
         return_dict["attr_score"] = return_dict["word_attributions"].sum(dim=1)
         return_dict["raw_input_ids"] = [self.tokenizer.convert_ids_to_tokens(inputs["input_ids"][i]) for i in range(inputs["input_ids"].shape[0])]
         return_dict["raw_input_ids"] = [[val for val in id_list if val != self.tokenizer.pad_token] for id_list in return_dict["raw_input_ids"]]
-        return_dict["convergence_score"] = attribution_dict["deltas"].detach().cpu()         
+        return_dict["convergence_score"] = attribution_dict["deltas"]         
         return return_dict 
     
     def get_unbatch_explanations(self, inputs, seq2seq=False):
@@ -124,6 +124,7 @@ class FeatureImportanceExplainer(Explainer):
         return_dict["raw_input_ids"] = [[val for val in id_list if val != self.tokenizer.pad_token] for id_list in return_dict["raw_input_ids"]]
         return return_dict 
 
+    @staticmethod
     def visualize_explanations(self, attributions):
         records = [] 
         for i in range(len(attributions["word_attributions"])):

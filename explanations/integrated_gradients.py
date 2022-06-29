@@ -84,7 +84,7 @@ class IntegratedGradients(FeatureImportanceExplainer):
             attributions, deltas = self.explainer.attribute(inputs=inputs["input_ids"],baselines=baselines,
                                     additional_forward_args=(non_input_forward_args, True), return_convergence_delta=True, n_steps=self.n_steps, internal_batch_size=self.internal_batch_size)            
         attribution_dict["attributions"] = torch.sum(attributions, dim=-1)
-        attribution_dict["deltas"] = deltas 
+        attribution_dict["deltas"] = deltas.detach().cpu() 
         return attribution_dict 
         
     def construct_baselines(self, inputs, ref_type="input", ref_token=None):

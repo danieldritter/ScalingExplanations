@@ -8,7 +8,7 @@ from .utils import compute_sequence_sum, get_attention_mask
 
 class SHAPWithKernel(FeatureImportanceExplainer):
 
-    def __init__(self, model:torch.nn.Module, tokenizer, baseline_token_id=None, normalize_attributions=False, device=None, n_samples=50, process_as_batch=False, show_progress=True):
+    def __init__(self, model:torch.nn.Module, tokenizer, baseline_token_id=None, normalize_attributions=False, device=None, n_samples=200, process_as_batch=False, show_progress=True):
         super().__init__(model, normalize_attributions=normalize_attributions, process_as_batch=process_as_batch, show_progress=show_progress)
         self.tokenizer = tokenizer
         self.normalize_attributions = normalize_attributions

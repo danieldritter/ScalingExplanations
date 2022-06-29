@@ -64,10 +64,46 @@ def ground_truth_overlap(attributions, ground_truths):
     k_vals = [torch.sum(mask) for mask in ground_truths] 
     overlaps = []
     for i in range(len(attributions)):
-        percent_overlap = precision_at_k(attributions[i], ground_truths[i], k=k_vals[i])
+        max_ind = len(ground_truths[i])
+        curr_attr = attributions[i].clone()
+        # masking out padding 
+        curr_attr[max_ind:] = float("-inf")
+        percent_overlap = precision_at_k(curr_attr, ground_truths[i], k=k_vals[i])
         overlaps.append(percent_overlap)
+
     return sum(overlaps)/len(overlaps)
 
-def mean_rank(attributions, ground_truth):
+def mean_rank(attributions, ground_truths, percentage=True):
     ground_truths = [torch.tensor(mask).to(attributions[0].device) for mask in ground_truths]
     k_vals = [torch.sum(mask) for mask in ground_truths]     
+    rank_vals = []
+    rank_val_perc = [] 
+    for i in range(len(attributions)):
+        max_ind = len(ground_truths[i])
+        curr_attr = attributions[i].clone()
+        curr_attr[max_ind:] = float("-inf")
+        gt_indices = set(torch.topk(ground_truths[i],k=torch.sum(ground_truths[i])).indices.tolist())
+        curr_precision = 0.0 
+        curr_k = 0
+        while curr_precision != 1.0:
+            curr_k += 1
+            curr_inds = set(torch.topk(curr_attr, k=curr_k).indices.tolist())
+            curr_precision = len(gt_indices.intersection(curr_inds))/len(gt_indices)
+        rank_vals.append(curr_k)
+        if percentage:
+            rank_val_perc.append(curr_k/len(ground_truths[i]))
+    if percentage:
+        return sum(rank_vals)/len(rank_vals), sum(rank_val_perc)/len(rank_val_perc)
+    else:
+        return sum(rank_vals)/len(rank_vals)
+    
+def ground_truth_mass(attributions, ground_truths):
+    ground_truths = [torch.tensor(mask) for mask in ground_truths]
+    k_vals = [torch.sum(mask) for mask in ground_truths] 
+    masses = []
+    for i in range(len(attributions)):
+        normalizer = torch.sum(torch.abs(attributions[i]))
+        gt_mass = torch.sum(torch.abs(attributions[i][torch.nonzero(ground_truths[i])])/normalizer)
+        masses.append(gt_mass)
+    return sum(masses).item()/len(masses)
+    
