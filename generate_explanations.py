@@ -33,7 +33,7 @@ Set a clear set of deadlines to get this shit done by August 1st and then enjoy 
 
 @ex.config 
 def config():
-    seed = 765
+    seed = 12345
     run_name = "dn_t5_small_enc/spurious_sst/cls-finetune"
     checkpoint_folder = "./model_outputs/dn_t5_small_enc/spurious_sst/cls-finetune/checkpoint-25260"
     data_cache_dir = "./cached_datasets"
