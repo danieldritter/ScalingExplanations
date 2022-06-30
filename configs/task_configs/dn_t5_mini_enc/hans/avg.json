@@ -1,0 +1,11 @@
+{
+    "dataset_name":"hans",
+    "dataset_kwargs":{"text_to_text":false},
+    "finetuning":false,
+    "pretrained_model_name":"t5_enc-avg-seq-class",
+    "pretrained_model_config":"google/t5-efficient-mini",
+    "tokenizer_config_name":"google/t5-efficient-mini",
+    "seq2seq":false,
+    "trained_layers":["classifier.dense.weight", "classifier.dense.bias", "classifier.out_proj.weight", "classifier.out_proj.bias"],
+    "num_labels":3
+}

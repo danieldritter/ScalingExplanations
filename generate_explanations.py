@@ -34,7 +34,7 @@ Set a clear set of deadlines to get this shit done by August 1st and then enjoy 
 @ex.config 
 def config():
     seed = 12345
-    run_name = "dn_t5_tiny_enc/mnli/cls-finetune"
+    run_name = "dn_t5_tiny_enc/hans/cls-finetune"
     checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/mnli/cls-finetune/checkpoint-245440"
     data_cache_dir = "./cached_datasets"
     explanation_type = "gradients/integrated_gradients_x_input"
@@ -94,6 +94,7 @@ def get_explanations(_seed, _config):
     transformers.logging.set_verbosity_error()
     train_set = dataset.get_dataloader(model,tokenizer,batch_size=_config["batch_size"], max_length=max_length, split=_config["example_split"], format=True)
     transformers.logging.set_verbosity_warning()
+
     # Need data collator here to handle padding of batches and turning into tensors 
     if _config["seq2seq"]:
         collator = DataCollatorForSeq2Seq(tokenizer, model=model,padding="longest",max_length=max_length)

@@ -3,6 +3,7 @@ from transformers import AutoConfig
 import os 
 import torch 
 import wandb 
+import pickle 
 import numpy as np  
 from tqdm import tqdm 
 import random 
@@ -33,7 +34,7 @@ Need to add ground truth attribution masks to relevant datasets
 @ex.config
 def config():
     seed = 12345
-    run_name = "dn_t5_base_enc/mnli/cls-finetune"
+    run_name = "dn_t5_mini_enc/mnli/cls-finetune"
     # run_name = "roberta_base/mnli/cls-finetune"
     # run_name = "bert_base_uncased/mnli/cls-finetune"
     # checkpoint_folder = f"./model_outputs/{run_name}/checkpoint-171808"
@@ -42,13 +43,10 @@ def config():
     ex.add_config(f"./configs/task_configs/{run_name}.json")
     num_samples = None 
     data_cache_dir = "./cached_datasets"
-    model_cache_dir = "./cached_models"
-    output_dir = "./model_metrics"
+    output_folder = "./test_model_metrics"
     # HF Trainer arguments
     batch_size = 8
     split = "val"
-    heuristic = "lexical_overlap"
-    # heuristic = None 
 
 
 def numel(m: torch.nn.Module, only_trainable: bool = False):
@@ -153,3 +151,5 @@ def run_eval(_seed, _config):
     print(f"Entailed Accuracy: {total_neg_correct/total_neg}")
     print(f"Non-Entailed Accuracy: {total_pos_correct/total_pos}")
     print(f"Ratio of Non-Entailed/Entailed: {total_pos/total}")
+    with open(f"{_config['output_folder']}/{_config['run_name']}/hans_metrics.pkl","wb+") as file:
+        pickle.dump({"Entailed Accuracy":total_neg_correct/total_neg, "Non-Entailed Accuracy": total_pos_correct/total_pos}, file)

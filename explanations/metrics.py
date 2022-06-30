@@ -59,26 +59,35 @@ def precision_at_k(attributions, ground_truth, k=1):
     overlap = len(topk_gt.intersection(topk_attr))/len(topk_gt)
     return overlap 
 
-def ground_truth_overlap(attributions, ground_truths):
+def ground_truth_overlap(attributions, ground_truths, return_avg=True):
     ground_truths = [torch.tensor(mask) for mask in ground_truths]
     k_vals = [torch.sum(mask) for mask in ground_truths] 
     overlaps = []
+    # This is to track only the cases where there is a valid ground truth attribution. E.g. in mnli, some examples may be all zeros 
     for i in range(len(attributions)):
+        if torch.sum(ground_truths[i]) == 0:
+            continue 
         max_ind = len(ground_truths[i])
         curr_attr = attributions[i].clone()
         # masking out padding 
         curr_attr[max_ind:] = float("-inf")
         percent_overlap = precision_at_k(curr_attr, ground_truths[i], k=k_vals[i])
         overlaps.append(percent_overlap)
+    if len(overlaps)/len(attributions) < 0.9:
+        print("More than 10 percent of examples don't have a ground truth. Ratio is:, ", len(overlaps)/len(attributions))
+    if return_avg:
+        return sum(overlaps)/len(overlaps)
+    else:
+        return overlaps
 
-    return sum(overlaps)/len(overlaps)
-
-def mean_rank(attributions, ground_truths, percentage=True):
+def mean_rank(attributions, ground_truths, percentage=True, return_avg=True):
     ground_truths = [torch.tensor(mask).to(attributions[0].device) for mask in ground_truths]
     k_vals = [torch.sum(mask) for mask in ground_truths]     
     rank_vals = []
     rank_val_perc = [] 
     for i in range(len(attributions)):
+        if torch.sum(ground_truths[i]) == 0:
+            continue 
         max_ind = len(ground_truths[i])
         curr_attr = attributions[i].clone()
         curr_attr[max_ind:] = float("-inf")
@@ -92,18 +101,33 @@ def mean_rank(attributions, ground_truths, percentage=True):
         rank_vals.append(curr_k)
         if percentage:
             rank_val_perc.append(curr_k/len(ground_truths[i]))
-    if percentage:
-        return sum(rank_vals)/len(rank_vals), sum(rank_val_perc)/len(rank_val_perc)
+    if len(rank_vals)/len(attributions) < 0.9:
+        print("More than 10 percent of examples don't have a ground truth. Ratio is:, ", len(rank_vals)/len(attributions))
+    if return_avg:
+        if percentage:
+            return sum(rank_vals)/len(rank_vals), sum(rank_val_perc)/len(rank_val_perc)
+        else:
+            return sum(rank_vals)/len(rank_vals)
     else:
-        return sum(rank_vals)/len(rank_vals)
+        if percentage:
+            return rank_vals, rank_val_perc
+        else:
+            return rank_vals
     
-def ground_truth_mass(attributions, ground_truths):
+def ground_truth_mass(attributions, ground_truths, return_avg=True):
     ground_truths = [torch.tensor(mask) for mask in ground_truths]
     k_vals = [torch.sum(mask) for mask in ground_truths] 
     masses = []
     for i in range(len(attributions)):
+        if torch.sum(ground_truths[i]) == 0:
+            continue 
         normalizer = torch.sum(torch.abs(attributions[i]))
         gt_mass = torch.sum(torch.abs(attributions[i][torch.nonzero(ground_truths[i])])/normalizer)
         masses.append(gt_mass)
-    return sum(masses).item()/len(masses)
+    if len(masses)/len(attributions) < 0.9:
+        print("More than 10 percent of examples don't have a ground truth. Ratio is:, ", len(masses)/len(attributions))
+    if return_avg:
+        return sum(masses).item()/len(masses)
+    else:
+        return [item.item() for item in masses]
     

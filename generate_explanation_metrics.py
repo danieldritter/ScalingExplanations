@@ -50,12 +50,20 @@ def get_explanations(_seed, _config):
             print("Mean Rank: ", mean_rank_val)
             print("Mean Rank Percentage: ", mean_rank_percentage)
             gt_mass = ground_truth_mass(attributions["word_attributions"], attributions_plus_ground_truth["ground_truth_attributions"])
-            metrics = {"Ground Truth Overlap": gt_overlap, "Mean Rank": mean_rank_val, "Mean Rank Percentage": mean_rank_percentage, "Ground Truth Mass": gt_mass}
+            avg_metrics = {"Ground Truth Overlap": gt_overlap, "Mean Rank": mean_rank_val, "Mean Rank Percentage": mean_rank_percentage, "Ground Truth Mass": gt_mass}
             print("Ground Truth Mass: ", gt_mass)
             with open(f"{_config['full_output_folder']}/ground_truth_metrics.pkl", "wb+") as file:
-                pickle.dump(metrics, file)
+                pickle.dump(avg_metrics, file)
             with open(f"{_config['full_output_folder']}/ground_truth_metrics.txt", "w+") as file:
                 file.write(f"Ground Truth Overlap: {gt_overlap} \n")
                 file.write(f"Mean Rank: {mean_rank_val} \n")
                 file.write(f"Mean Rank Percentange: {mean_rank_percentage} \n")
                 file.write(f"Ground Truth Mass: {gt_mass} \n")
+
+            gt_overlap = ground_truth_overlap(attributions["word_attributions"], attributions_plus_ground_truth["ground_truth_attributions"], return_avg=False)
+            mean_rank_val, mean_rank_percentage = mean_rank(attributions["word_attributions"], attributions_plus_ground_truth["ground_truth_attributions"], percentage=True, return_avg=False)
+            gt_mass = ground_truth_mass(attributions["word_attributions"], attributions_plus_ground_truth["ground_truth_attributions"], return_avg=False)
+            full_metrics = {"Ground Truth Overlap": gt_overlap, "Mean Rank": mean_rank_val, "Mean Rank Percentage": mean_rank_percentage, "Ground Truth Mass": gt_mass}
+            with open(f"{_config['full_output_folder']}/full_ground_truth_metrics.pkl", "wb+") as file:
+                pickle.dump(full_metrics, file)
+

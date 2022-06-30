@@ -11,13 +11,14 @@ examples have the same structure, though, so they could still be used.
 
 class HansDataset:
     
-    def __init__(self, cache_dir: str = "./cached_datasets", num_samples: int = None, text_to_text: bool = False, hypothesis_prefix: str = "hypothesis: ", premise_prefix: str = "mnli premise: ", heuristic=None):
+    def __init__(self, cache_dir: str = "./cached_datasets", num_samples: int = None, text_to_text: bool = False, hypothesis_prefix: str = "hypothesis: ", premise_prefix: str = "mnli premise: ", add_ground_truth_attributions=False):
         self.train_dataset = datasets.load_dataset("hans", split="train",cache_dir=cache_dir).shuffle()
         self.val_dataset = datasets.load_dataset("hans", split="validation", cache_dir=cache_dir)
         self.hypothesis_prefix = hypothesis_prefix 
         self.premise_prefix = premise_prefix 
         self.text_to_text = text_to_text
-        self.heuristic = heuristic 
+        self.heuristic = "lexical_overlap"
+        self.add_ground_truth_attributions = add_ground_truth_attributions
 
         if self.heuristic != None:
             self.train_dataset = self.train_dataset.filter(lambda e: e["heuristic"] == self.heuristic)
@@ -41,14 +42,34 @@ class HansDataset:
         self.train_dataset = self.train_dataset.rename_column("label","labels")
         self.val_dataset = self.val_dataset.rename_column("label","labels")
     
+    def get_overlap_annotations(self, token_ids, premise_ids, hypothesis_ids, tokenizer):
+        period_id = set(tokenizer(["."],add_special_tokens=False)["input_ids"][0])
+        overlapping_ids = []
+        for i,sentence in enumerate(premise_ids):
+            overlap_ids = set(sentence).intersection(set(hypothesis_ids[i])) - period_id
+            overlap_mask = [0 if token_id not in overlap_ids else 1 for token_id in token_ids[i]]
+            overlapping_ids.append(overlap_mask)
+        return overlapping_ids 
+
+    
     def get_dataloader(self, pretrained_model: PreTrainedModel, tokenizer: PreTrainedTokenizer, max_length: int = 512, batch_size: int = 32, split: str = "train", format: bool = False):
         def tokenization(example):
             if self.text_to_text:
                 token_out = tokenizer(example["premise"],example["hypothesis"],truncation="longest_first",max_length=max_length)
+                if self.add_ground_truth_attributions:
+                    premise_tokens = tokenizer(example["premise"], max_length=max_length, add_special_tokens=False)
+                    hypothesis_tokens = tokenizer(example["hypothesis"], max_length=max_length, add_special_tokens=False)
+                    overlaps = self.get_overlap_annotations(token_out["input_ids"], premise_tokens["input_ids"], hypothesis_tokens["input_ids"], tokenizer)
+                    example.update({"ground_truth_attributions":overlaps})
                 example.update(token_out)
                 return example 
             else:
                 token_out = tokenizer(example["premise"],example["hypothesis"],truncation="longest_first",max_length=max_length)
+                if self.add_ground_truth_attributions:
+                    premise_tokens = tokenizer(example["premise"], max_length=max_length, add_special_tokens=False)
+                    hypothesis_tokens = tokenizer(example["hypothesis"], max_length=max_length, add_special_tokens=False)
+                    overlaps = self.get_overlap_annotations(token_out["input_ids"], premise_tokens["input_ids"], hypothesis_tokens["input_ids"], tokenizer)
+                    example.update({"ground_truth_attributions":overlaps})
                 example.update(token_out)
                 return example
         if split == "train":
@@ -58,7 +79,7 @@ class HansDataset:
         elif split == "test":
             return None 
         if format:
-            non_input_cols = set(["premise", "hypothesis","idx", "parse_premise", "parse_hypothesis", "binary_parse_premise", "binary_parse_hypothesis", "heuristic", "subcase", "template"])
+            non_input_cols = set(["premise", "hypothesis","idx", "parse_premise", "parse_hypothesis", "binary_parse_premise", "binary_parse_hypothesis", "heuristic", "subcase", "template", "ground_truth_attributions"])
             keep_cols = list(set(tokenized_set.column_names) - non_input_cols)
             tokenized_set.set_format("torch",columns=keep_cols)
         return tokenized_set
