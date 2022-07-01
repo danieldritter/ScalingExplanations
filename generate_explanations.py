@@ -44,6 +44,7 @@ def config():
     full_output_folder = f"{output_folder}/{run_name}/{explanation_type}"
     save_visuals = False
     save_values = True 
+    save_examples = True
     num_samples = None
     num_examples = 100
     show_progress = True 
@@ -147,3 +148,6 @@ def get_explanations(_seed, _config):
                 pickle.dump({"attributions": attributions, "ground_truth_attributions":examples["ground_truth_attributions"]}, file)
             else:
                 pickle.dump({"attributions": attributions}, file)
+    if _config["save_examples"]:
+        with open(f"{_config['output_folder']}/{_config['run_name']}/examples.pkl", "wb+") as file:
+            pickle.dump(examples, file)

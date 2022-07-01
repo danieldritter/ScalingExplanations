@@ -65,4 +65,5 @@ def get_explanations(_seed, _config):
             full_metrics = {"Ground Truth Overlap": gt_overlap, "Mean Rank": mean_rank_val, "Mean Rank Percentage": mean_rank_percentage, "Ground Truth Mass": gt_mass}
             with open(f"{_config['full_output_folder']}/full_ground_truth_metrics.pkl", "wb+") as file:
                 pickle.dump(full_metrics, file)
+            
 
