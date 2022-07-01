@@ -16,15 +16,16 @@ ex = Experiment("explanation-metrics")
 @ex.config 
 def config():
     seed = 12345
-    run_names = ["dn_t5_tiny_enc/mnli/cls-finetune", "dn_t5_mini_enc/mnli/cls-finetune", "dn_t5_small_enc/mnli/cls-finetune", "dn_t5_base_enc/mnli/cls-finetune"]
-    # dataset_name = 'mnli'
-    dataset_name = "hans"
-    metric_file_name = "hans_metrics.pkl"
-    parameter_numbers = {"dn_t5_tiny_enc/mnli/cls-finetune":11,"dn_t5_mini_enc/mnli/cls-finetune":20,"dn_t5_small_enc/mnli/cls-finetune":35,"dn_t5_base_enc/mnli/cls-finetune":110}
-    # metrics = ["Ground Truth Overlap", "Mean Rank", "Mean Rank Percentage", "Ground Truth Mass"]
-    metrics = ["Entailed Accuracy", "Non-Entailed Accuracy"]
+    run_names = ["dn_t5_tiny_enc/hans/cls-finetune", "dn_t5_mini_enc/hans/cls-finetune", "dn_t5_small_enc/hans/cls-finetune", "dn_t5_base_enc/hans/cls-finetune"]
+    dataset_name = 'mnli'
+    # dataset_name = "hans"
+    # metric_file_name = "hans_metrics.pkl"
+    metric_file_name = "full_ground_truth_metrics.pkl"
+    parameter_numbers = {"dn_t5_tiny_enc/hans/cls-finetune":11,"dn_t5_mini_enc/hans/cls-finetune":20,"dn_t5_small_enc/hans/cls-finetune":35,"dn_t5_base_enc/hans/cls-finetune":110}
+    metrics = ["Ground Truth Overlap", "Mean Rank", "Mean Rank Percentage", "Ground Truth Mass"]
+    # metrics = ["Entailed Accuracy", "Non-Entailed Accuracy"]
     explanation_types = ['gradients/gradients_x_input', 'gradients/gradients', 'gradients/integrated_gradients_x_input', 'gradients/integrated_gradients', 'lime/lime', 'shap/shap']
-    input_folder = "./dn_model_explanation_outputs_complete"
+    input_folder = "./dn_model_explanation_outputs"
     output_folder = "./explanation_graphs"
     
 @ex.automain 
@@ -34,7 +35,7 @@ def get_explanations(_seed, _config):
     torch.cuda.manual_seed(_seed)
     np.random.seed(_seed)
     random.seed(_seed)
-    if _config["dataset_name"] != "hans":
+    if _config["dataset_name"] != "hans_entailment":
         metrics_dict = {metric:{"Parameters (Millions)":[], "Explanation Type":[], f"{metric}":[]} for metric in _config["metrics"]}
         for explanation_type in _config["explanation_types"]:
             for run_name in _config['run_names']:

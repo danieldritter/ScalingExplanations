@@ -1,12 +1,13 @@
 import torch 
 from .utils import get_attention_mask, compute_sequence_sum
 
-class TopKFeatureAblation:
+class FeatureRemoval:
 
-    def __init__(self, model, tokenizer, replace_token_id=None, device=None):
+    def __init__(self, model, tokenizer, replace_token_id=None, device=None, most_important_first=True):
         self.model = model 
         self.device = device 
         self.tokenizer = tokenizer
+        self.most_important_first = most_important_first 
         if replace_token_id == None:
             if tokenizer.mask_token != None:
                 self.replace_token_id = tokenizer.mask_token_id
@@ -30,7 +31,7 @@ class TopKFeatureAblation:
     
     def get_counterfactual(self, inputs, remove_indices, label_indices, seq2seq=False):
         input_ids = inputs["input_ids"].clone()
-        input_ids[remove_indices] = self.replace_token_id
+        input_ids[:,remove_indices] = self.replace_token_id
         model_kwargs = {key:inputs[key] for key in inputs if key != "input_ids"}
         if not seq2seq:
             return self.model(input_ids=input_ids, **model_kwargs).logits[:,label_indices]
@@ -42,7 +43,9 @@ class TopKFeatureAblation:
             likelihoods = compute_sequence_sum(label_indices, outs.logits, self.model, is_tuple=False)
             return likelihoods    
 
-    def compute_metric(self, inputs, attributions, k=1):
+    def compute_metric(self, inputs, predictions, attributions, k=1):
+        attributions = torch.stack(attributions)
+        top_inds = torch.topk(attributions, dim=1, k=k).indices 
         pass 
 
 

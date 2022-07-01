@@ -13,8 +13,8 @@ ex = Experiment("explanation-metrics")
 def config():
     seed = 12345
     run_name = "dn_t5_small_enc/spurious_sst/cls-finetune"
-    explanation_type = "gradients/gradients_x_input_normalized"
-    output_folder = "./dn_model_explanation_outputs"
+    explanation_type = "gradients/gradients_x_input"
+    output_folder = "./dn_model_explanation_outputs_complete"
     process_as_batches = True
     full_output_folder = f"{output_folder}/{run_name}/{explanation_type}"
     save_visuals = False
@@ -26,7 +26,7 @@ def config():
 @ex.automain 
 def get_explanations(_seed, _config):
     if not os.path.exists(f"{_config['full_output_folder']}/explanations.pkl"):
-        print(f"Explanations no present in {_config['full_output_folder']}")
+        print(f"Explanations not present in {_config['full_output_folder']}")
         exit() 
     # Setting manual seeds 
     torch.manual_seed(_seed)
@@ -36,7 +36,6 @@ def get_explanations(_seed, _config):
 
     attributions_plus_ground_truth = pickle.load(open(f"{_config['full_output_folder']}/explanations.pkl", "rb"))
     attributions = attributions_plus_ground_truth["attributions"]
-
     if _config["save_visuals"]:
         viz = EXPLANATIONS[_config["explanation_name"]].visualize_explanations(attributions)
         with open(f"{_config['full_output_folder']}/visuals.html", "w+") as file:
