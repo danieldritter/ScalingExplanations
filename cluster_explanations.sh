@@ -14,14 +14,18 @@ source /scratch-ssd/oatml/miniconda3/bin/activate ms21ddr_llms
 
 SEED=765
 
-EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
-'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' 'lime/lime' 'shap/shap')
+# EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
+# 'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' 'lime/lime' 'shap/shap' 'attention/average_attention')
 
-# RUN_NAMES=( 'dn_t5_mini_enc/hans/cls-finetune' 'dn_t5_tiny_enc/hans/cls-finetune' \
-# 'dn_t5_small_enc/hans/cls-finetune' 'dn_t5_base_enc/hans/cls-finetune')
-RUN_NAMES=( 'dn_t5_base_enc/spurious_sst/cls-finetune')
+EXPLANATIONS=( 'attention/average_attention' )
 
-CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_base_enc/spurious_sst/cls-finetune/checkpoint-25260' )
+RUN_NAMES=( 'dn_t5_mini_enc/spurious_sst/cls-finetune' 'dn_t5_tiny_enc/spurious_sst/cls-finetune' \
+'dn_t5_small_enc/spurious_sst/cls-finetune' 'dn_t5_base_enc/spurious_sst/cls-finetune')
+
+CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_mini_enc/spurious_sst/cls-finetune/checkpoint-25260' \
+'./model_outputs/dn_t5_tiny_enc/spurious_sst/cls-finetune/checkpoint-25260' \
+'./model_outputs/dn_t5_small_enc/spurious_sst/cls-finetune/checkpoint-25260' \
+'./model_outputs/dn_t5_base_enc/spurious_sst/cls-finetune/checkpoint-25260')
 
 for i in "${!EXPLANATIONS[@]}"
 do
@@ -48,9 +52,12 @@ done
 
 echo "SPURIOUS_SST EXPLANATIONS COMPLETED"
 
-RUN_NAMES=( 'dn_t5_base_enc/mnli/cls-finetune' )
+RUN_NAMES=( 'dn_t5_mini_enc/mnli/cls-finetune' 'dn_t5_tiny_enc/mnli/cls-finetune'\
+'dn_t5_small_enc/mnli/cls-finetune' 'dn_t5_base_enc/mnli/cls-finetune')
 
-CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_base_enc/mnli/cls-finetune/checkpoint-245440' )
+CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_mini_enc/mnli/cls-finetune/checkpoint-245440' \
+'./model_outputs/dn_t5_tiny_enc/mnli/cls-finetune/checkpoint-245440' './model_outputs/dn_t5_small_enc/mnli/cls-finetune/checkpoint-245440'\
+'./model_outputs/dn_t5_base_enc/mnli/cls-finetune/checkpoint-245440')
 
 for i in "${!EXPLANATIONS[@]}"
 do
@@ -77,9 +84,13 @@ done
 
 echo "MNLI EXPLANATIONS COMPLETED"
 
-RUN_NAMES=( 'dn_t5_base_enc/hans/cls-finetune' )
 
-CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_base_enc/mnli/cls-finetune/checkpoint-245440' )
+RUN_NAMES=( 'dn_t5_mini_enc/hans/cls-finetune' 'dn_t5_tiny_enc/hans/cls-finetune'\
+'dn_t5_small_enc/hans/cls-finetune' 'dn_t5_base_enc/hans/cls-finetune')
+
+CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_mini_enc/mnli/cls-finetune/checkpoint-245440' \
+'./model_outputs/dn_t5_tiny_enc/mnli/cls-finetune/checkpoint-245440' './model_outputs/dn_t5_small_enc/mnli/cls-finetune/checkpoint-245440'\
+'./model_outputs/dn_t5_base_enc/mnli/cls-finetune/checkpoint-245440')
 
 for i in "${!EXPLANATIONS[@]}"
 do

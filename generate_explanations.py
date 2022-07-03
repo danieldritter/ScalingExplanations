@@ -34,10 +34,10 @@ Set a clear set of deadlines to get this shit done by August 1st and then enjoy 
 @ex.config 
 def config():
     seed = 12345
-    run_name = "dn_t5_tiny_enc/hans/cls-finetune"
-    checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/mnli/cls-finetune/checkpoint-245440"
+    run_name = "dn_t5_tiny_enc/spurious_sst/cls-finetune"
+    checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/spurious_sst/cls-finetune/checkpoint-25260"
     data_cache_dir = "./cached_datasets"
-    explanation_type = "gradients/integrated_gradients_x_input"
+    explanation_type = "attention/average_attention"
     # explanation_type = "lime/lime"
     output_folder = "./test_explanation_outputs"
     process_as_batches = True
