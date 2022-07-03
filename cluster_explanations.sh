@@ -19,7 +19,7 @@ EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
 
 # RUN_NAMES=( 'dn_t5_mini_enc/hans/cls-finetune' 'dn_t5_tiny_enc/hans/cls-finetune' \
 # 'dn_t5_small_enc/hans/cls-finetune' 'dn_t5_base_enc/hans/cls-finetune')
-RUN_NAMES=( 'dn_t5_base_enc/hans/cls-finetune')
+RUN_NAMES=( 'dn_t5_base_enc/spurious_sst/cls-finetune')
 
 CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_base_enc/spurious_sst/cls-finetune/checkpoint-25260' )
 
