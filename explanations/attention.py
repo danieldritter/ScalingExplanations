@@ -22,7 +22,7 @@ class AverageAttention(FeatureImportanceExplainer):
             overall_attention_vals = torch.sum(curr_attention, dim=1)
         else:
             stacked_attention = torch.stack(attentions)
-            stacked_attention = torch.sum(stacked_attention, dim=3)
-            stacked_attention = torch.sum(stacked_attention, dim=2)
-            overall_attention_vals = torch.sum(stacked_attention, dim=0)
+            stacked_attention = torch.mean(stacked_attention, dim=3)
+            stacked_attention = torch.mean(stacked_attention, dim=2)
+            overall_attention_vals = torch.mean(stacked_attention, dim=0)
         return {"attributions": overall_attention_vals, "deltas":[None for i in range(len(inputs["input_ids"]))]}

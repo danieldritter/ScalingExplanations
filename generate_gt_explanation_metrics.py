@@ -36,6 +36,7 @@ def get_explanations(_seed, _config):
 
     attributions_plus_ground_truth = pickle.load(open(f"{_config['full_output_folder']}/explanations.pkl", "rb"))
     attributions = attributions_plus_ground_truth["attributions"]
+
     if _config["save_visuals"]:
         viz = EXPLANATIONS[_config["explanation_name"]].visualize_explanations(attributions)
         with open(f"{_config['full_output_folder']}/visuals.html", "w+") as file:

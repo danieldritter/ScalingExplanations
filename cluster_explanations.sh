@@ -19,6 +19,8 @@ SEED=765
 
 EXPLANATIONS=( 'attention/average_attention' )
 
+OUTPUT_FOLDER='./dn_model_explanation_outputs'
+
 RUN_NAMES=( 'dn_t5_mini_enc/spurious_sst/cls-finetune' 'dn_t5_tiny_enc/spurious_sst/cls-finetune' \
 'dn_t5_small_enc/spurious_sst/cls-finetune' 'dn_t5_base_enc/spurious_sst/cls-finetune')
 
@@ -37,10 +39,10 @@ do
         echo "CHECKPOINT_FOLDER: ${CHECKPOINT_FOLDERS[j]}"
         EXP_MAX_IND="$((${#EXPLANATIONS[@]} - 1))"
         if [ "$i" -eq "$EXP_MAX_IND" ]; then
-            srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" 'output_folder="./dn_model_explanation_outputs"' \
+            srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
             'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "save_examples=True" 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"'
         else 
-            srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" 'output_folder="./dn_model_explanation_outputs"' \
+            srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
             'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"'
         fi 
         if [ "$?" -ne 0 ]; then
@@ -69,10 +71,10 @@ do
         echo "CHECKPOINT_FOLDER: ${CHECKPOINT_FOLDERS[j]}"
         EXP_MAX_IND="$((${#EXPLANATIONS[@]} - 1))"
         if [ "$i" -eq "$EXP_MAX_IND" ]; then
-            srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" 'output_folder="./dn_model_explanation_outputs"' \
+            srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
             'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "save_examples=True" 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"'
         else 
-            srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" 'output_folder="./dn_model_explanation_outputs"' \
+            srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
             'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"'
         fi 
         if [ "$?" -ne 0 ]; then
@@ -102,10 +104,10 @@ do
         echo "CHECKPOINT_FOLDER: ${CHECKPOINT_FOLDERS[j]}"
         EXP_MAX_IND="$((${#EXPLANATIONS[@]} - 1))"
         if [ "$i" -eq "$EXP_MAX_IND" ]; then
-            srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" 'output_folder="./dn_model_explanation_outputs"' \
+            srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
             'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "save_examples=True" 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"'
         else 
-            srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" 'output_folder="./dn_model_explanation_outputs"' \
+            srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
             'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"'
         fi 
         if [ "$?" -ne 0 ]; then
