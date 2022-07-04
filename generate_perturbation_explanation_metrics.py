@@ -20,7 +20,7 @@ def config():
     checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/spurious_sst/cls-finetune/checkpoint-25260"
     # explanation_type = "gradients/gradients"
     explanation_type = "lime/lime"
-    output_folder = "./dn_model_explanation_outputs"
+    output_folder = "./explanation_outputs/test_explanation_outputs"
     process_as_batches = True
     full_output_folder = f"{output_folder}/{run_name}/{explanation_type}"
     # Model params (set later)
@@ -42,6 +42,7 @@ def config():
 
 @ex.automain 
 def get_explanations(_seed, _config):
+    examples = pickle.load(open(f"{_config['output_folder']}/{_config['run_name']}/examples.pkl","rb"))
     if not os.path.isdir(_config["full_output_folder"]):
         os.makedirs(_config["full_output_folder"])
 
@@ -63,7 +64,6 @@ def get_explanations(_seed, _config):
     else:
         print("Model max sequence length not determined by max_position_embeddings or n_positions. Using 512 as default")
         max_length = 512 
-    examples = pickle.load(open(f"{_config['output_folder']}/{_config['run_name']}/examples.pkl","rb"))
     attributions_with_gt = pickle.load(open(f"{_config['full_output_folder']}/explanations.pkl","rb"))
     attributions = attributions_with_gt["attributions"]
     tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=max_length)
