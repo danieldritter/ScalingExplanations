@@ -5,11 +5,11 @@ from torch.utils.data import DataLoader
 
 class SSTDataset:
 
-    def __init__(self, cache_dir: str = "./cached_datasets", num_samples: int = None, text_to_text=False, task_prefix="sst2 sentence: "):
-        self.train_dataset = datasets.load_dataset("glue", "sst2", split="train",cache_dir=cache_dir).shuffle()
+    def __init__(self, cache_dir: str = "./cached_datasets", num_samples: int = None, text_to_text=False, task_prefix="sst2 sentence: ", shuffle=True):
+        self.train_dataset = datasets.load_dataset("glue", "sst2", split="train",cache_dir=cache_dir)
         self.text_to_text = text_to_text
         self.task_prefix = task_prefix
-        self.val_dataset = datasets.load_dataset("glue","sst2",split="validation",cache_dir=cache_dir).shuffle()
+        self.val_dataset = datasets.load_dataset("glue","sst2",split="validation",cache_dir=cache_dir)
         if num_samples != None:
             self.train_dataset = self.train_dataset.filter(lambda e,idx: idx < num_samples, with_indices=True)
             self.val_dataset = self.val_dataset.filter(lambda e,idx: idx < num_samples, with_indices=True)
@@ -27,6 +27,9 @@ class SSTDataset:
             self.val_dataset = self.val_dataset.map(text_to_text_conversion, batched=True)
         self.train_dataset = self.train_dataset.rename_column("label","labels")
         self.val_dataset = self.val_dataset.rename_column("label","labels")
+        if shuffle:
+            self.train_dataset = self.train_dataset.shuffle()
+            self.val_dataset = self.val_dataset.shuffle()
 
     
     def get_dataloader(self, pretrained_model: PreTrainedModel, tokenizer: PreTrainedTokenizer, max_length: int = 512,  batch_size: int = 32, split: str = "train", format: bool = False):

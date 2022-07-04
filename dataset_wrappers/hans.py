@@ -11,8 +11,9 @@ examples have the same structure, though, so they could still be used.
 
 class HansDataset:
     
-    def __init__(self, cache_dir: str = "./cached_datasets", num_samples: int = None, text_to_text: bool = False, hypothesis_prefix: str = "hypothesis: ", premise_prefix: str = "mnli premise: ", add_ground_truth_attributions=False):
-        self.train_dataset = datasets.load_dataset("hans", split="train",cache_dir=cache_dir).shuffle()
+    def __init__(self, cache_dir: str = "./cached_datasets", num_samples: int = None, text_to_text: bool = False, hypothesis_prefix: str = "hypothesis: ",
+                 premise_prefix: str = "mnli premise: ", add_ground_truth_attributions=False, shuffle=True):
+        self.train_dataset = datasets.load_dataset("hans", split="train",cache_dir=cache_dir)
         self.val_dataset = datasets.load_dataset("hans", split="validation", cache_dir=cache_dir)
         self.hypothesis_prefix = hypothesis_prefix 
         self.premise_prefix = premise_prefix 
@@ -41,6 +42,9 @@ class HansDataset:
             self.val_dataset = self.val_dataset.map(text_to_text_conversion, batched=True)
         self.train_dataset = self.train_dataset.rename_column("label","labels")
         self.val_dataset = self.val_dataset.rename_column("label","labels")
+        if shuffle:
+            self.train_dataset = self.train_dataset.shuffle()
+            self.val_dataset = self.val_dataset.shuffle()
     
     def get_overlap_annotations(self, token_ids, premise_ids, hypothesis_ids, tokenizer):
         period_id = set(tokenizer(["."],add_special_tokens=False)["input_ids"][0])

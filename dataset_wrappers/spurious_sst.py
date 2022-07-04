@@ -8,37 +8,17 @@ from collections import defaultdict
 class SpuriousSSTDataset:
 
     def __init__(self, cache_dir: str = "./cached_datasets", num_samples: int = None, 
-                text_to_text: bool = False, task_prefix: str = "sst2 sentence: ", add_ground_truth_attributions=False):
+                text_to_text: bool = False, task_prefix: str = "sst2 sentence: ", add_ground_truth_attributions=False, shuffle=True):
         self.text_to_text = text_to_text
         self.task_prefix = task_prefix
         self.add_ground_truth_attributions = add_ground_truth_attributions
-        if "spurious_sst" not in os.listdir(cache_dir):
-            print("No Spurious Dataset Cached. Constructing and saving new one.")
-            self.train_dataset = datasets.load_dataset("glue", "sst2", split="train",cache_dir=cache_dir).shuffle()
-            self.val_dataset = datasets.load_dataset("glue","sst2",split="validation",cache_dir=cache_dir).shuffle()
-            self.spurious_pos_token = "positive"
-            self.spurious_neg_token = "negative"
-
-            def add_spurious_feature(example):
-                example["label"] = np.random.binomial(1, 0.5, size=len(example["label"]))
-                example["sentence"] = [example["sentence"][i] + " " + self.spurious_pos_token if example["label"][i] == 1 else example["sentence"][i] + " " + self.spurious_neg_token for i in range(len(example["sentence"]))]
-                example["spurious_pos_token"] = [self.spurious_pos_token for i in range(len(example["sentence"]))]
-                example["spurious_neg_token"] = [self.spurious_neg_token for i in range(len(example["sentence"]))]
-                return example 
-
-            self.train_dataset = self.train_dataset.map(add_spurious_feature, batched=True)
-            self.val_dataset = self.val_dataset.map(add_spurious_feature, batched=True)
-            self.train_dataset = self.train_dataset.rename_column("label","labels")
-            self.val_dataset = self.val_dataset.rename_column("label","labels")
-            if not os.path.isdir(f"{cache_dir}/spurious_sst"):
-                os.mkdir(f"{cache_dir}/spurious_sst")
-            self.train_dataset.save_to_disk(f"{cache_dir}/spurious_sst/spurious_sst_train")
-            self.val_dataset.save_to_disk(f"{cache_dir}/spurious_sst/spurious_sst_val")
-        else:
-            self.train_dataset = datasets.load_from_disk(f"{cache_dir}/spurious_sst/spurious_sst_train").shuffle()
-            self.val_dataset = datasets.load_from_disk(f"{cache_dir}/spurious_sst/spurious_sst_val").shuffle()
-            self.spurious_pos_token = self.train_dataset["spurious_pos_token"][0]
-            self.spurious_neg_token = self.train_dataset["spurious_neg_token"][0]
+        self.train_dataset = datasets.load_from_disk(f"{cache_dir}/spurious_sst/spurious_sst_train")
+        self.val_dataset = datasets.load_from_disk(f"{cache_dir}/spurious_sst/spurious_sst_val")
+        self.spurious_pos_token = self.train_dataset["spurious_pos_token"][0]
+        self.spurious_neg_token = self.train_dataset["spurious_neg_token"][0]
+        if shuffle:
+            self.train_dataset = self.train_dataset.shuffle()
+            self.val_dataset = self.val_dataset.shuffle()
                 
         def text_to_text_conversion(example):
             """

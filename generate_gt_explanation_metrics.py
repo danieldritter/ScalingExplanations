@@ -12,14 +12,15 @@ ex = Experiment("explanation-metrics")
 @ex.config 
 def config():
     seed = 12345
-    run_name = "dn_t5_small_enc/spurious_sst/cls-finetune"
+    run_name = "dn_t5_tiny_enc/spurious_sst/cls-finetune"
     explanation_type = "gradients/gradients_x_input"
-    output_folder = "./dn_model_explanation_outputs_complete"
+    output_folder = "./explanation_outputs/test_explanation_outputs"
     process_as_batches = True
     full_output_folder = f"{output_folder}/{run_name}/{explanation_type}"
     save_visuals = False
     save_metrics = True
     num_samples = None
+    split = "train"
     ex.add_config(f"./configs/task_configs/{run_name}.json")
     ex.add_config(f"./configs/explanations/{explanation_type}.json")
 

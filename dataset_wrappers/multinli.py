@@ -5,10 +5,10 @@ from torch.utils.data import DataLoader
 class MultiNLIDataset:
 
     def __init__(self, cache_dir: str = "./cached_datasets", num_samples: int = None, text_to_text: bool = False, hypothesis_prefix: str = "hypothesis: ", 
-                    premise_prefix: str = "mnli premise: ", add_ground_truth_attributions=False):
-        self.train_dataset = datasets.load_dataset("glue","mnli",split="train",cache_dir=cache_dir).shuffle()
-        self.val_dataset_match = datasets.load_dataset("glue","mnli",split="validation_matched", cache_dir=cache_dir).shuffle()
-        self.val_dataset_mismatch = datasets.load_dataset("glue","mnli",split="validation_mismatched", cache_dir=cache_dir).shuffle()
+                    premise_prefix: str = "mnli premise: ", add_ground_truth_attributions=False, shuffle=True):
+        self.train_dataset = datasets.load_dataset("glue","mnli",split="train",cache_dir=cache_dir)
+        self.val_dataset_match = datasets.load_dataset("glue","mnli",split="validation_matched", cache_dir=cache_dir)
+        self.val_dataset_mismatch = datasets.load_dataset("glue","mnli",split="validation_mismatched", cache_dir=cache_dir)
         self.hypothesis_prefix = hypothesis_prefix 
         self.premise_prefix = premise_prefix 
         self.text_to_text = text_to_text
@@ -42,9 +42,14 @@ class MultiNLIDataset:
         self.train_dataset = self.train_dataset.rename_column("label","labels")
         self.val_dataset_match = self.val_dataset_match.rename_column("label","labels")
         self.val_dataset_mismatch = self.val_dataset_mismatch.rename_column("label","labels")
-        self.full_val_dataset = datasets.concatenate_datasets([self.val_dataset_match,self.val_dataset_mismatch]).shuffle()
+        self.full_val_dataset = datasets.concatenate_datasets([self.val_dataset_match,self.val_dataset_mismatch])
         # This is a quick and dirty way to avoid lots of overlap from non-words, but certainly not perfect 
         self.punctuation_list = [".",","," ",":","\"","'",";","?","!", "/"]
+        if shuffle:
+            self.train_dataset = self.train_dataset.shuffle()
+            self.val_dataset_match = self.val_dataset_match.shuffle()
+            self.val_dataset_mismatch = self.val_dataset_mismatch.shuffle()
+            self.full_val_dataset = self.full_val_dataset.shuffle()
 
     def get_overlap_annotations(self, token_ids, premise_ids, hypothesis_ids, tokenizer):
         punctuation_tokens = tokenizer(self.punctuation_list,add_special_tokens=False)["input_ids"]

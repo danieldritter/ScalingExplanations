@@ -17,29 +17,15 @@ from explanations.metrics import ground_truth_overlap, mean_rank, ground_truth_m
 
 ex = Experiment("explanation-generation")
 
-"""
-Check on summations and masking when computing overall attributions. Make sure padded sections aren't included
-
-Currently integrated gradients and layer gradients both have basically zero attributions for all tokens (after normalizing correctly). Need to figure 
-out why that is. 
-
-Need to work out normalization and visualization stuff for gradients. Captum clips values to between -1 and 1 behind the scenes, but that kind of fucks up a 
-lot of the relationships. 
-
-Figure out why visualizations seem off 
-
-Set a clear set of deadlines to get this shit done by August 1st and then enjoy yourself a bit 
-"""
-
 @ex.config 
 def config():
     seed = 12345
     run_name = "dn_t5_tiny_enc/spurious_sst/cls-finetune"
     checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/spurious_sst/cls-finetune/checkpoint-25260"
     data_cache_dir = "./cached_datasets"
-    explanation_type = "attention/average_attention"
+    explanation_type = "gradients/gradients_x_input"
     # explanation_type = "lime/lime"
-    output_folder = "./test_explanation_outputs"
+    output_folder = "./explanation_outputs/test_explanation_outputs"
     process_as_batches = True
     full_output_folder = f"{output_folder}/{run_name}/{explanation_type}"
     save_visuals = False
@@ -89,7 +75,7 @@ def get_explanations(_seed, _config):
     else:
         print("Model max sequence length not determined by max_position_embeddings or n_positions. Using 512 as default")
         max_length = 512 
-    dataset = DATASETS[_config["dataset_name"]](**_config["dataset_kwargs"], num_samples=_config["num_samples"], cache_dir=_config["data_cache_dir"], add_ground_truth_attributions=True)
+    dataset = DATASETS[_config["dataset_name"]](**_config["dataset_kwargs"], num_samples=_config["num_samples"], cache_dir=_config["data_cache_dir"], add_ground_truth_attributions=True, shuffle=False)
     tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=max_length)
 
     transformers.logging.set_verbosity_error()
@@ -149,5 +135,5 @@ def get_explanations(_seed, _config):
             else:
                 pickle.dump({"attributions": attributions}, file)
     if _config["save_examples"]:
-        with open(f"{_config['output_folder']}/{_config['run_name']}/examples.pkl", "wb+") as file:
-            pickle.dump(examples, file)
+        # with open(f"{_config['output_folder']}/{_config['run_name']}/examples.pkl", "wb+") as file:
+        examples.to_json(f"{_config['output_folder']}/{_config['run_name']}/examples.json")
