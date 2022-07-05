@@ -19,32 +19,19 @@ from constants import PROJECT_NAME, WANDB_KEY, WANDB_ENTITY
 
 ex = Experiment("hans-diagnostic")
 
-"""
-Check on summations and masking when computing overall attributions. Make sure padded sections aren't included
-
-Currently integrated gradients and layer gradients both have basically zero attributions for all tokens (after normalizing correctly). Need to figure 
-out why that is. 
-
-Need to work out normalization and visualization stuff for gradients. Captum clips values to between -1 and 1 behind the scenes, but that kind of fucks up a 
-lot of the relationships. 
-
-Need to add ground truth attribution masks to relevant datasets 
-"""
-
 @ex.config
 def config():
     seed = 12345
-    run_name = "dn_t5_mini_enc/mnli/cls-finetune"
+    run_name = "dn_t5_mini_enc/hans/cls-finetune"
     # run_name = "roberta_base/mnli/cls-finetune"
     # run_name = "bert_base_uncased/mnli/cls-finetune"
     # checkpoint_folder = f"./model_outputs/{run_name}/checkpoint-171808"
-    checkpoint_folder = f"./model_outputs/{run_name}/checkpoint-245440"
+    checkpoint_folder = f"./model_outputs/dn_t5_mini_enc/mnli/cls-finetune/checkpoint-245440"
     # checkpoint_folder = f"./model_outputs/{run_name}/checkpoint-73632"
     ex.add_config(f"./configs/task_configs/{run_name}.json")
     num_samples = None 
     data_cache_dir = "./cached_datasets"
     output_folder = "./test_model_metrics"
-    # HF Trainer arguments
     batch_size = 8
     split = "val"
 
@@ -68,8 +55,7 @@ def run_eval(_seed, _config):
     torch.cuda.manual_seed(_seed)
     np.random.seed(_seed)
     random.seed(_seed)
-    dataset = DATASETS["hans"](**_config["dataset_kwargs"],num_samples=_config["num_samples"], cache_dir=_config["data_cache_dir"], heuristic=_config["heuristic"])
-    # dataset = DATASETS["multinli"](**_config["dataset_kwargs"],num_samples=_config["num_samples"], cache_dir=_config["data_cache_dir"])
+    dataset = DATASETS["hans"](**_config["dataset_kwargs"],num_samples=_config["num_samples"], cache_dir=_config["data_cache_dir"])
 
     model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["checkpoint_folder"])
     # TODO: Will have to be adjusted for model-parallelism 
