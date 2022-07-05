@@ -20,11 +20,13 @@ ex = Experiment("explanation-generation")
 @ex.config 
 def config():
     seed = 12345
-    run_name = "dn_t5_tiny_enc/spurious_sst/cls-finetune"
-    checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/spurious_sst/cls-finetune/checkpoint-25260"
+    run_name = "gpt2_small/spurious_sst/cls-finetune"
+    # run_name = "dn_t5_tiny_enc/spurious_sst/cls-finetune"
+    checkpoint_folder = "./model_outputs/gpt2_small/spurious_sst/cls-finetune/checkpoint-25260"
+    # checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/spurious_sst/cls-finetune/checkpoint-25260"
     data_cache_dir = "./cached_datasets"
-    explanation_type = "gradients/gradients_x_input"
-    # explanation_type = "lime/lime"
+    # explanation_type = "gradients/gradients_x_input"
+    explanation_type = "attention/average_attention"
     output_folder = "./explanation_outputs/test_explanation_outputs"
     process_as_batches = True
     full_output_folder = f"{output_folder}/{run_name}/{explanation_type}"
@@ -34,7 +36,7 @@ def config():
     num_samples = None
     num_examples = 100
     show_progress = True 
-    layer = "encoder.embed_tokens"
+    layer = "transformer.wte"
     # layer = "roberta.embeddings"
     # layer = "bert.embeddings"
     # Model params (set later)
@@ -76,7 +78,12 @@ def get_explanations(_seed, _config):
         print("Model max sequence length not determined by max_position_embeddings or n_positions. Using 512 as default")
         max_length = 512 
     dataset = DATASETS[_config["dataset_name"]](**_config["dataset_kwargs"], num_samples=_config["num_samples"], cache_dir=_config["data_cache_dir"], add_ground_truth_attributions=True, shuffle=False)
-    tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=max_length)
+
+    if "pad_token" in _config:
+        tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=max_length, pad_token=_config["pad_token"])
+        model.config.pad_token_id = tokenizer.pad_token_id
+    else:
+        tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=max_length)
 
     transformers.logging.set_verbosity_error()
     train_set = dataset.get_dataloader(model,tokenizer,batch_size=_config["batch_size"], max_length=max_length, split=_config["example_split"], format=True)
@@ -102,6 +109,10 @@ def get_explanations(_seed, _config):
         explainer = EXPLANATIONS[_config["explanation_name"]](model, tokenizer, layer, **_config["explanation_kwargs"], device=device, process_as_batch=_config["process_as_batches"])
     else:
         explainer = EXPLANATIONS[_config["explanation_name"]](model, tokenizer, **_config["explanation_kwargs"], device=device, process_as_batch=_config["process_as_batches"])
+
+    # this is primarily for attention explanations 
+    if hasattr(explainer, "left_right_mask") and "left_right_mask" in _config:
+        explainer.left_right_mask = _config["left_right_mask"]
 
     if _config["num_examples"] != None:
         examples = train_set.filter(lambda e,idx: idx < _config["num_examples"], with_indices=True)

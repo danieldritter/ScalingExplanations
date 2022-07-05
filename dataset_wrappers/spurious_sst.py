@@ -62,8 +62,9 @@ class SpuriousSSTDataset:
 
     def get_dataloader(self, pretrained_model: PreTrainedModel, tokenizer: PreTrainedTokenizer, max_length: int = 512, batch_size: int = 32, split: str = "train", format: bool = True):
         if self.add_ground_truth_attributions:
-            spurious_pos_token_ids = tokenizer(self.spurious_pos_token, add_special_tokens=False)["input_ids"]
-            spurious_neg_token_ids = tokenizer(self.spurious_neg_token, add_special_tokens=False)["input_ids"]
+            # The space is for tokenizers that tokenizer words differently if there is a space in front (as there is when the token is added to the sentences)
+            spurious_pos_token_ids = tokenizer(" " + self.spurious_pos_token, add_special_tokens=False)["input_ids"]
+            spurious_neg_token_ids = tokenizer(" " + self.spurious_neg_token, add_special_tokens=False)["input_ids"]
         def tokenization(example):
             if self.text_to_text:
                 token_out = tokenizer(example["sentence"], truncation=True, max_length=max_length)

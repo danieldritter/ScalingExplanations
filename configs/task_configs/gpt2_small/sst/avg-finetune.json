@@ -9,5 +9,6 @@
         "num_labels":3,
         "head":"gpt2-avg-pool",
         "pad_token":"!",
-        "max_length":512
+        "max_length":512,
+        "left_right_mask":true
     }

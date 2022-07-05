@@ -1,5 +1,5 @@
 {
-    "dataset_name":"spurious_sst",
+    "dataset_name":"sst",
     "dataset_kwargs":{},
     "finetuning":false,
     "pretrained_model_name":"gpt2-avg-seq-class",
@@ -8,6 +8,8 @@
     "seq2seq":false,
     "num_labels":2,
     "trained_layers": ["classifier.dense.weight", "classifier.dense.bias"],
+    "head":"gpt2-avg-pool",
     "pad_token":"!",
-    "max_length":512
+    "max_length":512,
+    "left_right_mask":true
 }
