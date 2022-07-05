@@ -22,6 +22,8 @@ OUTPUT_FOLDER='./diff_arch_model_explanation_outputs'
 RUN_NAMES=( 't5_base_enc/spurious_sst/cls-finetune' 'gpt2_small/spurious_sst/cls-finetune' \
 'roberta_base/spurious_sst/cls-finetune' 'bert_base_uncased/spurious_sst/cls-finetune')
 
+LAYERS=( 'encoder.embed_tokens' 'transformer.wte' 'roberta.embeddings.word_embeddings' 'bert.embeddings.word_embeddings' )
+
 CHECKPOINT_FOLDERS=( './model_outputs/t5_base_enc/spurious_sst/cls-finetune/checkpoint-25260' \
 './model_outputs/gpt2_small/spurious_sst/cls-finetune/checkpoint-25260' \
 './model_outputs/roberta_base/spurious_sst/cls-finetune/checkpoint-25260' \
@@ -38,10 +40,12 @@ do
         EXP_MAX_IND="$((${#EXPLANATIONS[@]} - 1))"
         if [ "$i" -eq "$EXP_MAX_IND" ]; then
             srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-            'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "save_examples=True" 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"'
+            'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "save_examples=True" \
+            'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' "layer=${LAYERS[j]}"
         else 
             srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-            'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"'
+            'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" \
+            'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' "layer=${LAYERS[j]}"
         fi 
         if [ "$?" -ne 0 ]; then
             echo "EXPLANATION GENERATION ${EXPLANATIONS[i]} FAILED FOR RUN ${RUN_NAMES[j]}"
@@ -71,10 +75,12 @@ do
         EXP_MAX_IND="$((${#EXPLANATIONS[@]} - 1))"
         if [ "$i" -eq "$EXP_MAX_IND" ]; then
             srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-            'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "save_examples=True" 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"'
+            'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" \
+            "save_examples=True" 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' "layer=${LAYERS[j]}"
         else 
             srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-            'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"'
+            'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" \
+            'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' "layer=${LAYERS[j]}"
         fi 
         if [ "$?" -ne 0 ]; then
             echo "EXPLANATION GENERATION ${EXPLANATIONS[i]} FAILED FOR RUN ${RUN_NAMES[j]}"
@@ -105,10 +111,12 @@ do
         EXP_MAX_IND="$((${#EXPLANATIONS[@]} - 1))"
         if [ "$i" -eq "$EXP_MAX_IND" ]; then
             srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-            'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "save_examples=True" 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"'
+            'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" \
+            "save_examples=True" 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' "layer=${LAYERS[j]}"
         else 
             srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-            'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"'
+            'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" \
+            'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' "layer=${LAYERS[j]}"
         fi 
         if [ "$?" -ne 0 ]; then
             echo "EXPLANATION GENERATION ${EXPLANATIONS[i]} FAILED FOR RUN ${RUN_NAMES[j]}"
