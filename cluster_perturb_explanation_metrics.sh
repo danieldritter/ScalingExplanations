@@ -17,8 +17,6 @@ SEED=765
 EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
 'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' 'lime/lime' 'shap/shap' 'attention/average_attention')
 
-# EXPLANATIONS=( 'attention/average_attention' )
-
 OUTPUT_FOLDER='./dn_model_explanation_outputs'
 
 RUN_NAMES=( 'dn_t5_mini_enc/spurious_sst/cls-finetune' 'dn_t5_tiny_enc/spurious_sst/cls-finetune' \
@@ -37,14 +35,8 @@ do
         do
         echo "RUN NAME: ${RUN_NAMES[j]}"
         echo "CHECKPOINT_FOLDER: ${CHECKPOINT_FOLDERS[j]}"
-        EXP_MAX_IND="$((${#EXPLANATIONS[@]} - 1))"
-        if [ "$i" -eq "$EXP_MAX_IND" ]; then
-            srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-            seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}"
-        else 
-            srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-            seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}"
-        fi 
+        srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
+        seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}"
         if [ "$?" -ne 0 ]; then
             echo "EXPLANATION GENERATION ${EXPLANATIONS[i]} FAILED FOR RUN ${RUN_NAMES[j]}"
             exit $?
@@ -69,14 +61,8 @@ do
         do
         echo "RUN NAME: ${RUN_NAMES[j]}"
         echo "CHECKPOINT_FOLDER: ${CHECKPOINT_FOLDERS[j]}"
-        EXP_MAX_IND="$((${#EXPLANATIONS[@]} - 1))"
-        if [ "$i" -eq "$EXP_MAX_IND" ]; then
-            srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-            seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}"
-        else 
-            srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-            seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}"
-        fi 
+        srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
+        seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" 
         if [ "$?" -ne 0 ]; then
             echo "EXPLANATION GENERATION ${EXPLANATIONS[i]} FAILED FOR RUN ${RUN_NAMES[j]}"
             exit $?
@@ -102,14 +88,8 @@ do
         do
         echo "RUN NAME: ${RUN_NAMES[j]}"
         echo "CHECKPOINT_FOLDER: ${CHECKPOINT_FOLDERS[j]}"
-        EXP_MAX_IND="$((${#EXPLANATIONS[@]} - 1))"
-        if [ "$i" -eq "$EXP_MAX_IND" ]; then
-            srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-            seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}"
-        else 
-            srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-            seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}"
-        fi 
+        srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
+        seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}"
         if [ "$?" -ne 0 ]; then
             echo "EXPLANATION GENERATION ${EXPLANATIONS[i]} FAILED FOR RUN ${RUN_NAMES[j]}"
             exit $?

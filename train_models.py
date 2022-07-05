@@ -34,12 +34,12 @@ available gpu, but may not be the case with multiple gpus
 @ex.config
 def config():
     seed = 12345
-    run_name = "bert_base_uncased/spurious_sst/cls-finetune"
+    run_name = "dn_t5_tiny_enc/spurious_sst/cls-finetune"
     ex.add_config(f"./configs/task_configs/{run_name}.json")
     num_samples = None
     data_cache_dir = "./cached_datasets"
     model_cache_dir = "./cached_models"
-    output_dir = "./model_outputs"
+    output_dir = "./test_model_outputs"
     #NOTE: All of these are just defaults and can be overridden in task-specific configs, so that hyperparameters aren't fixed per-task/dataset 
     test_split = "test"
     # HF Trainer arguments

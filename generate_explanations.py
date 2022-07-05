@@ -135,5 +135,4 @@ def get_explanations(_seed, _config):
             else:
                 pickle.dump({"attributions": attributions}, file)
     if _config["save_examples"]:
-        # with open(f"{_config['output_folder']}/{_config['run_name']}/examples.pkl", "wb+") as file:
         examples.to_json(f"{_config['output_folder']}/{_config['run_name']}/examples.json")

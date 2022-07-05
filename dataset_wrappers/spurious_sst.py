@@ -89,7 +89,12 @@ class SpuriousSSTDataset:
         elif split == "test":
             return None 
         if format:
-            non_input_cols = set(["sentence","idx", "spurious_pos_token", "spurious_neg_token", "ground_truth_attributions"])
-            keep_cols = list(set(tokenized_set.column_names) - non_input_cols)
-            tokenized_set.set_format("torch",columns=keep_cols)       
+            tokenized_set = self.format_dataset(tokenized_set)  
         return tokenized_set  
+
+    @staticmethod 
+    def format_dataset(dataset):
+        non_input_cols = set(["sentence","idx", "spurious_pos_token", "spurious_neg_token", "ground_truth_attributions"])
+        keep_cols = list(set(dataset.column_names) - non_input_cols)
+        dataset.set_format("torch",columns=keep_cols)  
+        return dataset

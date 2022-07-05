@@ -5,6 +5,7 @@ import numpy as np
 import random 
 from model_registry import MODELS, TOKENIZERS
 import transformers 
+import datasets
 import pickle 
 from tqdm import tqdm 
 from transformers import DataCollatorWithPadding, DataCollatorForSeq2Seq
@@ -19,6 +20,7 @@ def config():
     run_name = "dn_t5_tiny_enc/spurious_sst/cls-finetune"
     checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/spurious_sst/cls-finetune/checkpoint-25260"
     explanation_type = "gradients/gradients_x_input"
+    cache_dir = "./cached_examples"
     # explanation_type = "lime/lime"
     output_folder = "./explanation_outputs/test_explanation_outputs"
     process_as_batches = True
@@ -32,7 +34,7 @@ def config():
     dataset_kwargs = None
     num_labels = None 
     example_split = "train"
-    most_important_first = True 
+    most_important_first = False
     batch_size = 16
     sparsity_levels = [.05, .1, .2, .5]
     # report_to = "wandb"
@@ -65,19 +67,14 @@ def get_explanations(_seed, _config):
         max_length = 512 
     attributions_with_gt = pickle.load(open(f"{_config['full_output_folder']}/explanations.pkl","rb"))
     attributions = attributions_with_gt["attributions"]
-    tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=max_length)
-    examples = pickle.load(open(f"{_config['output_folder']}/{_config['run_name']}/examples.pkl","rb"))
-    for i in range(len(attributions["word_attributions"])):
-        print(examples[i]["input_ids"].shape)
-        print(torch.sum(examples[i]["attention_mask"]))
-        print(attributions["word_attributions"][i].shape)
-        print(attributions["word_attributions"][i])
-        input()
+    tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=max_length, return_tensors="pt")
+    examples = datasets.load_dataset("json",split=_config["example_split"],data_files=f"{_config['output_folder']}/{_config['run_name']}/examples.json", cache_dir=_config["cache_dir"])
+    examples = DATASETS[_config["dataset_name"]].format_dataset(examples)
     # Need data collator here to handle padding of batches and turning into tensors 
     if _config["seq2seq"]:
         collator = DataCollatorForSeq2Seq(tokenizer, model=model,padding="longest",max_length=max_length)
     else:
-        collator = DataCollatorWithPadding(tokenizer,"longest",max_length=max_length)  
+        collator = DataCollatorWithPadding(tokenizer,padding="longest", max_length=max_length, return_tensors="pt")  
     example_loader = torch.utils.data.DataLoader(examples, batch_size=_config["batch_size"], collate_fn=collator, shuffle=False)
     metric = FeatureRemoval(model, tokenizer, device=device, most_important_first=_config["most_important_first"])
     results = {"sparsity":[], "val_diffs":[], "type":[]}
