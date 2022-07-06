@@ -1,0 +1,7 @@
+{
+    "explanation_name":"random_baseline",
+    "explanation_kwargs": {
+        "normalize_attributions":false
+    },
+    "uses_layers":false
+}

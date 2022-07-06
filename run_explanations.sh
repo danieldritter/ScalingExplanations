@@ -1,8 +1,8 @@
 SEED=765
 
-OUTPUT_FOLDER='./explanation_outputs/new_explanation_outputs'
+OUTPUT_FOLDER='./explanation_outputs/dn_model_explanation_outputs'
 
-EXPLANATIONS=( 'attention/average_attention' )
+EXPLANATIONS=( 'random/random_baseline' )
 
 RUN_NAMES=( 'dn_t5_mini_enc/spurious_sst/cls-finetune' 'dn_t5_tiny_enc/spurious_sst/cls-finetune' \
 'dn_t5_small_enc/spurious_sst/cls-finetune' 'dn_t5_base_enc/spurious_sst/cls-finetune')

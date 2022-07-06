@@ -26,7 +26,8 @@ def config():
     # checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/spurious_sst/cls-finetune/checkpoint-25260"
     data_cache_dir = "./cached_datasets"
     # explanation_type = "gradients/gradients_x_input"
-    explanation_type = "attention/average_attention"
+    # explanation_type = "attention/average_attention"
+    explanation_type = "random/random_baseline"
     output_folder = "./explanation_outputs/test_explanation_outputs"
     process_as_batches = True
     full_output_folder = f"{output_folder}/{run_name}/{explanation_type}"
@@ -39,18 +40,8 @@ def config():
     layer = "transformer.wte"
     # layer = "roberta.embeddings"
     # layer = "bert.embeddings"
-    # Model params (set later)
-    pretrained_model_name = None
-    pretrained_model_config = None
-    tokenizer_config_name = None
-    # dataset params (set later)
-    dataset_name = None
-    dataset_kwargs = None
-    num_labels = None 
     example_split = "train"
-    batch_size = 16
-    # report_to = "wandb"
-    report_to = "none"
+    batch_size = 8
     ex.add_config(f"./configs/task_configs/{run_name}.json")
     ex.add_config(f"./configs/explanations/{explanation_type}.json")
 

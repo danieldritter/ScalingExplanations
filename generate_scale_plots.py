@@ -16,23 +16,23 @@ ex = Experiment("explanation-metrics")
 @ex.config 
 def config():
     seed = 12345
-    run_names = ["dn_t5_tiny_enc/hans/cls-finetune", "dn_t5_mini_enc/hans/cls-finetune", 
-                "dn_t5_small_enc/hans/cls-finetune", "dn_t5_base_enc/hans/cls-finetune"]
-    # dataset_name = 'hans'
-    dataset_name = "hans_accuracy"
-    plot_ground_truth = False
-    parameter_numbers = {"dn_t5_tiny_enc/hans/cls-finetune":11,"dn_t5_mini_enc/hans/cls-finetune":20,
-                        "dn_t5_small_enc/hans/cls-finetune":35,"dn_t5_base_enc/hans/cls-finetune":110}
+    run_names = ["dn_t5_tiny_enc/mnli/cls-finetune", "dn_t5_mini_enc/mnli/cls-finetune", 
+                "dn_t5_small_enc/mnli/cls-finetune", "dn_t5_base_enc/mnli/cls-finetune"]
+    dataset_name = 'mnli'
+    # dataset_name = "hans_accuracy"
+    plot_ground_truth = True
+    parameter_numbers = {"dn_t5_tiny_enc/mnli/cls-finetune":11,"dn_t5_mini_enc/mnli/cls-finetune":20,
+                        "dn_t5_small_enc/mnli/cls-finetune":35,"dn_t5_base_enc/mnli/cls-finetune":110}
     explanation_name_map = {'gradients/gradients_x_input':"Grad*Input",'gradients/gradients':"Grad",
                             'gradients/integrated_gradients_x_input':"Integrated Gradients*Input",
                             'gradients/integrated_gradients':"Integrated Gradients",'lime/lime':"Lime",
-                            'shap/shap':"KernelSHAP","attention/average_attention":"Average Attention"}
+                            'shap/shap':"KernelSHAP","attention/average_attention":"Average Attention", "random/random_baseline":"Random"}
     metrics = ["Ground Truth Overlap", "Mean Rank", "Mean Rank Percentage", "Ground Truth Mass"]
     # metrics = ["Entailed Accuracy", "Non-Entailed Accuracy"]
     # metrics = ["Sufficency", "Comprehensiveness"]
-    metrics = ["Sufficiency"]
+    # metrics = ["Sufficiency"]
     explanation_types = ['gradients/gradients_x_input', 'gradients/gradients', 'gradients/integrated_gradients_x_input', 
-                        'gradients/integrated_gradients', 'lime/lime', 'shap/shap']
+                        'gradients/integrated_gradients', 'lime/lime', 'shap/shap', 'random/random_baseline']
     input_folder = "./explanation_outputs/dn_model_explanation_outputs"
     output_folder = f"./explanation_graphs/{dataset_name}"
     
