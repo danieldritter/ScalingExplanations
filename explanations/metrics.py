@@ -84,7 +84,7 @@ def ground_truth_overlap(attributions, ground_truths, return_avg=True):
         percent_overlap = precision_at_k(curr_attr, ground_truths[i], k=k_vals[i])
         overlaps.append(percent_overlap)
     if len(overlaps)/len(attributions) < 0.9:
-        print("More than 10 percent of examples don't have a ground truth. Ratio is:, ", len(overlaps)/len(attributions))
+        print("More than 10 percent of examples don't have a ground truth. Ratio is: ", len(overlaps)/len(attributions))
     if return_avg:
         return sum(overlaps)/len(overlaps)
     else:

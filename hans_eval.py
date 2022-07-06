@@ -33,7 +33,7 @@ def config():
     data_cache_dir = "./cached_datasets"
     output_folder = "./test_model_metrics"
     batch_size = 8
-    split = "val"
+    split = "train"
 
 
 def numel(m: torch.nn.Module, only_trainable: bool = False):
