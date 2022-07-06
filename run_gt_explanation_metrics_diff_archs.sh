@@ -1,11 +1,10 @@
 SEED=765
 
-# EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
-# 'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' 'lime/lime' 'shap/shap' 'attention/average_attention' 'random/random_baseline')
-EXPLANATIONS=( 'random/random_baseline' )
+EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
+'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' 'lime/lime' 'shap/shap' 'attention/average_attention' 'random/random_baseline')
 
-RUN_NAMES=( 'dn_t5_mini_enc/spurious_sst/cls-finetune' 'dn_t5_tiny_enc/spurious_sst/cls-finetune' \
-'dn_t5_small_enc/spurious_sst/cls-finetune' 'dn_t5_base_enc/spurious_sst/cls-finetune')
+RUN_NAMES=( 't5_base_enc/spurious_sst/cls-finetune' 'gpt2_small/spurious_sst/cls-finetune' \
+'roberta_base/spurious_sst/cls-finetune' 'bert_base_uncased/spurious_sst/cls-finetune')
 
 OUTPUT_FOLDER='./explanation_outputs/dn_model_explanation_outputs'
 
@@ -26,8 +25,8 @@ do
     done 
 done
 
-RUN_NAMES=( 'dn_t5_mini_enc/mnli/cls-finetune' 'dn_t5_tiny_enc/mnli/cls-finetune' \
-'dn_t5_small_enc/mnli/cls-finetune' 'dn_t5_base_enc/mnli/cls-finetune')
+RUN_NAMES=( 't5_base_enc/mnli/cls-finetune' 'gpt2_small/mnli/cls-finetune' \
+'roberta_base/mnli/cls-finetune' 'bert_base_uncased/mnli/cls-finetune')
 
 for i in "${!EXPLANATIONS[@]}"
 do
@@ -46,8 +45,8 @@ do
     done 
 done
 
-RUN_NAMES=( 'dn_t5_mini_enc/hans/cls-finetune' 'dn_t5_tiny_enc/hans/cls-finetune' \
-'dn_t5_small_enc/hans/cls-finetune' 'dn_t5_base_enc/hans/cls-finetune')
+RUN_NAMES=( 't5_base_enc/hans/cls-finetune' 'gpt2_small/hans/cls-finetune' \
+'roberta_base/hans/cls-finetune' 'bert_base_uncased/hans/cls-finetune')
 
 for i in "${!EXPLANATIONS[@]}"
 do

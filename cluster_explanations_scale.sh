@@ -4,7 +4,7 @@
 
 #SBATCH --output=slurm-%j.out
 #SBATCH --error=slurm-%j.err
-#SBATCH --job-name="llm-metrics"
+#SBATCH --job-name="llm-interp"
 
 export CONDA_ENVS_PATH=/scratch-ssd/$USER/conda_envs
 export CONDA_PKGS_DIRS=/scratch-ssd/$USER/conda_pkgs
@@ -15,13 +15,13 @@ source /scratch-ssd/oatml/miniconda3/bin/activate ms21ddr_llms
 SEED=765
 
 # EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
-# 'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' 'lime/lime' 'shap/shap' 'attention/average_attention')
+# 'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' 'lime/lime' 'shap/shap' 'attention/average_attention' 'random/random_baseline')
 
-EXPLANATIONS=( 'attention/average_attention' 'random/random_baseline')
+EXPLANATIONS=( 'attention/average_attention' 'random/random_baseline' )
 
 OUTPUT_FOLDER='./dn_model_explanation_outputs'
 
-MOST_IMPORTANT_FIRST='True'
+LAYER='encoder.embed_tokens'
 
 RUN_NAMES=( 'dn_t5_mini_enc/spurious_sst/cls-finetune' 'dn_t5_tiny_enc/spurious_sst/cls-finetune' \
 'dn_t5_small_enc/spurious_sst/cls-finetune' 'dn_t5_base_enc/spurious_sst/cls-finetune')
@@ -39,8 +39,16 @@ do
         do
         echo "RUN NAME: ${RUN_NAMES[j]}"
         echo "CHECKPOINT_FOLDER: ${CHECKPOINT_FOLDERS[j]}"
-        srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-        seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "most_important_first=${MOST_IMPORTANT_FIRST}"
+        EXP_MAX_IND="$((${#EXPLANATIONS[@]} - 1))"
+        if [ "$i" -eq "$EXP_MAX_IND" ]; then
+            srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
+            'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "save_examples=True" \
+            'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' "layer=${LAYER}"
+        else 
+            srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
+            'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" \
+            'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' "layer=${LAYER}"
+        fi 
         if [ "$?" -ne 0 ]; then
             echo "EXPLANATION GENERATION ${EXPLANATIONS[i]} FAILED FOR RUN ${RUN_NAMES[j]}"
             exit $?
@@ -48,7 +56,7 @@ do
     done 
 done
 
-echo "SPURIOUS_SST PERTURBATION METRICS COMPLETED"
+echo "SPURIOUS_SST EXPLANATIONS COMPLETED"
 
 RUN_NAMES=( 'dn_t5_mini_enc/mnli/cls-finetune' 'dn_t5_tiny_enc/mnli/cls-finetune' \
 'dn_t5_small_enc/mnli/cls-finetune' 'dn_t5_base_enc/mnli/cls-finetune')
@@ -65,8 +73,16 @@ do
         do
         echo "RUN NAME: ${RUN_NAMES[j]}"
         echo "CHECKPOINT_FOLDER: ${CHECKPOINT_FOLDERS[j]}"
-        srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-        seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "most_important_first=${MOST_IMPORTANT_FIRST}"
+        EXP_MAX_IND="$((${#EXPLANATIONS[@]} - 1))"
+        if [ "$i" -eq "$EXP_MAX_IND" ]; then
+            srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
+            'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" \
+            "save_examples=True" 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' "layer=${LAYER}"
+        else 
+            srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
+            'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" \
+            'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' "layer=${LAYER}"
+        fi 
         if [ "$?" -ne 0 ]; then
             echo "EXPLANATION GENERATION ${EXPLANATIONS[i]} FAILED FOR RUN ${RUN_NAMES[j]}"
             exit $?
@@ -92,8 +108,16 @@ do
         do
         echo "RUN NAME: ${RUN_NAMES[j]}"
         echo "CHECKPOINT_FOLDER: ${CHECKPOINT_FOLDERS[j]}"
-        srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-        seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "most_important_first=${MOST_IMPORTANT_FIRST}"
+        EXP_MAX_IND="$((${#EXPLANATIONS[@]} - 1))"
+        if [ "$i" -eq "$EXP_MAX_IND" ]; then
+            srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
+            'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" \
+            "save_examples=True" 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' "layer=${LAYER}"
+        else 
+            srun python generate_explanations.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
+            'num_examples=1000' seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" \
+            'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' "layer=${LAYER}"
+        fi 
         if [ "$?" -ne 0 ]; then
             echo "EXPLANATION GENERATION ${EXPLANATIONS[i]} FAILED FOR RUN ${RUN_NAMES[j]}"
             exit $?
