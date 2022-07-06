@@ -39,7 +39,10 @@ class FeatureRemoval:
             curr_attr = attributions[i].clone()
             num_tokens = torch.sum(inputs["attention_mask"][i])
             k_val = int(torch.ceil(sparsity*num_tokens).item())
-            curr_attr[num_tokens:] = float("-inf")
+            if self.most_important_first:
+                curr_attr[num_tokens:] = float("-inf")
+            else:
+                curr_attr[num_tokens:] = float("inf")
             top_inds.append(torch.topk(curr_attr, k=k_val, largest=self.most_important_first).indices)
         predictions = torch.tensor(predictions).to(self.device)
         pred_probs = torch.tensor(pred_probs).to(self.device)

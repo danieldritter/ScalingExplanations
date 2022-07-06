@@ -35,8 +35,8 @@ def config():
     num_labels = None 
     example_split = "train"
     most_important_first = False
-    batch_size = 16
-    sparsity_levels = [.05, .1, .2, .5]
+    batch_size = 5
+    sparsity_levels = [.95, .9, .8, .5]
     # report_to = "wandb"
     report_to = "none"
     ex.add_config(f"./configs/task_configs/{run_name}.json")
@@ -57,6 +57,7 @@ def get_explanations(_seed, _config):
     model.eval()
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)
+
     # Different models have different attributes determining maximum sequence length. Just checking for the ones used in T5, RoBERTa and GPT2 here 
     if hasattr(model.config,"max_position_embeddings"):
         max_length = model.config.max_position_embeddings

@@ -14,10 +14,9 @@ source /scratch-ssd/oatml/miniconda3/bin/activate ms21ddr_llms
 
 SEED=765
 
-# EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
-# 'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' 'lime/lime' 'shap/shap' 'attention/average_attention')
-
-EXPLANATIONS=( 'random/random_baseline' )
+EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
+'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' 'lime/lime' 'shap/shap' \
+'attention/average_attention' 'random/random_baseline')
 
 OUTPUT_FOLDER='./dn_model_explanation_outputs'
 
