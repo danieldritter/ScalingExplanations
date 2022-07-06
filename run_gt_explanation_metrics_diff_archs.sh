@@ -6,7 +6,7 @@ EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
 RUN_NAMES=( 't5_base_enc/spurious_sst/cls-finetune' 'gpt2_small/spurious_sst/cls-finetune' \
 'roberta_base/spurious_sst/cls-finetune' 'bert_base_uncased/spurious_sst/cls-finetune')
 
-OUTPUT_FOLDER='./explanation_outputs/dn_model_explanation_outputs'
+OUTPUT_FOLDER='./explanation_outputs/diff_arch_model_explanation_outputs'
 
 for i in "${!EXPLANATIONS[@]}"
 do
