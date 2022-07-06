@@ -67,7 +67,12 @@ def get_explanations(_seed, _config):
         max_length = 512 
     attributions_with_gt = pickle.load(open(f"{_config['full_output_folder']}/explanations.pkl","rb"))
     attributions = attributions_with_gt["attributions"]
-    tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=max_length, return_tensors="pt")
+    if "pad_token" in _config:
+        tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=max_length, pad_token=_config["pad_token"])
+        model.config.pad_token_id = tokenizer.pad_token_id
+    else:
+        tokenizer = TOKENIZERS[_config["pretrained_model_name"]].from_pretrained(_config["tokenizer_config_name"], model_max_length=max_length)
+    
     examples = datasets.load_dataset("json",split=_config["example_split"],data_files=f"{_config['output_folder']}/{_config['run_name']}/examples.json", cache_dir=_config["cache_dir"])
     examples = DATASETS[_config["dataset_name"]].format_dataset(examples)
     # Need data collator here to handle padding of batches and turning into tensors 
