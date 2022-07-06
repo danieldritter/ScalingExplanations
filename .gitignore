@@ -8,6 +8,7 @@ model_outputs
 explanation_outputs_old 
 test_explanation_outputs 
 dn_model_explanation_outputs*
-explanation_graphs
+explanation_graphs_diff_archs
+explanation_graphs_scale
 explanation_outputs
 cached_examples
