@@ -40,8 +40,8 @@ do
         do
         echo "RUN NAME: ${RUN_NAMES[j]}"
         echo "CHECKPOINT_FOLDER: ${CHECKPOINT_FOLDERS[j]}"
-        srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-        seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "most_important_first=True" "sparsity_levels=${COMPREHENSIVENESS_VALS}"
+        # srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
+        # seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "most_important_first=True" "sparsity_levels=${COMPREHENSIVENESS_VALS}"
         srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
         seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "most_important_first=False" "sparsity_levels=${SUFFICIENCY_VALS}"       
         if [ "$?" -ne 0 ]; then
@@ -69,8 +69,8 @@ do
         do
         echo "RUN NAME: ${RUN_NAMES[j]}"
         echo "CHECKPOINT_FOLDER: ${CHECKPOINT_FOLDERS[j]}"
-        srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-        seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "most_important_first=True" "sparsity_levels=${COMPREHENSIVENESS_VALS}"
+        # srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
+        # seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "most_important_first=True" "sparsity_levels=${COMPREHENSIVENESS_VALS}"
         srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
         seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "most_important_first=False" "sparsity_levels=${SUFFICIENCY_VALS}"       
         if [ "$?" -ne 0 ]; then
@@ -99,8 +99,8 @@ do
         do
         echo "RUN NAME: ${RUN_NAMES[j]}"
         echo "CHECKPOINT_FOLDER: ${CHECKPOINT_FOLDERS[j]}"
-        srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-        seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "most_important_first=True" "sparsity_levels=${COMPREHENSIVENESS_VALS}"
+        # srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
+        # seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "most_important_first=True" "sparsity_levels=${COMPREHENSIVENESS_VALS}"
         srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
         seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "most_important_first=False" "sparsity_levels=${SUFFICIENCY_VALS}"       
         if [ "$?" -ne 0 ]; then
