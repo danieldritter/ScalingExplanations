@@ -6,14 +6,11 @@
 #SBATCH --error=slurm-%j.err
 #SBATCH --job-name="llm-interp"
 
-# export CONDA_ENVS_PATH=/scratch-ssd/$USER/conda_envs
-# export CONDA_PKGS_DIRS=/scratch-ssd/$USER/conda_pkgs
+export CONDA_ENVS_PATH=/scratch-ssd/$USER/conda_envs
+export CONDA_PKGS_DIRS=/scratch-ssd/$USER/conda_pkgs
 
-# /scratch-ssd/oatml/run_locked.sh /scratch-ssd/oatml/miniconda3/bin/conda-env update -f environment.yml
-# source /scratch-ssd/oatml/miniconda3/bin/activate ms21ddr_llms
-
-# First arg: Explanations list, Second arg: Run names, Third arg: checkpoint folders, Fourth: output folder
-# fifth: num_examples, sixth: cache_dir, seventh: layer, eight: cascading, ninth: num_layers, tenth: random_seed
+/scratch-ssd/oatml/run_locked.sh /scratch-ssd/oatml/miniconda3/bin/conda-env update -f environment.yml
+source /scratch-ssd/oatml/miniconda3/bin/activate ms21ddr_llms
 
 function run_explanation_set {
     local explanations=( $1 )
