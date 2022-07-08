@@ -38,8 +38,8 @@ def config():
     num_examples = 100
     show_progress = True 
     layer = "transformer.wte"
-    # layer = "roberta.embeddings"
-    # layer = "bert.embeddings"
+    # layer = "roberta.embeddings.word_embeddings"
+    # layer = "bert.embeddings.word_embeddings"
     example_split = "train"
     batch_size = 8
     ex.add_config(f"./configs/task_configs/{run_name}.json")

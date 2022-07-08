@@ -34,3 +34,32 @@ TOKENIZERS = {
     "bert-cls-seq-class": BertTokenizer,
     "bert-avg-seq-class":BertTokenizer
 }
+
+HEAD_WEIGHTS = {
+    "gpt2":["transformer.ln_f","score"],
+    "gpt2-cls-seq-class":["transformer.ln_f","score"],
+    "gpt2-cls-avg-class":["transformer.ln_f","score"],
+    "roberta": ["classfifier"],
+    "roberta-cls-seq-class":["classifier"],
+    "roberta-avg-seq-class":["classifier"],
+    "t5":["encoder.final_layer_norm", "classifier"],
+    "t5_enc-avg-seq-class":["encoder.final_layer_norm", "classifier"],
+    "t5_enc-cls-seq-class":["encoder.final_layer_norm", "classifier"],
+    "bert-cls-seq-class":["bert.pooler", "classifier"],
+    "bert-avg-seq-class":["bert.pooler", "classifier"],
+
+}
+
+EMBEDDING_WEIGHTS = {
+    "gpt2":["transformer.wte","transformer.wpe"],
+    "gpt2-cls-seq-class":["transformer.wte","transformer.wpe"],
+    "gpt2-cls-avg-class":["transformer.wte","transformer.wpe"],
+    "roberta": ["roberta.embeddings"],
+    "roberta-cls-seq-class":["roberta.embeddings"],
+    "roberta-avg-seq-class":["roberta.embeddings"],
+    "t5":["shared"],
+    "t5_enc-avg-seq-class":["shared"],
+    "t5_enc-cls-seq-class":["shared"],
+    "bert-cls-seq-class":["bert.embeddings"],
+    "bert-avg-seq-class":["bert.embeddings"]
+}

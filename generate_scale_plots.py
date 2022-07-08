@@ -20,20 +20,20 @@ def config():
     run_names = [f"dn_t5_tiny_enc/{dataset_name}/cls-finetune", f"dn_t5_mini_enc/{dataset_name}/cls-finetune", 
                 f"dn_t5_small_enc/{dataset_name}/cls-finetune", f"dn_t5_base_enc/{dataset_name}/cls-finetune"]
     # dataset_name = "hans_accuracy"
-    plot_ground_truth = False
+    plot_ground_truth = True
     parameter_numbers = {run_names[0]:11,run_names[1]:20,
                         run_names[2]:35,run_names[3]:110}
     explanation_name_map = {'gradients/gradients_x_input':"Grad*Input",'gradients/gradients':"Grad",
                             'gradients/integrated_gradients_x_input':"Integrated Gradients*Input",
                             'gradients/integrated_gradients':"Integrated Gradients",'lime/lime':"Lime",
                             'shap/shap':"KernelSHAP","attention/average_attention":"Average Attention", "random/random_baseline":"Random"}
-    # metrics = ["Ground Truth Overlap", "Mean Rank", "Mean Rank Percentage", "Ground Truth Mass"]
+    metrics = ["Ground Truth Overlap", "Mean Rank", "Mean Rank Percentage", "Ground Truth Mass"]
     # metrics = ["Entailed Accuracy", "Non-Entailed Accuracy"]
-    metrics = ["Sufficiency", "Comprehensiveness"]
+    # metrics = ["Sufficiency", "Comprehensiveness"]
     # metrics = ["Sufficiency"]
     explanation_types = ['gradients/gradients_x_input', 'gradients/gradients', 'gradients/integrated_gradients_x_input', 
-                        'gradients/integrated_gradients', 'lime/lime', 'shap/shap', 'random/random_baseline']
-    input_folder = "./explanation_outputs/new_dn_model_explanation_outputs"
+                        'gradients/integrated_gradients', 'lime/lime', 'shap/shap', 'attention/average_attention', 'random/random_baseline']
+    input_folder = "./explanation_outputs/dn_model_explanation_outputs"
     output_folder = f"./explanation_graphs_scale/{dataset_name}"
     
 @ex.automain 

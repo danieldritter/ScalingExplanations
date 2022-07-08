@@ -35,7 +35,7 @@ def config():
     num_labels = None 
     example_split = "train"
     most_important_first = False
-    batch_size = 5
+    batch_size = 16
     sparsity_levels = [.95, .9, .8, .5]
     # report_to = "wandb"
     report_to = "none"

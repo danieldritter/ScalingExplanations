@@ -16,23 +16,23 @@ ex = Experiment("explanation-metrics")
 @ex.config 
 def config():
     seed = 12345
-    dataset_name = 'hans'
+    dataset_name = 'mnli'
     run_names = [f't5_base_enc/{dataset_name}/cls-finetune', f'gpt2_small/{dataset_name}/cls-finetune',
                 f'roberta_base/{dataset_name}/cls-finetune', f'bert_base_uncased/{dataset_name}/cls-finetune']
-    dataset_name = "hans_accuracy"
+    # dataset_name = "hans_accuracy"
     plot_ground_truth = False
     model_names = {run_names[0]:"T5 Base", run_names[1]: "GPT2 Small", run_names[2]:"Roberta Base", run_names[3]:"BERT Base"}
     explanation_name_map = {'gradients/gradients_x_input':"Grad*Input",'gradients/gradients':"Grad",
                             'gradients/integrated_gradients_x_input':"Integrated Gradients*Input",
                             'gradients/integrated_gradients':"Integrated Gradients",'lime/lime':"Lime",
                             'shap/shap':"KernelSHAP","attention/average_attention":"Average Attention", "random/random_baseline":"Random"}
-    # metrics = ["Ground Truth Overlap", "Mean Rank", "Mean Rank Percentage", "Ground Truth Mass"]
-    metrics = ["Entailed Accuracy", "Non-Entailed Accuracy"]
+    metrics = ["Ground Truth Overlap", "Mean Rank", "Mean Rank Percentage", "Ground Truth Mass"]
+    # metrics = ["Entailed Accuracy", "Non-Entailed Accuracy"]
     # metrics = ["Sufficiency", "Comprehensiveness"]
-    # metrics = ["Sufficiency"]
+    metrics = ["Sufficiency"]
     explanation_types = ['gradients/gradients_x_input', 'gradients/gradients', 'gradients/integrated_gradients_x_input', 
                         'gradients/integrated_gradients', 'lime/lime', 'shap/shap', 'attention/average_attention', 'random/random_baseline']
-    input_folder = "./explanation_outputs/diff_arch_model_explanation_outputs"
+    input_folder = "./explanation_outputs/new_diff_arch_explanation_outputs"
     output_folder = f"./explanation_graphs_diff_archs/{dataset_name}"
     
 @ex.automain 
@@ -59,7 +59,7 @@ def get_explanations(_seed, _config):
             for i,metric_name in enumerate(metrics_dict):
                 df = pd.DataFrame(metrics_dict[metric_name])
                 fig, ax = plt.subplots(1,1,figsize=(12,8))
-                sns.boxplot(x="Model Name",y=metric_name,hue="Explanation Type", data=df,ax=ax)
+                sns.barplot(x="Model Name",y=metric_name,hue="Explanation Type", data=df,ax=ax, ci="sd")
                 ax.set_title(f"{metric_name} for Four Different Pretrained Models")
                 fig.savefig(f"{_config['output_folder']}/{metric_name.replace(' ','_')}.png")
         else:
@@ -78,7 +78,7 @@ def get_explanations(_seed, _config):
                 df = pd.DataFrame(metrics_dict[metric_name])
                 fig, ax = plt.subplots(1,1,figsize=(12,8))
                 ax.set_title(f"{metric_name} for Four Different Pretrained Models")
-                sns.boxplot(x="Model Name",y=metric_name,hue="Explanation Type", data=df, ax=ax)
+                sns.barplot(x="Model Name",y=metric_name,hue="Explanation Type", data=df, ax=ax, ci="sd")
                 fig.savefig(f"{_config['output_folder']}/{metric_name.replace(' ','_')}.png")    
     else:
         metrics_dict = {"Model Name":[], "Subset":[], f"Accuracy":[]} 
