@@ -29,11 +29,11 @@ run_explanation_set () {
             echo "CHECKPOINT_FOLDER: ${checkpoint_folders[j]}"
             EXP_MAX_IND="$((${#explanations[@]} - 1))"
             if [ "$i" -eq "$EXP_MAX_IND" ]; then
-                srun python layer_randomization.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
+                python layer_randomization.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
                 "num_examples=$5" seed=${10} "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" "save_examples=True" \
                 "data_cache_dir=$6" "layer=${layers[j]}" "cascading=$8" "num_layers=${num_layers[j]}" "layer_object=${layer_objects[j]}"
             else 
-                srun python layer_randomization.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
+                python layer_randomization.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
                 "num_examples=$5" seed=${10} "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" \
                 "data_cache_dir=${6}" "layer=${layers[j]}" "cascading=$8" "num_layers=${num_layers[j]}" "layer_object=${layer_objects[j]}"
             fi 
@@ -65,10 +65,10 @@ CHECKPOINT_FOLDERS=( './model_outputs/t5_base_enc/spurious_sst/cls-finetune/chec
 './model_outputs/bert_base_uncased/spurious_sst/cls-finetune/checkpoint-25260')
 
 CASCADING="False"
-run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
+srun run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
 $OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR "${LAYERS[*]}" $CASCADING "${NUM_LAYERS[*]}" $SEED "${LAYER_OBJECTS[*]}"
 CASCADING="True"
-run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
+srun run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
 $OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR "${LAYERS[*]}" $CASCADING "${NUM_LAYERS[*]}" $SEED "${LAYER_OBJECTS[*]}"
 
 echo "SPURIOUS_SST EXPLANATIONS COMPLETED"
@@ -82,10 +82,10 @@ CHECKPOINT_FOLDERS=( './model_outputs/t5_base_enc/mnli/cls-finetune/checkpoint-1
 './model_outputs/bert_base_uncased/mnli/cls-finetune/checkpoint-196352')
 
 CASCADING="False"
-run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
+srun run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
 $OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR "${LAYERS[*]}" $CASCADING "${NUM_LAYERS[*]}" $SEED "${LAYER_OBJECTS[*]}"
 CASCADING="True"
-run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
+srun run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
 $OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR "${LAYERS[*]}" $CASCADING "${NUM_LAYERS[*]}" $SEED "${LAYER_OBJECTS[*]}"
 
 echo "MNLI EXPLANATIONS COMPLETED"
@@ -99,10 +99,10 @@ CHECKPOINT_FOLDERS=( './model_outputs/t5_base_enc/mnli/cls-finetune/checkpoint-1
 './model_outputs/bert_base_uncased/mnli/cls-finetune/checkpoint-196352')
 
 CASCADING="False"
-run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
+srun run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
 $OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR "${LAYERS[*]}" $CASCADING "${NUM_LAYERS[*]}" $SEED "${LAYER_OBJECTS[*]}"
 CASCADING="True"
-run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
+srun run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
 $OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR "${LAYERS[*]}" $CASCADING "${NUM_LAYERS[*]}" $SEED "${LAYER_OBJECTS[*]}"
 
 echo "HANS EXPLANATIONS COMPLETED"
