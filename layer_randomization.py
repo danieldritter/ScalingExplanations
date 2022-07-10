@@ -53,7 +53,7 @@ def randomize_weights(m: torch.nn.Module):
     for name, param in m.named_parameters():
         torch.nn.init.normal_(param)
 
-def run_layer_randomizations(examples, model, tokenizer, collator, device, _config):
+def run_randomization(examples, model, tokenizer, collator, device, _config):
     """
     Helper function to save space below. Runs for every layer, and initially to get full model explanations 
     """
@@ -91,7 +91,7 @@ def run_layer_randomizations(examples, model, tokenizer, collator, device, _conf
         return attributions 
 
 @ex.automain 
-def get_explanations(_seed, _config):
+def run_layer_randomizations(_seed, _config):
     if not os.path.isdir(_config["full_output_folder"]):
         os.makedirs(_config["full_output_folder"])
 
@@ -143,13 +143,13 @@ def get_explanations(_seed, _config):
     if _config["num_examples"] != None:
         examples = train_set.filter(lambda e,idx: idx < _config["num_examples"], with_indices=True)
     layer_attributions = {}
-    layer_attributions["Full Model"] = run_explanations(examples, model, tokenizer, collator, device, _config)
+    layer_attributions["Full Model"] = run_randomization(examples, model, tokenizer, collator, device, _config)
     
     # Randomizing classification head first 
     # This is done as a separate step because there's not a generic, consistently named object across the models to access it (like the layers)
     for module_name in HEAD_WEIGHTS[_config["pretrained_model_name"]]:
         randomize_weights(attrgetter(module_name)(model))
-    layer_attributions["Classification Head"] = run_explanations(examples, model, tokenizer, collator, device, _config)
+    layer_attributions["Classification Head"] = run_randomization(examples, model, tokenizer, collator, device, _config)
     
     for layer in reversed(range(_config['num_layers'])):
         if not _config["cascading"]:
@@ -158,7 +158,7 @@ def get_explanations(_seed, _config):
             model.to(device)
         randomize_weights(attrgetter(_config["layer_object"])(model)[layer])
         # Run explanations again here 
-        layer_attributions[f"Layer {layer}"] = run_explanations(examples, model, tokenizer, collator, device, _config)
+        layer_attributions[f"Layer {layer}"] = run_randomization(examples, model, tokenizer, collator, device, _config)
     
     if not _config["cascading"]:
         model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["checkpoint_folder"])
@@ -166,7 +166,7 @@ def get_explanations(_seed, _config):
         model.to(device)
     for module_name in EMBEDDING_WEIGHTS[_config["pretrained_model_name"]]:
         randomize_weights(attrgetter(module_name)(model))
-    layer_attributions["Embeddings"] = run_explanations(examples, model, tokenizer, collator, device, _config)
+    layer_attributions["Embeddings"] = run_randomization(examples, model, tokenizer, collator, device, _config)
 
 
     if _config["save_values"]:
