@@ -15,7 +15,7 @@ from dataset_registry import DATASETS
 from explanation_registry import EXPLANATIONS
 from explanations.metrics import ground_truth_overlap, mean_rank, ground_truth_mass
 
-ex = Experiment("explanation-generation")
+ex = Experiment("layer-randomization-explanations")
 
 @ex.config 
 def config():
@@ -49,11 +49,11 @@ def config():
     ex.add_config(f"./configs/task_configs/{run_name}.json")
     ex.add_config(f"./configs/explanations/{explanation_type}.json")
 
-def randomize_weights(m):
+def randomize_weights(m: torch.nn.Module):
     for name, param in m.named_parameters():
         torch.nn.init.normal_(param)
 
-def run_explanations(examples, model, tokenizer, collator, device, _config):
+def run_layer_randomizations(examples, model, tokenizer, collator, device, _config):
     """
     Helper function to save space below. Runs for every layer, and initially to get full model explanations 
     """

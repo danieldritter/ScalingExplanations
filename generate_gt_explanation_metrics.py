@@ -7,7 +7,7 @@ import pickle
 from explanation_registry import EXPLANATIONS
 from explanations.metrics import ground_truth_overlap, mean_rank, ground_truth_mass 
 
-ex = Experiment("explanation-metrics")
+ex = Experiment("gt-metrics")
 
 @ex.config 
 def config():
@@ -25,7 +25,7 @@ def config():
     ex.add_config(f"./configs/explanations/{explanation_type}.json")
 
 @ex.automain 
-def get_explanations(_seed, _config):
+def get_gt_metrics(_seed, _config):
     if not os.path.exists(f"{_config['full_output_folder']}/explanations.pkl"):
         print(f"Explanations not present in {_config['full_output_folder']}")
         exit() 

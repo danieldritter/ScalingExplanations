@@ -8,7 +8,7 @@ import pickle
 from explanation_registry import EXPLANATIONS
 from explanations.metrics import ground_truth_overlap, mean_rank, ground_truth_mass 
 
-ex = Experiment("explanation-metrics")
+ex = Experiment("layer-randomization-metrics")
 
 @ex.config 
 def config():
