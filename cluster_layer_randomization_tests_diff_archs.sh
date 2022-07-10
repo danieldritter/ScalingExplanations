@@ -51,7 +51,7 @@ EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
 'lime/lime' 'shap/shap' 'attention/average_attention' 'random/random_baseline')
 OUTPUT_FOLDER='./dn_layer_randomization_outputs_diff_archs'
 CACHE_DIR="/scratch-ssd/ms21ddr/data/hf_language_datasets"
-LAYER_OBJECTS=( "encoder.block" "transformer.h" "roberta.encoder" "bert.encoder" )
+LAYER_OBJECTS=( "encoder.block" "transformer.h" "roberta.encoder.layer" "bert.encoder.layer" )
 NUM_EXAMPLES=100 
 LAYERS=( 'encoder.embed_tokens' 'transformer.wte' 'roberta.embeddings.word_embeddings' 'bert.embeddings.word_embeddings' )
 NUM_LAYERS=( 12 12 12 12 )

@@ -14,12 +14,12 @@ def randomize_weights(m):
         torch.nn.init.normal_(param)
 
 if __name__ == "__main__":
-    model = T5EncoderForSequenceClassificationCLS.from_pretrained("./model_outputs/dn_t5_base_enc/spurious_sst/cls-finetune/checkpoint-25260")
+    # model = T5EncoderForSequenceClassificationCLS.from_pretrained("./model_outputs/dn_t5_base_enc/spurious_sst/cls-finetune/checkpoint-25260")
     # old_model = T5EncoderForSequenceClassificationCLS.from_pretrained("./model_outputs/dn_t5_tiny_enc/spurious_sst/cls-finetune/checkpoint-25260")
     # model = BertForSequenceClassification.from_pretrained("./model_outputs/bert_base_uncased/spurious_sst/cls-finetune/checkpoint-25260")
     # old_model = BertForSequenceClassification.from_pretrained("./model_outputs/bert_base_uncased/spurious_sst/cls-finetune/checkpoint-25260")
     # tokenizer = T5Tokenizer.from_pretrained("google/t5-efficient-tiny")
-    # model = GPT2ForSequenceClassification.from_pretrained("./model_outputs/gpt2_small/spurious_sst/cls-finetune/checkpoint-25260")
+    model = GPT2ForSequenceClassification.from_pretrained("./model_outputs/gpt2_small/spurious_sst/cls-finetune/checkpoint-25260")
     # old_model = GPT2ForSequenceClassification.from_pretrained("./model_outputs/gpt2_small/spurious_sst/cls-finetune/checkpoint-25260")
     # model = RobertaForSequenceClassification.from_pretrained("./model_outputs/roberta_base/spurious_sst/cls-finetune/checkpoint-25260")
     # old_model = RobertaForSequenceClassification.from_pretrained("./model_outputs/roberta_base/spurious_sst/cls-finetune/checkpoint-25260")
