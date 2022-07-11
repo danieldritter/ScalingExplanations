@@ -7,6 +7,8 @@ from dataset_wrappers.multinli import MultiNLIDataset
 from dataset_wrappers.hans import HansDataset
 from torchinfo import summary 
 import torch 
+from dataset_wrappers.eraser.utils import load_datasets, load_documents 
+
 
 
 def randomize_weights(m):
@@ -19,33 +21,20 @@ if __name__ == "__main__":
     # model = BertForSequenceClassification.from_pretrained("./model_outputs/bert_base_uncased/spurious_sst/cls-finetune/checkpoint-25260")
     # old_model = BertForSequenceClassification.from_pretrained("./model_outputs/bert_base_uncased/spurious_sst/cls-finetune/checkpoint-25260")
     # tokenizer = T5Tokenizer.from_pretrained("google/t5-efficient-tiny")
-    model = GPT2ForSequenceClassification.from_pretrained("./model_outputs/gpt2_small/spurious_sst/cls-finetune/checkpoint-25260")
+    # model = GPT2ForSequenceClassification.from_pretrained("./model_outputs/gpt2_small/spurious_sst/cls-finetune/checkpoint-25260")
     # old_model = GPT2ForSequenceClassification.from_pretrained("./model_outputs/gpt2_small/spurious_sst/cls-finetune/checkpoint-25260")
     # model = RobertaForSequenceClassification.from_pretrained("./model_outputs/roberta_base/spurious_sst/cls-finetune/checkpoint-25260")
     # old_model = RobertaForSequenceClassification.from_pretrained("./model_outputs/roberta_base/spurious_sst/cls-finetune/checkpoint-25260")
-    summary(model)
-    for name, module in model.named_parameters():
-        print(name)
-    exit()
-    single_layer = model.transformer.h[0]
-    randomize_weights(single_layer)
-    print("RANDOMIZED WEIGHTS")
-    old_params = list(old_model.named_parameters())
-    params = list(model.named_parameters())
-    for i, item in enumerate(params):
-        if not torch.equal(item[1], old_params[i][1]):
-            print(item[0])
-        else:
-            continue 
-    exit()
-    tokenizer = GPT2Tokenizer.from_pretrained('gpt2', cache_dir="./cached_models")
-    dataset = MultiNLIDataset(num_samples=500,add_ground_truth_attributions=True, shuffle=True)
-    # dataset = HansDataset(num_samples=500, add_ground_truth_attributions=True, shuffle=True)
-    train_set = dataset.get_dataloader(model, tokenizer, max_length=512, batch_size=16, split="train")
-    for item in train_set:
-        decon_tokens = tokenizer.convert_ids_to_tokens(item["input_ids"])
-        print(item["premise"])
-        print(item["hypothesis"])
-        print(item["input_ids"])
-        print(list(zip(decon_tokens,item["ground_truth_attributions"])))
+    # reader = RationaleReader({"tokens":SingleIdTokenIndexer()})
+    # out = reader._read("./cached_datasets/eraser/data/esnli/val.jsonl")
+    # while True:
+    #     print(next(out))
+    #     input()
+    train, val, test = load_datasets("./cached_datasets/eraser/data/multirc")
+    docs = load_documents("./cached_datasets/eraser/data/multirc")
+    print(type(train))
+    for i in range(len(train)):
+        print(train[i])
+        # print(docs[train[i].annotation_id + "_premise"])
+        # print(docs[train[i].annotation_id + "_hypothesis"])
         input()

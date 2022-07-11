@@ -49,7 +49,7 @@ SEED=765
 EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
 'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' \
 'lime/lime' 'shap/shap' 'attention/average_attention' 'random/random_baseline')
-OUTPUT_FOLDER='./dn_layer_randomization_outputs_diff_archs'
+OUTPUT_FOLDER='./layer_randomization_outputs_diff_archs'
 CACHE_DIR="/scratch-ssd/ms21ddr/data/hf_language_datasets"
 LAYER_OBJECTS=( "encoder.block" "transformer.h" "roberta.encoder.layer" "bert.encoder.layer" )
 NUM_EXAMPLES=100 
