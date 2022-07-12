@@ -29,7 +29,7 @@ function run_explanation_set {
             if [ "$i" -eq "$EXP_MAX_IND" ]; then
                 srun python layer_randomization.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
                 "num_examples=$5" seed=${10} "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" "save_examples=True" \
-                "data_cache_dir=$6" "layer=${7}" "cascading=$8" "num_layers=${num_layers[j]}" "layer_object=${$11}"
+                "data_cache_dir=$6" "layer=${7}" "cascading=$8" "num_layers=${num_layers[j]}" "layer_object=${11}"
             else 
                 srun python layer_randomization.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
                 "num_examples=$5" seed=${10} "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" \
@@ -44,9 +44,10 @@ function run_explanation_set {
 }
 
 SEED=765
-EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
-'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' \
-'lime/lime' 'shap/shap' 'attention/average_attention' 'random/random_baseline')
+# EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
+# 'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' \
+# 'lime/lime' 'shap/shap' 'attention/average_attention' 'random/random_baseline')
+EXPLANATIONS=( 'random/random_baseline' )
 OUTPUT_FOLDER='./dn_layer_randomization_outputs_scale'
 CACHE_DIR="/scratch-ssd/ms21ddr/data/hf_language_datasets"
 LAYER='encoder.embed_tokens'
