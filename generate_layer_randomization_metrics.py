@@ -15,7 +15,7 @@ def config():
     seed = 12345
     run_name = "gpt2_small/spurious_sst/cls-finetune"
     explanation_type = "gradients/gradients_x_input"
-    output_folder = "./explanation_outputs/test_layer_randomization_outputs"
+    output_folder = "./explanation_outputs/dn_layer_randomization_outputs_scale"
     process_as_batches = True
     full_output_folder = f"{output_folder}/{run_name}/{explanation_type}"
     save_visuals = False
@@ -47,7 +47,7 @@ def get_explanations(_seed, _config):
         rank_correlations[layer] = []
         for i in range(len(full_example_lengths)):
             if _config["absolute_value"]:
-                rank_corr =spearmanr(torch.abs(full_attributions[i][:full_example_lengths[i]]),torch.abs(word_attributions[layer][i][:full_example_lengths[i]]))
+                rank_corr = spearmanr(torch.abs(full_attributions[i][:full_example_lengths[i]]),torch.abs(word_attributions[layer][i][:full_example_lengths[i]]))
             else:
                 rank_corr =spearmanr(full_attributions[i][:full_example_lengths[i]],word_attributions[layer][i][:full_example_lengths[i]])
             rank_correlations[layer].append(rank_corr.correlation)

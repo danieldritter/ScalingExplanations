@@ -39,15 +39,15 @@ def get_explanations(_seed, _config):
     if not os.path.isdir(_config["output_folder"]):
         os.makedirs(_config["output_folder"])
 
-    metrics_dict = {metric:{"Parameters (Millions)":[], "Explanation Type":[], f"{metric}":[]} for metric in _config["metrics"]}
+    metrics_dict = {metric:{"Layer":[], "Explanation Type":[], f"{metric}":[]} for metric in _config["metrics"]}
     for explanation_type in _config["explanation_types"]:
         for run_name in _config['run_names']:
             if _config["cascading"]:
                 metrics = pickle.load(open(f"{_config['input_folder']}/{run_name}/{explanation_type}/explanations_cascading.pkl", "rb"))
             else:
                 metrics = pickle.load(open(f"{_config['input_folder']}/{run_name}/{explanation_type}/explanations_independent.pkl", "rb"))
-            print(list(metrics.keys()))
-            exit()
+            for layer in metrics:
+                # Make one plot for each image here, and then put them into a subplot 
             for metric_name in metrics:
                 for val in metrics[metric_name]:
                     metrics_dict[metric_name]["Parameters (Millions)"].append(_config["parameter_numbers"][run_name])
