@@ -14,4 +14,5 @@ source /scratch-ssd/oatml/miniconda3/bin/activate ms21ddr_llms
 
 # srun python train_models.py with 'run_name="bert_base_uncased/spurious_sst/cls-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True'
 # srun python train_models.py with 'run_name="t5_base_enc/spurious_sst/cls-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True'
-srun python train_models.py with 'run_name="bert_base_uncased/eraser_cose/cls-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True'
+srun python train_models.py with 'run_name="bert_base_uncased/eraser_cose/cls-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' \
+'disable_tqdm=True' "batch_size=32" "num_epochs=30" "lr=.00002"
