@@ -1,8 +1,8 @@
 {
-        "dataset_name":"multinli",
-        "dataset_kwargs":{},
+        "dataset_name":"eraser",
+        "dataset_kwargs":{"subset":"esnli"},
         "finetuning":true,
-        "pretrained_model_name":"roberta-cls-seq-class",
+        "pretrained_model_name":"roberta-avg-seq-class",
         "pretrained_model_config":"roberta-base",
         "tokenizer_config_name":"roberta-base",
         "seq2seq":false,

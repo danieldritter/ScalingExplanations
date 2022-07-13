@@ -138,9 +138,6 @@ def load_documents(data_dir: str, docids: Set[str] = None) -> Dict[str, List[Lis
     Each document is assumed to be serialized as newline ('\n') separated sentences.
     Each sentence is assumed to be space (' ') joined tokens.
     """
-    if os.path.exists(os.path.join(data_dir, 'docs.jsonl')):
-        assert not os.path.exists(os.path.join(data_dir, 'docs'))
-        return load_documents_from_file(data_dir, docids)
 
     docs_dir = os.path.join(data_dir, 'docs')
     res = dict()
@@ -152,8 +149,7 @@ def load_documents(data_dir: str, docids: Set[str] = None) -> Dict[str, List[Lis
         with open(os.path.join(docs_dir, d), 'r') as inf:
             lines = [l.strip() for l in inf.readlines()]
             lines = list(filter(lambda x: bool(len(x)), lines))
-            tokenized = [list(filter(lambda x: bool(len(x)), line.strip().split(' '))) for line in lines]
-            res[d] = tokenized
+            res[d] = " ".join(lines)
     return res
 
 
@@ -203,14 +199,11 @@ def intern_annotations(annotations: List[Annotation], word_interner: Dict[str, i
     return ret
 
 
-def load_documents_from_file(data_dir: str, docids: Set[str] = None) -> Dict[str, List[List[str]]]:
+def load_documents_from_file(documents, docids: Set[str] = None) -> Dict[str, List[List[str]]]:
     """Loads a subset of available documents from 'docs.jsonl' file on disk.
     Each document is assumed to be serialized as newline ('\n') separated sentences.
     Each sentence is assumed to be space (' ') joined tokens.
     """
-    docs_file = os.path.join(data_dir, 'docs.jsonl')
-    documents = load_jsonl(docs_file)
-    documents = {doc['docid']: doc['document'] for doc in documents}
     res = dict()
     if docids is None:
         docids = sorted(list(documents.keys()))
@@ -218,6 +211,5 @@ def load_documents_from_file(data_dir: str, docids: Set[str] = None) -> Dict[str
         docids = sorted(set(str(d) for d in docids))
     for d in docids:
         lines = documents[d].split('\n')
-        tokenized = [line.strip().split(' ') for line in lines]
-        res[d] = tokenized
+        res[d] = " ".join(lines)
     return res

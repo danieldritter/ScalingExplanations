@@ -1,6 +1,6 @@
 {
-        "dataset_name":"multinli",
-        "dataset_kwargs":{},
+        "dataset_name":"eraser",
+        "dataset_kwargs":{"subset":"esnli"},
         "finetuning":true,
         "pretrained_model_name":"bert-cls-seq-class",
         "pretrained_model_config":"bert-base-uncased",

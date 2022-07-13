@@ -1,0 +1,15 @@
+{
+    "dataset_name":"eraser",
+    "dataset_kwargs":{"subset":"esnli"},
+    "finetuning":false,
+    "pretrained_model_name":"gpt2-cls-seq-class",
+    "pretrained_model_config":"gpt2",
+    "tokenizer_config_name":"gpt2",
+    "seq2seq":false,
+    "num_labels":3,
+    "test_split":"test",
+    "trained_layers": ["score.weight"],
+    "pad_token":"!",
+    "max_length":512,
+    "left_right_mask":true
+}

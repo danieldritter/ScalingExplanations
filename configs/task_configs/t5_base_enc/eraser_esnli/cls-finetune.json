@@ -1,0 +1,10 @@
+{
+    "dataset_name":"eraser",
+    "dataset_kwargs":{"text_to_text":false, "subset":"esnli"},
+    "finetuning":true,
+    "pretrained_model_name":"t5_enc-cls-seq-class",
+    "pretrained_model_config":"t5-base",
+    "tokenizer_config_name":"t5-base",
+    "seq2seq":false,
+    "num_labels":3
+}
