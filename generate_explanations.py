@@ -25,7 +25,7 @@ def config():
     checkpoint_folder = "./model_outputs/gpt2_small/spurious_sst/cls-finetune/checkpoint-25260"
     # checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/spurious_sst/cls-finetune/checkpoint-25260"
     data_cache_dir = "./cached_datasets"
-    explanation_type = "random/random_baseline"
+    explanation_type = "attention/attention_rollout"
     output_folder = "./explanation_outputs/test_explanation_outputs"
     process_as_batches = True
     full_output_folder = f"{output_folder}/{run_name}/{explanation_type}"

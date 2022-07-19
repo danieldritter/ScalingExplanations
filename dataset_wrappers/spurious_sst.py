@@ -51,6 +51,7 @@ class SpuriousSSTDataset:
                 else:
                     spurious_token_ids = spurious_pos_token_ids 
             spur_start_positions = [index for index, item in enumerate(token_id_seq) if item == spurious_token_ids[0]]
+            print(i, token_id_seq)
             spurious_start_index = max(index for index, item in enumerate(token_id_seq) if item == spurious_token_ids[0])
             spurious_token_mask = [0 for i in range(len(token_id_seq))]
             for j in range(len(spurious_token_ids)):
@@ -77,6 +78,18 @@ class SpuriousSSTDataset:
                 return example 
             else:
                 token_out = tokenizer(example["sentence"], truncation=True, max_length=max_length)
+                print(example["sentence"][97])
+                print(token_out["input_ids"][97])
+                print(tokenizer.decode(token_out["input_ids"][97]))
+                print(example["sentence"][45])
+                print(token_out["input_ids"][45])
+                print(tokenizer.decode(token_out['input_ids'][45]))
+                print(tokenizer.decode([4633]))
+                print(tokenizer.decode([3967]))
+                print(tokenizer.decode([31591]))
+                print(tokenizer.decode([0]))
+                print(spurious_neg_token_ids)
+                print(spurious_pos_token_ids)
                 if self.add_ground_truth_attributions:
                     ground_truth_masks = self.get_spurious_token_mask(token_out["input_ids"], spurious_pos_token_ids, spurious_neg_token_ids, example["labels"])
                     example.update({"ground_truth_attributions":ground_truth_masks})            

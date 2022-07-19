@@ -1,0 +1,8 @@
+{
+    "explanation_name":"average_attention",
+    "explanation_kwargs": {
+        "normalize_attributions":false,
+        "mult_back":true
+    },
+    "uses_layers":false
+}
