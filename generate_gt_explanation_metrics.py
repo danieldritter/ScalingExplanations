@@ -12,9 +12,9 @@ ex = Experiment("gt-metrics")
 @ex.config 
 def config():
     seed = 12345
-    run_name = "dn_t5_tiny_enc/hans/cls-finetune"
-    explanation_type = "gradients/gradients_x_input"
-    output_folder = "./explanation_outputs/dn_model_explanation_outputs"
+    run_name = "bert_base_uncased/spurious_sst/cls-finetune"
+    explanation_type = "gradients/integrated_gradients_x_input"
+    output_folder = "./explanation_outputs/diff_arch_model_explanation_outputs"
     process_as_batches = True
     full_output_folder = f"{output_folder}/{run_name}/{explanation_type}"
     save_visuals = False
@@ -37,7 +37,6 @@ def get_gt_metrics(_seed, _config):
 
     attributions_plus_ground_truth = pickle.load(open(f"{_config['full_output_folder']}/explanations.pkl", "rb"))
     attributions = attributions_plus_ground_truth["attributions"]
-
     if _config["save_visuals"]:
         viz = EXPLANATIONS[_config["explanation_name"]].visualize_explanations(attributions)
         with open(f"{_config['full_output_folder']}/visuals.html", "w+") as file:
