@@ -86,18 +86,18 @@ $OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR $LAYER $CASCADING "${NUM_LAYERS[*]}" $SE
 
 echo "MNLI EXPLANATIONS COMPLETED"
 
-RUN_NAMES=( 'dn_t5_mini_enc/hans/cls-finetune' 'dn_t5_tiny_enc/hans/cls-finetune' \
-'dn_t5_small_enc/hans/cls-finetune' 'dn_t5_base_enc/hans/cls-finetune')
+# RUN_NAMES=( 'dn_t5_mini_enc/hans/cls-finetune' 'dn_t5_tiny_enc/hans/cls-finetune' \
+# 'dn_t5_small_enc/hans/cls-finetune' 'dn_t5_base_enc/hans/cls-finetune')
 
-CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_mini_enc/mnli/cls-finetune/checkpoint-245440' \
-'./model_outputs/dn_t5_tiny_enc/mnli/cls-finetune/checkpoint-245440' './model_outputs/dn_t5_small_enc/mnli/cls-finetune/checkpoint-245440' \
-'./model_outputs/dn_t5_base_enc/mnli/cls-finetune/checkpoint-245440')
+# CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_mini_enc/mnli/cls-finetune/checkpoint-245440' \
+# './model_outputs/dn_t5_tiny_enc/mnli/cls-finetune/checkpoint-245440' './model_outputs/dn_t5_small_enc/mnli/cls-finetune/checkpoint-245440' \
+# './model_outputs/dn_t5_base_enc/mnli/cls-finetune/checkpoint-245440')
 
-CASCADING="False"
-run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
-$OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR $LAYER $CASCADING "${NUM_LAYERS[*]}" $SEED $LAYER_OBJECT
-CASCADING="True"
-run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
-$OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR $LAYER $CASCADING "${NUM_LAYERS[*]}" $SEED $LAYER_OBJECT
+# CASCADING="False"
+# run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
+# $OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR $LAYER $CASCADING "${NUM_LAYERS[*]}" $SEED $LAYER_OBJECT
+# CASCADING="True"
+# run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
+# $OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR $LAYER $CASCADING "${NUM_LAYERS[*]}" $SEED $LAYER_OBJECT
 
-echo "HANS EXPLANATIONS COMPLETED"
+# echo "HANS EXPLANATIONS COMPLETED"

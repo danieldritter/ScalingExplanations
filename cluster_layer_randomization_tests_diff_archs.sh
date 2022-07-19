@@ -91,19 +91,19 @@ $OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR "${LAYERS[*]}" $CASCADING "${NUM_LAYERS[
 
 echo "MNLI EXPLANATIONS COMPLETED"
 
-RUN_NAMES=( 't5_base_enc/hans/cls-finetune' 'gpt2_small/hans/cls-finetune' \
-'roberta_base/hans/cls-finetune' 'bert_base_uncased/hans/cls-finetune')
+# RUN_NAMES=( 't5_base_enc/hans/cls-finetune' 'gpt2_small/hans/cls-finetune' \
+# 'roberta_base/hans/cls-finetune' 'bert_base_uncased/hans/cls-finetune')
 
-CHECKPOINT_FOLDERS=( './model_outputs/t5_base_enc/mnli/cls-finetune/checkpoint-122720' \
-'./model_outputs/gpt2_small/mnli/cls-finetune/checkpoint-245440' \
-'./model_outputs/roberta_base/mnli/cls-finetune/checkpoint-171808' \
-'./model_outputs/bert_base_uncased/mnli/cls-finetune/checkpoint-196352')
+# CHECKPOINT_FOLDERS=( './model_outputs/t5_base_enc/mnli/cls-finetune/checkpoint-122720' \
+# './model_outputs/gpt2_small/mnli/cls-finetune/checkpoint-245440' \
+# './model_outputs/roberta_base/mnli/cls-finetune/checkpoint-171808' \
+# './model_outputs/bert_base_uncased/mnli/cls-finetune/checkpoint-196352')
 
-CASCADING="False"
-run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
-$OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR "${LAYERS[*]}" $CASCADING "${NUM_LAYERS[*]}" $SEED "${LAYER_OBJECTS[*]}"
-CASCADING="True"
-run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
-$OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR "${LAYERS[*]}" $CASCADING "${NUM_LAYERS[*]}" $SEED "${LAYER_OBJECTS[*]}"
+# CASCADING="False"
+# run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
+# $OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR "${LAYERS[*]}" $CASCADING "${NUM_LAYERS[*]}" $SEED "${LAYER_OBJECTS[*]}"
+# CASCADING="True"
+# run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
+# $OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR "${LAYERS[*]}" $CASCADING "${NUM_LAYERS[*]}" $SEED "${LAYER_OBJECTS[*]}"
 
-echo "HANS EXPLANATIONS COMPLETED"
+# echo "HANS EXPLANATIONS COMPLETED"
