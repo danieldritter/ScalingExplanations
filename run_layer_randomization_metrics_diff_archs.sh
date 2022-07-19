@@ -23,7 +23,7 @@ SEED=765
 
 EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
 'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' 'lime/lime' 'shap/shap' 'attention/average_attention' 'random/random_baseline')
-OUTPUT_FOLDER='./explanation_outputs/layer_randomization_outputs_diff_archs'
+OUTPUT_FOLDER='./explanation_outputs/layer_randomization_diff_archs_new'
 
 RUN_NAMES=( 't5_base_enc/spurious_sst/cls-finetune' 'gpt2_small/spurious_sst/cls-finetune' \
 'roberta_base/spurious_sst/cls-finetune' 'bert_base_uncased/spurious_sst/cls-finetune')

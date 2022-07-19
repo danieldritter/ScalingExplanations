@@ -8,7 +8,7 @@
     "seq2seq":false,
     "num_labels":5,
     "test_split":"test",
-    "pad_token":"!",
+    "pad_token":"[PAD]",
     "max_length":512,
     "left_right_mask":true
 }

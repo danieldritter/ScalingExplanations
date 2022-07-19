@@ -16,7 +16,7 @@ ex = Experiment("explanation-metrics")
 @ex.config 
 def config():
     seed = 12345
-    dataset_name = 'mnli'
+    dataset_name = 'spurious_sst'
     # run_names = [f"dn_t5_tiny_enc/{dataset_name}/cls-finetune", f"dn_t5_mini_enc/{dataset_name}/cls-finetune", 
     #             f"dn_t5_small_enc/{dataset_name}/cls-finetune", f"dn_t5_base_enc/{dataset_name}/cls-finetune"]
     run_names = [f't5_base_enc/{dataset_name}/cls-finetune', f'gpt2_small/{dataset_name}/cls-finetune',
@@ -29,9 +29,9 @@ def config():
                             'shap/shap':"KernelSHAP","attention/average_attention":"Average Attention", "random/random_baseline":"Random"}
     explanation_types = ['gradients/gradients_x_input', 'gradients/gradients', 'gradients/integrated_gradients_x_input', 
                         'gradients/integrated_gradients', 'lime/lime', 'shap/shap', 'attention/average_attention', 'random/random_baseline']    
-    input_folder = "./explanation_outputs/layer_randomization_outputs_diff_archs"
+    input_folder = "./explanation_outputs/layer_randomization_diff_archs_new"
     output_folder = f"./layer_randomization_graphs_diff_archs/{dataset_name}"
-    cascading = False
+    cascading = True
     absolute_value = True
     if cascading:
         if absolute_value:

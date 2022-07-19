@@ -9,7 +9,7 @@
     "num_labels":3,
     "trained_layers": ["score.weight"],
     "head":"gpt2-cls",
-    "pad_token":"!",
+    "pad_token":"[PAD]",
     "max_length":512,
     "left_right_mask":true
 }
