@@ -39,7 +39,7 @@ def config():
     num_samples = None
     data_cache_dir = "./cached_datasets"
     model_cache_dir = "./cached_models"
-    output_dir = "./test_model_outputs"
+    output_dir = "./model_outputs"
     #NOTE: All of these are just defaults and can be overridden in task-specific configs, so that hyperparameters aren't fixed per-task/dataset 
     test_split = "test"
     # HF Trainer arguments
