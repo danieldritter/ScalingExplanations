@@ -9,7 +9,7 @@
     "num_labels":3,
     "test_split":"test",
     "trained_layers": ["score.weight"],
-    "pad_token":"[PAD]",
+    "pad_token":"<|endoftext|>",
     "max_length":512,
     "left_right_mask":true
 }
