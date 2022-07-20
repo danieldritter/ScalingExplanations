@@ -44,15 +44,14 @@ function run_explanation_set {
 }
 
 SEED=765
-# EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
-# 'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' \
-# 'lime/lime' 'shap/shap' 'attention/average_attention' 'random/random_baseline')
-EXPLANATIONS=( 'random/random_baseline' )
-OUTPUT_FOLDER='./dn_layer_randomization_outputs_scale'
+EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
+'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' \
+'lime/lime' 'shap/shap' 'attention/attention_rollout' 'random/random_baseline')
+OUTPUT_FOLDER='./scale_layer_randomization'
 CACHE_DIR="/scratch-ssd/ms21ddr/data/hf_language_datasets"
 LAYER='encoder.embed_tokens'
 LAYER_OBJECT="encoder.block"
-NUM_EXAMPLES=100
+NUM_EXAMPLES=15
 RUN_NAMES=( 'dn_t5_mini_enc/spurious_sst/cls-finetune' 'dn_t5_tiny_enc/spurious_sst/cls-finetune' \
 'dn_t5_small_enc/spurious_sst/cls-finetune' 'dn_t5_base_enc/spurious_sst/cls-finetune')
 CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_mini_enc/spurious_sst/cls-finetune/checkpoint-25260' \
