@@ -46,7 +46,6 @@ def config():
 def get_explanations(_seed, _config):
     if not os.path.isdir(_config["full_output_folder"]):
         os.makedirs(_config["full_output_folder"])
-
     # Setting manual seeds 
     torch.manual_seed(_seed)
     torch.cuda.manual_seed(_seed)

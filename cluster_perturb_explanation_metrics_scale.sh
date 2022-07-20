@@ -45,7 +45,7 @@ EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
 
 OUTPUT_FOLDER='./scale_model_explanation_outputs'
 
-SUFFICIENCY_VALS='[.95, .9, .8, .5]'
+SUFFICIENCY_VALS='[.95,.9,.8,.5]'
 COMPREHENSIVENESS_VALS='[.05,.1,.2,.5]'
 
 RUN_NAMES=( 'dn_t5_mini_enc/spurious_sst/cls-finetune' 'dn_t5_tiny_enc/spurious_sst/cls-finetune' \

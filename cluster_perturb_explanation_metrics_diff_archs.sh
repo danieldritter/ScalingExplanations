@@ -20,7 +20,7 @@ EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
 
 OUTPUT_FOLDER='./diff_arch_model_explanation_outputs'
 
-SUFFICIENCY_VALS='[.95, .9, .8, .5]'
+SUFFICIENCY_VALS='[.95,.9,.8,.5]'
 COMPREHENSIVENESS_VALS='[.05,.1,.2,.5]'
 
 RUN_NAMES=( 't5_base_enc/spurious_sst/cls-finetune' 'gpt2_small/spurious_sst/cls-finetune' \
