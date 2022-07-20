@@ -21,9 +21,9 @@ ex = Experiment("explanation-generation")
 def config():
     seed = 12345
     # run_name = "gpt2_small/spurious_sst/cls-finetune"
-    run_name = "dn_t5_tiny_enc/spurious_sst/cls-finetune"
+    run_name = "dn_t5_tiny_enc/eraser_esnli/cls-finetune"
     # checkpoint_folder = "./model_outputs/gpt2_small/spurious_sst/cls-finetune/checkpoint-25260"
-    checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/spurious_sst/cls-finetune/checkpoint-25260"
+    checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/eraser_esnli/cls-finetune/checkpoint-343320"
     data_cache_dir = "./cached_datasets"
     explanation_type = "attention/attention_rollout"
     # explanation_type = "attention/average_attention"
@@ -78,7 +78,6 @@ def get_explanations(_seed, _config):
     transformers.logging.set_verbosity_error()
     train_set = dataset.get_dataloader(model,tokenizer,batch_size=_config["batch_size"], max_length=max_length, split=_config["example_split"], format=True)
     transformers.logging.set_verbosity_warning()
-
     # Need data collator here to handle padding of batches and turning into tensors 
     if _config["seq2seq"]:
         collator = DataCollatorForSeq2Seq(tokenizer, model=model,padding="longest",max_length=max_length)

@@ -45,7 +45,7 @@ class ERASERDataset:
     
     @staticmethod 
     def format_dataset(dataset):
-        non_input_cols = set(["premise", "hypothesis","document","query", "ground_truth_attributions"])
+        non_input_cols = set(["annotation_id", "premise", "hypothesis","evidences", "idx", "query", "document", "ground_truth_attributions"])
         keep_cols = list(set(dataset.column_names) - non_input_cols)
         dataset.set_format("torch",columns=keep_cols)   
         return dataset  

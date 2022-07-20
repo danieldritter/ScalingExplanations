@@ -55,6 +55,7 @@ class ERASERHFDataset(datasets.GeneratorBasedBuilder):
         features = {feature: datasets.Value("string") for feature in self.config.features}
         features["evidences"] = datasets.features.Sequence({"text":datasets.Value("string"), "docid":datasets.Value("string")})
         features["label"] = datasets.features.ClassLabel(names=self.config.label_classes)
+        features["idx"] = datasets.Value("int32")
 
         return datasets.DatasetInfo(
             description=self.config.description,
@@ -92,9 +93,10 @@ class ERASERHFDataset(datasets.GeneratorBasedBuilder):
         if self.config.name == "esnli" or self.config.name == "cose":
             documents  = load_jsonl(os.path.join(os.path.join(self.config.data_dir, self.config.name), "docs.jsonl"))
             documents = {doc['docid']: doc['document'] for doc in documents}
-
+        idx = -1
         with open(data_file, 'r') as inf:
             for line in inf:
+                idx += 1
                 example = {} 
                 content = json.loads(line)
                 ev_groups = []
@@ -126,4 +128,5 @@ class ERASERHFDataset(datasets.GeneratorBasedBuilder):
                     example["evidences"] = [{"text":item.text, "docid":item.docid } for item in annotation.all_evidences()]
                     example["annotation_id"] = annotation.annotation_id 
                     example["label"] = annotation.classification 
-                yield annotation.annotation_id, example
+                example["idx"] = idx
+                yield idx, example
