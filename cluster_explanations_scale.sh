@@ -49,7 +49,7 @@ EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
 'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' \
 'lime/lime' 'shap/shap' 'attention/attention_rollout' 'random/random_baseline')
 
-OUTPUT_FOLDER='./test_model_explanation_outputs'
+OUTPUT_FOLDER='./scale_model_explanation_outputs'
 
 LAYER='encoder.embed_tokens'
 
@@ -78,3 +78,16 @@ CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_mini_enc/mnli/cls-finetune/checkpoin
 run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $NUM_EXAMPLES $DATA_CACHE_DIR $LAYER $SEED
 
 echo "MNLI EXPLANATIONS COMPLETED"
+
+
+RUN_NAMES=( 'dn_t5_mini_enc/eraser_esnli/cls-finetune' 'dn_t5_tiny_enc/eraser_esnli/cls-finetune' \
+'dn_t5_small_enc/eraser_esnli/cls-finetune' 'dn_t5_base_enc/eraser_esnli/cls-finetune')
+
+CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_mini_enc/eraser_esnli/cls-finetune/checkpoint-343320' \
+'./model_outputs/dn_t5_tiny_enc/eraser_esnli/cls-finetune/checkpoint-343320' \
+'./model_outputs/dn_t5_small_enc/eraser_esnli/cls-finetune/checkpoint-343320' \
+'./model_outputs/dn_t5_base_enc/eraser_esnli/cls-finetune/checkpoint-240324')
+
+run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $NUM_EXAMPLES $DATA_CACHE_DIR $LAYER $SEED
+
+echo "ERASER ESNLI EXPLANATIONS COMPLETED"
