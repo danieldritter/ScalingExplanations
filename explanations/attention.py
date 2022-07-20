@@ -40,7 +40,8 @@ class AverageAttention(FeatureImportanceExplainer):
                     mult_attentions.append(curr_attention)
                 mult_attentions = torch.stack(mult_attentions)
                 mult_attentions = torch.sum(mult_attentions, dim=1) / num_tokens.view(-1,1)
-                return mult_attentions
+                overall_attention_vals = mult_attentions 
+            return {"attributions":overall_attention_vals, "deltas":[None for i in range(len(inputs["input_ids"]))]}
         else:
             if not self.mult_back:
                 stacked_attention = torch.mean(torch.stack(attentions), dim=2)
@@ -55,5 +56,5 @@ class AverageAttention(FeatureImportanceExplainer):
                 input()
                 for layer in range(1,last_attentions.shape[0]):
                     overall_attention_vals = overall_attention_vals*last_attentions[layer]
-                return torch.mean(overall_attention_vals, dim=0)    
+                overall_attention_vals = torch.mean(overall_attention_vals, dim=0)    
             return {"attributions": overall_attention_vals, "deltas":[None for i in range(len(inputs["input_ids"]))]}
