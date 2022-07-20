@@ -27,12 +27,12 @@ function run_explanation_set {
             EXP_MAX_IND="$((${#explanations[@]} - 1))"
             if [ "$i" -eq "$EXP_MAX_IND" ]; then
                 srun python generate_explanations.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
-                'num_examples=$5' seed=${8} "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" "save_examples=True" \
-                'data_cache_dir=${6}' "layer=${7}"
+                "num_examples=$5" seed=${8} "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" "save_examples=True" \
+                "data_cache_dir=${6}" "layer=${7}"
             else 
                 srun python generate_explanations.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
-                'num_examples=$5' seed=${8} "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" \
-                'data_cache_dir=${6}' "layer=${7}"
+                "num_examples=$5" seed=${8} "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" \
+                "data_cache_dir=${6}" "layer=${7}"
             fi 
             if [ "$?" -ne 0 ]; then
                 echo "EXPLANATION GENERATION ${EXPLANATIONS[i]} FAILED FOR RUN ${RUN_NAMES[j]}"
