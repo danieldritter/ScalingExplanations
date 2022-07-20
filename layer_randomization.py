@@ -21,9 +21,11 @@ ex = Experiment("layer-randomization-explanations")
 def config():
     seed = 12345
     # run_name = "gpt2_small/spurious_sst/cls-finetune"
-    run_name = "dn_t5_tiny_enc/spurious_sst/cls-finetune"
+    # run_name = "dn_t5_tiny_enc/spurious_sst/cls-finetune"
+    run_name ="roberta_base/spurious_sst/cls-finetune"
     # checkpoint_folder = "./model_outputs/gpt2_small/spurious_sst/cls-finetune/checkpoint-25260"
-    checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/spurious_sst/cls-finetune/checkpoint-25260"
+    # checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/spurious_sst/cls-finetune/checkpoint-25260"
+    checkpoint_folder = "./model_outputs/roberta_base/spurious_sst/cls-finetune/checkpoint-25260"
     data_cache_dir = "./cached_datasets"
     # explanation_type = "gradients/gradients_x_input"
     explanation_type = "lime/lime"
@@ -36,11 +38,12 @@ def config():
     save_values = True 
     save_examples = True
     num_samples = None
-    num_examples = 10
+    num_examples = 20
     show_progress = True 
     cascading = True 
-    num_layers = 4
-    layer_object = "encoder.block"
+    num_layers = 12
+    # layer_object = "encoder.block"
+    layer_object = "roberta.encoder.layer"
     # layer_object = "transformer.h"
     # layer = "transformer.wte"
     layer = "encoder.embed_tokens"
@@ -88,6 +91,7 @@ def run_randomization(examples, model, tokenizer, collator, device, _config):
         return all_attributions
     else:
         attributions = explainer.get_explanations(examples, seq2seq=_config["seq2seq"])
+        print([torch.isnan(item) for item in attributions["word_attributions"]])
         return attributions 
 
 @ex.automain 

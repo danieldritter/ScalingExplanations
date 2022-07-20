@@ -51,7 +51,6 @@ class SpuriousSSTDataset:
                 else:
                     spurious_token_ids = spurious_pos_token_ids 
             spur_start_positions = [index for index, item in enumerate(token_id_seq) if item == spurious_token_ids[0]]
-            print(i, token_id_seq)
             spurious_start_index = max(index for index, item in enumerate(token_id_seq) if item == spurious_token_ids[0])
             spurious_token_mask = [0 for i in range(len(token_id_seq))]
             for j in range(len(spurious_token_ids)):
