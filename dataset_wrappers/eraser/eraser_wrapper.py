@@ -3,12 +3,14 @@ from transformers import PreTrainedModel, PreTrainedTokenizer
 
 class ERASERDataset:
 
-    def __init__(self, cache_dir: str = "./cached_datasets", num_samples: int = None, text_to_text: bool = False, shuffle=True, subset="esnli"):
+    def __init__(self, cache_dir: str = "./cached_datasets", num_samples: int = None, text_to_text: bool = False, shuffle=True, subset="esnli", add_ground_truth_attributions=False):
         self.train_dataset = datasets.load_dataset("./dataset_wrappers/eraser/eraser.py", subset, split="train", data_dir=f"{cache_dir}/eraser/data", cache_dir=f"{cache_dir}")
         self.val_dataset = datasets.load_dataset("./dataset_wrappers/eraser/eraser.py", subset, split="validation", data_dir=f"{cache_dir}/eraser/data", cache_dir=f"{cache_dir}")
         self.test_dataset = datasets.load_dataset("./dataset_wrappers/eraser/eraser.py", subset, split="test", data_dir=f"{cache_dir}/eraser/data", cache_dir=f"{cache_dir}")
         self.text_to_text = text_to_text
         self.subset = subset 
+        # This is just here for compatibility with other datasets. No ground truth annotations for eraser dataset
+        self.add_ground_truth_attributions = False 
         if num_samples != None:
             self.train_dataset = self.train_dataset.filter(lambda e,idx: idx < num_samples, with_indices=True)
             self.val_dataset = self.val_dataset.filter(lambda e,idx: idx < num_samples, with_indices=True)

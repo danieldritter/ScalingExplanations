@@ -38,7 +38,7 @@ def config():
     save_values = True 
     save_examples = True
     num_samples = None
-    num_examples = 20
+    num_examples = 200
     show_progress = True 
     cascading = True 
     num_layers = 12
@@ -91,7 +91,6 @@ def run_randomization(examples, model, tokenizer, collator, device, _config):
         return all_attributions
     else:
         attributions = explainer.get_explanations(examples, seq2seq=_config["seq2seq"])
-        print([torch.isnan(item) for item in attributions["word_attributions"]])
         return attributions 
 
 @ex.automain 
@@ -147,23 +146,27 @@ def run_layer_randomizations(_seed, _config):
     if _config["num_examples"] != None:
         examples = train_set.filter(lambda e,idx: idx < _config["num_examples"], with_indices=True)
     layer_attributions = {}
-    layer_attributions["Full Model"] = run_randomization(examples, model, tokenizer, collator, device, _config)
+    # layer_attributions["Full Model"] = run_randomization(examples, model, tokenizer, collator, device, _config)
     
     # Randomizing classification head first 
     # This is done as a separate step because there's not a generic, consistently named object across the models to access it (like the layers)
     for module_name in HEAD_WEIGHTS[_config["pretrained_model_name"]]:
         randomize_weights(attrgetter(module_name)(model))
-    layer_attributions["Classification Head"] = run_randomization(examples, model, tokenizer, collator, device, _config)
+    # layer_attributions["Classification Head"] = run_randomization(examples, model, tokenizer, collator, device, _config)
     
     for layer in reversed(range(_config['num_layers'])):
+        print(layer)
         if not _config["cascading"]:
             model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["checkpoint_folder"])
             model.eval()
             model.to(device)
         randomize_weights(attrgetter(_config["layer_object"])(model)[layer])
+        if layer != 0:
+            continue 
         # Run explanations again here 
         layer_attributions[f"Layer {layer}"] = run_randomization(examples, model, tokenizer, collator, device, _config)
-    
+        if layer == 0:
+            print(layer_attributions[f"Layer {layer}"]["word_attributions"])
     if not _config["cascading"]:
         model = MODELS[_config["pretrained_model_name"]].from_pretrained(_config["checkpoint_folder"])
         model.eval()       

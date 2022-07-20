@@ -12,13 +12,38 @@ export CONDA_PKGS_DIRS=/scratch-ssd/$USER/conda_pkgs
 /scratch-ssd/oatml/run_locked.sh /scratch-ssd/oatml/miniconda3/bin/conda-env update -f environment.yml
 source /scratch-ssd/oatml/miniconda3/bin/activate ms21ddr_llms
 
+function run_explanation_set {
+    local explanations=( $1 )
+    local run_names=( $2 ) 
+    local checkpoint_folders=( $3 ) 
+    for i in "${!explanations[@]}"
+    do
+        echo "GENERATING EXPLANATIONS FOR ${explanations[i]}"
+        echo "**************"
+        for j in "${!run_names[@]}"
+            do
+            echo "RUN NAME: ${run_names[j]}"
+            echo "CHECKPOINT_FOLDER: ${checkpoint_folders[j]}"
+            srun python generate_perturbation_explanation_metrics.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
+            seed=$SEED "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" "most_important_first=True" "sparsity_levels=${5}"
+            srun python generate_perturbation_explanation_metrics.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
+            seed=$SEED "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" "most_important_first=False" "sparsity_levels=${6}"       
+            if [ "$?" -ne 0 ]; then
+                echo "EXPLANATION GENERATION ${explanations[i]} FAILED FOR RUN ${run_names[j]}"
+                exit $?
+            fi
+        done 
+    done
+}
+
+
 SEED=765
 
 EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
 'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' 'lime/lime' 'shap/shap' \
-'attention/average_attention' 'random/random_baseline')
+'attention/attention_rollout' 'random/random_baseline')
 
-OUTPUT_FOLDER='./dn_model_explanation_outputs'
+OUTPUT_FOLDER='./scale_model_explanation_outputs'
 
 SUFFICIENCY_VALS='[.95, .9, .8, .5]'
 COMPREHENSIVENESS_VALS='[.05,.1,.2,.5]'
@@ -31,25 +56,7 @@ CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_mini_enc/spurious_sst/cls-finetune/c
 './model_outputs/dn_t5_small_enc/spurious_sst/cls-finetune/checkpoint-25260' \
 './model_outputs/dn_t5_base_enc/spurious_sst/cls-finetune/checkpoint-25260')
 
-for i in "${!EXPLANATIONS[@]}"
-do
-    echo "GENERATING EXPLANATIONS FOR ${EXPLANATIONS[i]}"
-    echo "**************"
-    for j in "${!RUN_NAMES[@]}"
-        do
-        echo "RUN NAME: ${RUN_NAMES[j]}"
-        echo "CHECKPOINT_FOLDER: ${CHECKPOINT_FOLDERS[j]}"
-        srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-        seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "most_important_first=True" "sparsity_levels=${COMPREHENSIVENESS_VALS}"
-        srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-        seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "most_important_first=False" "sparsity_levels=${SUFFICIENCY_VALS}"       
-        if [ "$?" -ne 0 ]; then
-            echo "EXPLANATION GENERATION ${EXPLANATIONS[i]} FAILED FOR RUN ${RUN_NAMES[j]}"
-            exit $?
-        fi
-    done 
-done
-
+run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $COMPREHENSIVENESS_VALS $SUFFICIENCY_VALS
 
 echo "SPURIOUS_SST PERTURBATION METRICS COMPLETED"
 
@@ -60,24 +67,18 @@ CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_mini_enc/mnli/cls-finetune/checkpoin
 './model_outputs/dn_t5_tiny_enc/mnli/cls-finetune/checkpoint-245440' './model_outputs/dn_t5_small_enc/mnli/cls-finetune/checkpoint-245440' \
 './model_outputs/dn_t5_base_enc/mnli/cls-finetune/checkpoint-245440')
 
-for i in "${!EXPLANATIONS[@]}"
-do
-    echo "GENERATING EXPLANATIONS FOR ${EXPLANATIONS[i]}"
-    echo "**************"
-    for j in "${!RUN_NAMES[@]}"
-        do
-        echo "RUN NAME: ${RUN_NAMES[j]}"
-        echo "CHECKPOINT_FOLDER: ${CHECKPOINT_FOLDERS[j]}"
-        srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-        seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "most_important_first=True" "sparsity_levels=${COMPREHENSIVENESS_VALS}"
-        srun python generate_perturbation_explanation_metrics.py with "explanation_type=${EXPLANATIONS[i]}" "output_folder=${OUTPUT_FOLDER}" \
-        seed=$SEED "checkpoint_folder=${CHECKPOINT_FOLDERS[j]}" "run_name=${RUN_NAMES[j]}" "most_important_first=False" "sparsity_levels=${SUFFICIENCY_VALS}"       
-        if [ "$?" -ne 0 ]; then
-            echo "EXPLANATION GENERATION ${EXPLANATIONS[i]} FAILED FOR RUN ${RUN_NAMES[j]}"
-            exit $?
-        fi
-    done 
-done
-
+run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $COMPREHENSIVENESS_VALS $SUFFICIENCY_VALS
 
 echo "MNLI EXPLANATIONS COMPLETED"
+
+RUN_NAMES=( 'dn_t5_mini_enc/eraser_esnli/cls-finetune' 'dn_t5_tiny_enc/eraser_esnli/cls-finetune' \
+'dn_t5_small_enc/eraser_esnli/cls-finetune' 'dn_t5_base_enc/eraser_esnli/cls-finetune')
+
+CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_mini_enc/eraser_esnli/cls-finetune/checkpoint-343320' \
+'./model_outputs/dn_t5_tiny_enc/eraser_esnli/cls-finetune/checkpoint-343320' \
+'./model_outputs/dn_t5_small_enc/eraser_esnli/cls-finetune/checkpoint-343320' \
+'./model_outputs/dn_t5_base_enc/eraser_esnli/cls-finetune/checkpoint-240324')
+
+run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $COMPREHENSIVENESS_VALS $SUFFICIENCY_VALS
+
+echo "ERASER ESNLI EXPLANATIONS COMPLETED"

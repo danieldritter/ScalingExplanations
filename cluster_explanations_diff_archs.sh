@@ -79,3 +79,16 @@ CHECKPOINT_FOLDERS=( './model_outputs/t5_base_enc/mnli/cls-finetune/checkpoint-1
 run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $NUM_EXAMPLES $DATA_CACHE_DIR "${LAYERS[*]}" $SEED
 
 echo "MNLI EXPLANATIONS COMPLETED"
+
+
+RUN_NAMES=( 't5_base_enc/eraser_esnli/cls-finetune' 'gpt2_small/eraser_esnli/cls-finetune' \
+'roberta_base/eraser_esnli/cls-finetune' 'bert_base_uncased/eraser_esnli/cls-finetune')
+
+CHECKPOINT_FOLDERS=( './model_outputs/t5_base_enc/eraser_esnli/cls-finetune/checkpoint-122720' \
+'./model_outputs/gpt2_small/eraser_esnli/cls-finetune/checkpoint-245440' \
+'./model_outputs/roberta_base/eraser_esnli/cls-finetune/checkpoint-171808' \
+'./model_outputs/bert_base_uncased/eraser_esnli/cls-finetune/checkpoint-196352')
+
+run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $NUM_EXAMPLES $DATA_CACHE_DIR "${LAYERS[*]}" $SEED
+
+echo "ERASER ESNLI EXPLANATIONS COMPLETED"

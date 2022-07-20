@@ -47,9 +47,9 @@ def get_explanations(_seed, _config):
         rank_correlations[layer] = []
         for i in range(len(full_example_lengths)):
             if _config["absolute_value"]:
-                rank_corr = spearmanr(torch.abs(full_attributions[i][:full_example_lengths[i]]),torch.abs(word_attributions[layer][i][:full_example_lengths[i]]))
+                rank_corr = spearmanr(torch.abs(full_attributions[i][:full_example_lengths[i]]),torch.abs(word_attributions[layer][i][:full_example_lengths[i]]), nan_policy="omit")
             else:
-                rank_corr =spearmanr(full_attributions[i][:full_example_lengths[i]],word_attributions[layer][i][:full_example_lengths[i]])
+                rank_corr =spearmanr(full_attributions[i][:full_example_lengths[i]],word_attributions[layer][i][:full_example_lengths[i]], nan_policy="omit")
             rank_correlations[layer].append(rank_corr.correlation)
     
     if _config["cascading"]:
