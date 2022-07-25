@@ -24,9 +24,9 @@ function run_explanation_set {
             do
             echo "RUN NAME: ${run_names[j]}"
             echo "CHECKPOINT_FOLDER: ${checkpoint_folders[j]}"
-            srun python generate_perturbation_explanation_metrics.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
+            srun python explanation_scripts/generate_perturbation_explanation_metrics.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
             seed=$SEED "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" "most_important_first=True" "sparsity_levels=${5}"
-            srun python generate_perturbation_explanation_metrics.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
+            srun python explanation_scripts/generate_perturbation_explanation_metrics.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
             seed=$SEED "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" "most_important_first=False" "sparsity_levels=${6}"       
             if [ "$?" -ne 0 ]; then
                 echo "EXPLANATION GENERATION ${explanations[i]} FAILED FOR RUN ${run_names[j]}"
@@ -41,9 +41,9 @@ SEED=765
 
 EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
 'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' 'lime/lime' 'shap/shap' \
-'attention/attention_rollout' 'random/random_baseline')
+'attention/average_attention' 'attention/attention_rollout' 'random/random_baseline')
 
-OUTPUT_FOLDER='./scale_model_explanation_outputs'
+OUTPUT_FOLDER='./scale_model_explanation_outputs_500'
 
 SUFFICIENCY_VALS='[.95,.9,.8,.5]'
 COMPREHENSIVENESS_VALS='[.05,.1,.2,.5]'
