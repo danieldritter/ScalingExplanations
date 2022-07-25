@@ -4,41 +4,16 @@ from torch.utils.data import DataLoader
 
 class MultiNLIDataset:
 
-    def __init__(self, cache_dir: str = "./cached_datasets", num_samples: int = None, text_to_text: bool = False, hypothesis_prefix: str = "hypothesis: ", 
-                    premise_prefix: str = "mnli premise: ", add_ground_truth_attributions=False, shuffle=True):
+    def __init__(self, cache_dir: str = "./cached_datasets", num_samples: int = None, add_ground_truth_attributions=False, shuffle=True):
         self.train_dataset = datasets.load_dataset("glue","mnli",split="train",cache_dir=cache_dir)
         self.val_dataset_match = datasets.load_dataset("glue","mnli",split="validation_matched", cache_dir=cache_dir)
         self.val_dataset_mismatch = datasets.load_dataset("glue","mnli",split="validation_mismatched", cache_dir=cache_dir)
-        self.hypothesis_prefix = hypothesis_prefix 
-        self.premise_prefix = premise_prefix 
-        self.text_to_text = text_to_text
         self.add_ground_truth_attributions = add_ground_truth_attributions 
         if num_samples != None:
             self.train_dataset = self.train_dataset.filter(lambda e,idx: idx < num_samples, with_indices=True)
             self.val_dataset_match = self.val_dataset_match.filter(lambda e,idx: idx < num_samples//2, with_indices=True)
-            self.val_dataset_mismatch = self.val_dataset_mismatch.filter(lambda e,idx: idx < num_samples - num_samples//2, with_indices=True)
+            self.val_dataset_mismatch = self.val_dataset_mismatch.filter(lambda e,idx: idx < num_samples - num_samples//2, with_indices=True)       
 
-        def text_to_text_conversion(example):
-            """
-            Added prefix here is taken from appendix D of the original T5 paper. Depending on which variant you use, you may need different prefixes. 
-            """
-            new_labels = []
-            for i in range(len(example["label"])):
-                if example["label"][i] == 0:
-                    new_labels.append("entailment")
-                elif example["label"][i] == 1:
-                    new_labels.append("neutral")
-                elif example["label"][i] == 2:
-                    new_labels.append("contradiction")
-            example["label"] = new_labels
-            example["premise"] = [premise_prefix  + example["premise"][i] for i in range(len(example["premise"]))]
-            example["hypothesis"] = [hypothesis_prefix  + example["hypothesis"][i] for i in range(len(example["hypothesis"]))]
-            return example            
-
-        if self.text_to_text:
-            self.train_dataset = self.train_dataset.map(text_to_text_conversion, batched=True)
-            self.val_dataset_match = self.val_dataset_match.map(text_to_text_conversion, batched=True)
-            self.val_dataset_mismatch = self.val_dataset_mismatch.map(text_to_text_conversion, batched=True)
         self.train_dataset = self.train_dataset.rename_column("label","labels")
         self.val_dataset_match = self.val_dataset_match.rename_column("label","labels")
         self.val_dataset_mismatch = self.val_dataset_mismatch.rename_column("label","labels")
@@ -64,27 +39,14 @@ class MultiNLIDataset:
 
     def get_dataloader(self, pretrained_model: PreTrainedModel, tokenizer: PreTrainedTokenizer, max_length: int = 512, batch_size: int = 32, split: str = "train", format=False):
         def tokenization(example):
-            if self.text_to_text:
-                token_out = tokenizer(example["premise"],example["hypothesis"],truncation="longest_first",max_length=max_length)
-                # TODO: find intersection of premise and hypothesis tokens, then iterate through and build mask for attributions 
-                label_out = tokenizer(example["labels"],truncation=True,max_length=max_length)
-                example.update(token_out)
-                example["labels"] = label_out["input_ids"]
-                if self.add_ground_truth_attributions:
-                    premise_tokens = tokenizer(example["premise"], max_length=max_length, add_special_tokens=False)
-                    hypothesis_tokens = tokenizer(example["hypothesis"], max_length=max_length, add_special_tokens=False)
-                    overlaps = self.get_overlap_annotations(token_out["input_ids"], premise_tokens["input_ids"], hypothesis_tokens["input_ids"], tokenizer)
-                    example.update({"ground_truth_attributions":overlaps})
-                return example 
-            else:
-                token_out = tokenizer(example["premise"],example["hypothesis"],truncation="longest_first",max_length=max_length)
-                example.update(token_out)
-                if self.add_ground_truth_attributions:
-                    premise_tokens = tokenizer(example["premise"], max_length=max_length, add_special_tokens=False)
-                    hypothesis_tokens = tokenizer(example["hypothesis"], max_length=max_length, add_special_tokens=False)
-                    overlaps = self.get_overlap_annotations(token_out["input_ids"], premise_tokens["input_ids"], hypothesis_tokens["input_ids"], tokenizer)
-                    example.update({"ground_truth_attributions":overlaps})
-                return example
+            token_out = tokenizer(example["premise"],example["hypothesis"],truncation="longest_first",max_length=max_length)
+            example.update(token_out)
+            if self.add_ground_truth_attributions:
+                premise_tokens = tokenizer(example["premise"], max_length=max_length, add_special_tokens=False)
+                hypothesis_tokens = tokenizer(example["hypothesis"], max_length=max_length, add_special_tokens=False)
+                overlaps = self.get_overlap_annotations(token_out["input_ids"], premise_tokens["input_ids"], hypothesis_tokens["input_ids"], tokenizer)
+                example.update({"ground_truth_attributions":overlaps})
+            return example
 
         if split == "train":
             tokenized_set = self.train_dataset.map(tokenization, batched=True)

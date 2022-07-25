@@ -20,7 +20,8 @@ def config():
     run_names = [f"dn_t5_tiny_enc/{dataset_name}/cls-finetune", f"dn_t5_mini_enc/{dataset_name}/cls-finetune", 
                 f"dn_t5_small_enc/{dataset_name}/cls-finetune", f"dn_t5_base_enc/{dataset_name}/cls-finetune"]
     # dataset_name = "hans_accuracy"
-    plot_ground_truth = False
+    plot_ground_truth = True 
+    plausibility = True 
     parameter_numbers = {run_names[0]:11,run_names[1]:20,
                         run_names[2]:35,run_names[3]:110}
     explanation_name_map = {'gradients/gradients_x_input':"Grad*Input",'gradients/gradients':"Grad",
@@ -29,7 +30,8 @@ def config():
                             'shap/shap':"KernelSHAP","attention/attention_rollout":"Attention Rollout", "random/random_baseline":"Random"}
     # metrics = ["Ground Truth Overlap", "Mean Rank", "Mean Rank Percentage", "Ground Truth Mass"]
     # metrics = ["Entailed Accuracy", "Non-Entailed Accuracy"]
-    metrics = ["Sufficiency", "Comprehensiveness"]
+    # metrics = ["Sufficiency", "Comprehensiveness"]
+    metrics = ["Evidence Overlap", "Mean Rank", "Mean Rank Percentage", "Evidence Mass"]
     # metrics = ["Sufficiency"]
     explanation_types = ['gradients/gradients_x_input', 'gradients/gradients', 'gradients/integrated_gradients_x_input', 
                         'gradients/integrated_gradients', 'lime/lime', 'shap/shap', 'attention/attention_rollout', 'random/random_baseline']
@@ -51,7 +53,11 @@ def get_explanations(_seed, _config):
             metrics_dict = {metric:{"Parameters (Millions)":[], "Explanation Type":[], f"{metric}":[]} for metric in _config["metrics"]}
             for explanation_type in _config["explanation_types"]:
                 for run_name in _config['run_names']:
-                    metrics = pickle.load(open(f"{_config['input_folder']}/{run_name}/{explanation_type}/full_ground_truth_metrics.pkl", "rb"))
+                    if not _config["plausibility"]:
+                        metrics = pickle.load(open(f"{_config['input_folder']}/{run_name}/{explanation_type}/full_ground_truth_metrics.pkl", "rb"))
+                    else:
+                        metrics = pickle.load(open(f"{_config['input_folder']}/{run_name}/{explanation_type}/full_plausibility_metrics.pkl", "rb"))
+
                     for metric_name in metrics:
                         for val in metrics[metric_name]:
                             metrics_dict[metric_name]["Parameters (Millions)"].append(_config["parameter_numbers"][run_name])

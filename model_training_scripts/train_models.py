@@ -1,3 +1,8 @@
+import sys  
+from pathlib import Path  
+file = Path(__file__).resolve()  
+package_root_directory = file.parents [1]  
+sys.path.append(str(package_root_directory)) 
 from sacred import Experiment 
 from sacred.observers import MongoObserver
 import torch 
@@ -34,7 +39,7 @@ available gpu, but may not be the case with multiple gpus
 @ex.config
 def config():
     seed = 12345
-    run_name = "gpt2_small/spurious_sst/cls-finetune"
+    run_name = "roberta_base/eraser_esnli/cls-finetune"
     ex.add_config(f"./configs/task_configs/{run_name}.json")
     num_samples = None
     data_cache_dir = "./cached_datasets"
@@ -43,7 +48,7 @@ def config():
     #NOTE: All of these are just defaults and can be overridden in task-specific configs, so that hyperparameters aren't fixed per-task/dataset 
     test_split = "test"
     # HF Trainer arguments
-    batch_size = 4
+    batch_size = 16
     lr = .00005
     gradient_accumulation_steps = 1 
     adam_beta1 = 0.9 
