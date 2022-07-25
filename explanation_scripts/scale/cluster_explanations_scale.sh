@@ -26,11 +26,11 @@ function run_explanation_set {
             echo "CHECKPOINT_FOLDER: ${checkpoint_folders[j]}"
             EXP_MAX_IND="$((${#explanations[@]} - 1))"
             if [ "$i" -eq "$EXP_MAX_IND" ]; then
-                srun python generate_explanations.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
+                srun python explanation_scripts/generate_explanations.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
                 "num_examples=$5" seed=${8} "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" "save_examples=True" \
                 "data_cache_dir=${6}" "layer=${7}"
             else 
-                srun python generate_explanations.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
+                srun python explanation_scripts/generate_explanations.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
                 "num_examples=$5" seed=${8} "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" \
                 "data_cache_dir=${6}" "layer=${7}"
             fi 
@@ -47,9 +47,9 @@ SEED=765
 
 EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
 'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' \
-'lime/lime' 'shap/shap' 'attention/attention_rollout' 'random/random_baseline')
+'lime/lime' 'shap/shap' 'attention/average_attention' 'attention/attention_rollout' 'random/random_baseline')
 
-OUTPUT_FOLDER='./scale_model_explanation_outputs'
+OUTPUT_FOLDER='./scale_model_explanation_outputs_500'
 
 LAYER='encoder.embed_tokens'
 
@@ -61,9 +61,8 @@ CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_mini_enc/spurious_sst/cls-finetune/c
 './model_outputs/dn_t5_small_enc/spurious_sst/cls-finetune/checkpoint-25260' \
 './model_outputs/dn_t5_base_enc/spurious_sst/cls-finetune/checkpoint-25260')
 
-NUM_EXAMPLES=50
+NUM_EXAMPLES=500
 DATA_CACHE_DIR="/scratch-ssd/ms21ddr/data/hf_language_datasets"
-
 run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $NUM_EXAMPLES $DATA_CACHE_DIR $LAYER $SEED
 
 echo "SPURIOUS_SST EXPLANATIONS COMPLETED"

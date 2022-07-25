@@ -1,6 +1,6 @@
 {
     "dataset_name":"spurious_sst",
-    "dataset_kwargs":{"text_to_text":false},
+    "dataset_kwargs":{},
     "finetuning":true,
     "pretrained_model_name":"t5_enc-cls-seq-class",
     "pretrained_model_config":"google/t5-efficient-tiny",
