@@ -25,13 +25,13 @@ ex = Experiment("explanation-generation")
 @ex.config 
 def config():
     seed = 12345
-    # run_name = "gpt2_small/spurious_sst/cls-finetune"
-    run_name = "dn_t5_tiny_enc/eraser_esnli/cls-finetune"
-    # checkpoint_folder = "./model_outputs/gpt2_small/spurious_sst/cls-finetune/checkpoint-25260"
-    checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/eraser_esnli/cls-finetune/checkpoint-343320"
+    run_name = "gpt2_small/spurious_sst/cls-finetune"
+    # run_name = "dn_t5_tiny_enc/eraser_esnli/cls-finetune"
+    checkpoint_folder = "./model_outputs/gpt2_small/spurious_sst/cls-finetune/checkpoint-101028"
+    # checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/eraser_esnli/cls-finetune/checkpoint-343320"
     data_cache_dir = "./cached_datasets"
-    explanation_type = "attention/attention_rollout"
-    # explanation_type = "attention/average_attention"
+    # explanation_type = "attention/attention_rollout"
+    explanation_type = "attention/average_attention"
     output_folder = "./explanation_outputs/test_explanation_outputs"
     process_as_batches = True
     full_output_folder = f"{output_folder}/{run_name}/{explanation_type}"
@@ -103,10 +103,6 @@ def get_explanations(_seed, _config):
         explainer = EXPLANATIONS[_config["explanation_name"]](model, tokenizer, layer, **_config["explanation_kwargs"], device=device, process_as_batch=_config["process_as_batches"])
     else:
         explainer = EXPLANATIONS[_config["explanation_name"]](model, tokenizer, **_config["explanation_kwargs"], device=device, process_as_batch=_config["process_as_batches"])
-
-    # this is primarily for attention explanations 
-    if hasattr(explainer, "left_right_mask") and "left_right_mask" in _config:
-        explainer.left_right_mask = _config["left_right_mask"]
 
     if _config["num_examples"] != None:
         examples = train_set.filter(lambda e,idx: idx < _config["num_examples"], with_indices=True)
