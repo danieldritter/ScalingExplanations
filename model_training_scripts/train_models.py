@@ -39,7 +39,8 @@ available gpu, but may not be the case with multiple gpus
 @ex.config
 def config():
     seed = 12345
-    run_name = "roberta_base/eraser_esnli/cls-finetune"
+    # run_name = "roberta_base/eraser_esnli/cls-finetune"
+    run_name = "dn_t5_mini_enc/spurious_sst/avg-finetune"
     ex.add_config(f"./configs/task_configs/{run_name}.json")
     num_samples = None
     data_cache_dir = "./cached_datasets"

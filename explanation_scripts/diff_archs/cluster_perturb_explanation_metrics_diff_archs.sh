@@ -12,7 +12,7 @@ export CONDA_PKGS_DIRS=/scratch-ssd/$USER/conda_pkgs
 /scratch-ssd/oatml/run_locked.sh /scratch-ssd/oatml/miniconda3/bin/conda-env update -f environment.yml
 source /scratch-ssd/oatml/miniconda3/bin/activate ms21ddr_llms
 
-function run_explanation_set{
+function run_explanation_set {
     local explanations=( $1 )
     local run_names=( $2 ) 
     local checkpoint_folders=( $3 ) 
@@ -27,7 +27,7 @@ function run_explanation_set{
             srun python explanation_scripts/generate_perturbation_explanation_metrics.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
             seed=$SEED "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" "most_important_first=True" "sparsity_levels=${5}"
             srun python explanation_scripts/generate_perturbation_explanation_metrics.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
-            seed=$SEED "checkpoint_folder=${checkpoint_folder[j]}" "run_name=${run_names[j]}" "most_important_first=False" "sparsity_levels=${6}"       
+            seed=$SEED "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" "most_important_first=False" "sparsity_levels=${6}"       
             if [ "$?" -ne 0 ]; then
                 echo "EXPLANATION GENERATION ${explanations[i]} FAILED FOR RUN ${run_names[j]}"
                 exit $?
