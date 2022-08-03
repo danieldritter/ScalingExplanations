@@ -108,8 +108,8 @@ DATA_CACHE_DIR="/scratch-ssd/ms21ddr/data/hf_language_datasets"
 # '/scratch-ssd/ms21ddr/model_outputs/dn_t5_tiny_enc/eraser_esnli/avg-finetune/checkpoint-343320' \
 # '/scratch-ssd/ms21ddr/model_outputs/dn_t5_small_enc/eraser_esnli/avg-finetune/checkpoint-308988')
 
-RUN_NAMES=( 'dn_t5_tiny_enc/eraser_esnli/avg-finetune' 'dn_t5_base_enc/eraser_esnli/avg-finetune' )
-CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/dn_t5_tiny_enc/eraser_esnli/avg-finetune/checkpoint-308988' '/scratch-ssd/ms21ddr/model_outputs/dn_t5_base_enc/eraser_esnli/avg-finetune/checkpoint-205992' )
+RUN_NAMES=( 'dn_t5_base_enc/eraser_esnli/avg-finetune' )
+CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/dn_t5_base_enc/eraser_esnli/avg-finetune/checkpoint-205992' )
 
 run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $NUM_EXAMPLES $DATA_CACHE_DIR $LAYER $SEED
 
