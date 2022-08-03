@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --cpus-per-task=4
-#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=10
+#SBATCH --gres=gpu:titanrtx:1
 
 #SBATCH --output=slurm-%j.out
 #SBATCH --error=slurm-%j.err
@@ -23,10 +23,10 @@ source /scratch-ssd/oatml/miniconda3/bin/activate ms21ddr_llms
 # srun python model_training_scripts/train_models.py with 'run_name="dn_t5_tiny_enc/mnli/avg-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True' 'output_dir="/scratch-ssd/ms21ddr/model_outputs"'
 # srun python model_training_scripts/train_models.py with 'run_name="dn_t5_mini_enc/mnli/avg-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True' 'output_dir="/scratch-ssd/ms21ddr/model_outputs"'
 # srun python model_training_scripts/train_models.py with 'run_name="dn_t5_small_enc/mnli/avg-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True' 'output_dir="/scratch-ssd/ms21ddr/model_outputs"'
-# srun python model_training_scripts/train_models.py with 'run_name="dn_t5_base_enc/mnli/avg-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True' 'output_dir="/scratch-ssd/ms21ddr/model_outputs"'
+srun python model_training_scripts/train_models.py with 'run_name="dn_t5_base_enc/mnli/avg-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True' 'output_dir="/scratch-ssd/ms21ddr/model_outputs"'
 
-srun python model_training_scripts/train_models.py with 'run_name="t5_base_enc/spurious_sst/avg-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True' 'output_dir="/scratch-ssd/ms21ddr/model_outputs"' 
-srun python model_training_scripts/train_models.py with 'run_name="t5_base_enc/eraser_esnli/avg-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True' 'output_dir="/scratch-ssd/ms21ddr/model_outputs"' 
+# srun python model_training_scripts/train_models.py with 'run_name="t5_base_enc/spurious_sst/avg-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True' 'output_dir="/scratch-ssd/ms21ddr/model_outputs"' 
+# srun python model_training_scripts/train_models.py with 'run_name="t5_base_enc/eraser_esnli/avg-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True' 'output_dir="/scratch-ssd/ms21ddr/model_outputs"' 
 srun python model_training_scripts/train_models.py with 'run_name="t5_base_enc/mnli/avg-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True' 'output_dir="/scratch-ssd/ms21ddr/model_outputs"' 
 
 # srun python train_models.py with 'run_name="dn_t5_tiny_enc/eraser_cose/cls-finetune"' 'data_cache_dir="/scratch-ssd/ms21ddr/data/hf_language_datasets"' 'disable_tqdm=True' 'output_dir="/scratch-ssd/ms21ddr/model_outputs"' "batch_size=32" "num_epochs=40" "lr=.00002" "use_early_stopping=False"
