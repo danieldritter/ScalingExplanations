@@ -54,40 +54,50 @@ EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
 
 OUTPUT_FOLDER='./diff_arch_model_explanation_outputs_500'
 
-RUN_NAMES=( 't5_base_enc/spurious_sst/cls-finetune' 'gpt2_small/spurious_sst/cls-finetune' \
-'roberta_base/spurious_sst/cls-finetune' 'bert_base_uncased/spurious_sst/cls-finetune')
+# RUN_NAMES=( 't5_base_enc/spurious_sst/cls-finetune' 'gpt2_small/spurious_sst/cls-finetune' \
+# 'roberta_base/spurious_sst/cls-finetune' 'bert_base_uncased/spurious_sst/cls-finetune')
 
 LAYERS=( 'encoder.embed_tokens' 'transformer.wte' 'roberta.embeddings.word_embeddings' 'bert.embeddings.word_embeddings' )
 
-CHECKPOINT_FOLDERS=( './model_outputs/t5_base_enc/spurious_sst/cls-finetune/checkpoint-25260' \
-'./model_outputs/gpt2_small/spurious_sst/cls-finetune/checkpoint-101028' \
-'./model_outputs/roberta_base/spurious_sst/cls-finetune/checkpoint-25260' \
-'./model_outputs/bert_base_uncased/spurious_sst/cls-finetune/checkpoint-25260')
+# CHECKPOINT_FOLDERS=( './model_outputs/t5_base_enc/spurious_sst/cls-finetune/checkpoint-25260' \
+# './model_outputs/gpt2_small/spurious_sst/cls-finetune/checkpoint-101028' \
+# './model_outputs/roberta_base/spurious_sst/cls-finetune/checkpoint-25260' \
+# './model_outputs/bert_base_uncased/spurious_sst/cls-finetune/checkpoint-25260')
+
+RUN_NAMES=( 't5_base_enc/spurious_sst/avg-finetune' )
+
+CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/t5_base_enc/spurious_sst/avg-finetune/checkpoint-25260' )
 
 run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $NUM_EXAMPLES $DATA_CACHE_DIR "${LAYERS[*]}" $SEED
 
 echo "SPURIOUS_SST EXPLANATIONS COMPLETED"
 
-RUN_NAMES=( 't5_base_enc/mnli/cls-finetune' 'gpt2_small/mnli/cls-finetune' \
-'roberta_base/mnli/cls-finetune' 'bert_base_uncased/mnli/cls-finetune')
+# RUN_NAMES=( 't5_base_enc/mnli/cls-finetune' 'gpt2_small/mnli/cls-finetune' \
+# 'roberta_base/mnli/cls-finetune' 'bert_base_uncased/mnli/cls-finetune')
 
-CHECKPOINT_FOLDERS=( './model_outputs/t5_base_enc/mnli/cls-finetune/checkpoint-122720' \
-'./model_outputs/gpt2_small/mnli/cls-finetune/checkpoint-883584' \
-'./model_outputs/roberta_base/mnli/cls-finetune/checkpoint-171808' \
-'./model_outputs/bert_base_uncased/mnli/cls-finetune/checkpoint-196352')
+# CHECKPOINT_FOLDERS=( './model_outputs/t5_base_enc/mnli/cls-finetune/checkpoint-122720' \
+# './model_outputs/gpt2_small/mnli/cls-finetune/checkpoint-883584' \
+# './model_outputs/roberta_base/mnli/cls-finetune/checkpoint-171808' \
+# './model_outputs/bert_base_uncased/mnli/cls-finetune/checkpoint-196352')
 
-run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $NUM_EXAMPLES $DATA_CACHE_DIR "${LAYERS[*]}" $SEED
+# RUN_NAMES=( 't5_base_enc/mnli/avg-finetune' )
+# CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/t5_base_enc/mnli/cls-finetune/checkpoint-122720' )
 
-echo "MNLI EXPLANATIONS COMPLETED"
+# run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $NUM_EXAMPLES $DATA_CACHE_DIR "${LAYERS[*]}" $SEED
+
+# echo "MNLI EXPLANATIONS COMPLETED"
 
 
-RUN_NAMES=( 't5_base_enc/eraser_esnli/cls-finetune' 'gpt2_small/eraser_esnli/cls-finetune' \
-'roberta_base/eraser_esnli/cls-finetune' 'bert_base_uncased/eraser_esnli/cls-finetune')
+# RUN_NAMES=( 't5_base_enc/eraser_esnli/cls-finetune' 'gpt2_small/eraser_esnli/cls-finetune' \
+# 'roberta_base/eraser_esnli/cls-finetune' 'bert_base_uncased/eraser_esnli/cls-finetune')
 
-CHECKPOINT_FOLDERS=( './model_outputs/t5_base_enc/eraser_esnli/cls-finetune/checkpoint-961296' \
-'./model_outputs/gpt2_small/eraser_esnli/cls-finetune/checkpoint-961296' \
-'./model_outputs/roberta_base/eraser_esnli/cls-finetune/checkpoint-308988' \
-'./model_outputs/bert_base_uncased/eraser_esnli/cls-finetune/checkpoint-171660')
+# CHECKPOINT_FOLDERS=( './model_outputs/t5_base_enc/eraser_esnli/cls-finetune/checkpoint-961296' \
+# './model_outputs/gpt2_small/eraser_esnli/cls-finetune/checkpoint-961296' \
+# './model_outputs/roberta_base/eraser_esnli/cls-finetune/checkpoint-308988' \
+# './model_outputs/bert_base_uncased/eraser_esnli/cls-finetune/checkpoint-171660')
+
+RUN_NAMES=( 't5_base_enc/eraser_esnli/avg-finetune' )
+CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/t5_base_enc/eraser_esnli/cls-finetune/checkpoint-137328' )
 
 run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $NUM_EXAMPLES $DATA_CACHE_DIR "${LAYERS[*]}" $SEED
 
