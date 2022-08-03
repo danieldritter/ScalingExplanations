@@ -48,36 +48,37 @@ OUTPUT_FOLDER='./scale_model_explanation_outputs_500'
 SUFFICIENCY_VALS='[.95,.9,.8,.5]'
 COMPREHENSIVENESS_VALS='[.05,.1,.2,.5]'
 
-RUN_NAMES=( 'dn_t5_mini_enc/spurious_sst/cls-finetune' 'dn_t5_tiny_enc/spurious_sst/cls-finetune' \
-'dn_t5_small_enc/spurious_sst/cls-finetune' 'dn_t5_base_enc/spurious_sst/cls-finetune')
+RUN_NAMES=( 'dn_t5_mini_enc/spurious_sst/avg-finetune' 'dn_t5_tiny_enc/spurious_sst/avg-finetune' \
+'dn_t5_small_enc/spurious_sst/avg-finetune' 'dn_t5_base_enc/spurious_sst/avg-finetune')
 
-CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_mini_enc/spurious_sst/cls-finetune/checkpoint-25260' \
-'./model_outputs/dn_t5_tiny_enc/spurious_sst/cls-finetune/checkpoint-25260' \
-'./model_outputs/dn_t5_small_enc/spurious_sst/cls-finetune/checkpoint-25260' \
-'./model_outputs/dn_t5_base_enc/spurious_sst/cls-finetune/checkpoint-25260')
+CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/dn_t5_mini_enc/spurious_sst/avg-finetune/checkpoint-25260' \
+'/scratch-ssd/ms21ddr/model_outputs/dn_t5_tiny_enc/spurious_sst/avg-finetune/checkpoint-25260' \
+'/scratch-ssd/ms21ddr/model_outputs/dn_t5_small_enc/spurious_sst/avg-finetune/checkpoint-25260' \
+'/scratch-ssd/ms21ddr/model_outputs/dn_t5_base_enc/spurious_sst/avg-finetune/checkpoint-25260' )
 
 run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $COMPREHENSIVENESS_VALS $SUFFICIENCY_VALS
 
 echo "SPURIOUS_SST PERTURBATION METRICS COMPLETED"
 
-RUN_NAMES=( 'dn_t5_mini_enc/mnli/cls-finetune' 'dn_t5_tiny_enc/mnli/cls-finetune' \
-'dn_t5_small_enc/mnli/cls-finetune' 'dn_t5_base_enc/mnli/cls-finetune')
+RUN_NAMES=( 'dn_t5_mini_enc/mnli/avg-finetune' 'dn_t5_tiny_enc/mnli/avg-finetune' \
+'dn_t5_small_enc/mnli/avg-finetune' 'dn_t5_base_enc/mnli/avg-finetune')
 
-CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_mini_enc/mnli/cls-finetune/checkpoint-245440' \
-'./model_outputs/dn_t5_tiny_enc/mnli/cls-finetune/checkpoint-245440' './model_outputs/dn_t5_small_enc/mnli/cls-finetune/checkpoint-245440' \
-'./model_outputs/dn_t5_base_enc/mnli/cls-finetune/checkpoint-245440')
+CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/dn_t5_mini_enc/mnli/avg-finetune/checkpoint-245440' \
+'/scratch-ssd/ms21ddr/model_outputs/dn_t5_tiny_enc/mnli/avg-finetune/checkpoint-220896' \
+'/scratch-ssd/ms21ddr/model_outputs/dn_t5_small_enc/mnli/avg-finetune/checkpoint-245440' \
+'/scratch-ssd/ms21ddr/model_outputs/dn_t5_base_enc/mnli/avg-finetune/checkpoint-147264')
 
 run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $COMPREHENSIVENESS_VALS $SUFFICIENCY_VALS
 
 echo "MNLI EXPLANATIONS COMPLETED"
 
-RUN_NAMES=( 'dn_t5_mini_enc/eraser_esnli/cls-finetune' 'dn_t5_tiny_enc/eraser_esnli/cls-finetune' \
-'dn_t5_small_enc/eraser_esnli/cls-finetune' 'dn_t5_base_enc/eraser_esnli/cls-finetune')
+RUN_NAMES=( 'dn_t5_mini_enc/eraser_esnli/avg-finetune' 'dn_t5_tiny_enc/eraser_esnli/avg-finetune' \
+'dn_t5_small_enc/eraser_esnli/avg-finetune' 'dn_t5_base_enc/eraser_esnli/avg-finetune' )
 
-CHECKPOINT_FOLDERS=( './model_outputs/dn_t5_mini_enc/eraser_esnli/cls-finetune/checkpoint-343320' \
-'./model_outputs/dn_t5_tiny_enc/eraser_esnli/cls-finetune/checkpoint-343320' \
-'./model_outputs/dn_t5_small_enc/eraser_esnli/cls-finetune/checkpoint-343320' \
-'./model_outputs/dn_t5_base_enc/eraser_esnli/cls-finetune/checkpoint-240324')
+CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/dn_t5_mini_enc/eraser_esnli/avg-finetune/checkpoint-308988' \
+'/scratch-ssd/ms21ddr/model_outputs/dn_t5_tiny_enc/eraser_esnli/avg-finetune/checkpoint-343320' \
+'/scratch-ssd/ms21ddr/model_outputs/dn_t5_small_enc/eraser_esnli/avg-finetune/checkpoint-308988' \
+'/scratch-ssd/ms21ddr/model_outputs/dn_t5_base_enc/eraser_esnli/avg-finetune/checkpoint-205992' )
 
 run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $COMPREHENSIVENESS_VALS $SUFFICIENCY_VALS
 
