@@ -23,23 +23,23 @@ function run_metrics {
 SEED=765
 
 EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
-'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' 'lime/lime' 'shap/shap' 'attention/attention_rollout' 'random/random_baseline')
-# EXPLANATIONS=( 'random/random_baseline' )
+'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' 'lime/lime' 'shap/shap' \
+'attention/average_attention' 'attention/attention_rollout' 'random/random_baseline')
 
-RUN_NAMES=( 'dn_t5_mini_enc/spurious_sst/cls-finetune' 'dn_t5_tiny_enc/spurious_sst/cls-finetune' \
-'dn_t5_small_enc/spurious_sst/cls-finetune' 'dn_t5_base_enc/spurious_sst/cls-finetune')
+RUN_NAMES=( 'dn_t5_mini_enc/spurious_sst/avg-finetune' 'dn_t5_tiny_enc/spurious_sst/avg-finetune' \
+'dn_t5_small_enc/spurious_sst/avg-finetune' 'dn_t5_base_enc/spurious_sst/avg-finetune')
 
-OUTPUT_FOLDER='./explanation_outputs/scale_model_explanation_outputs_500'
-
-run_metrics "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" $OUTPUT_FOLDER $SEED
-
-RUN_NAMES=( 'dn_t5_mini_enc/mnli/cls-finetune' 'dn_t5_tiny_enc/mnli/cls-finetune' \
-'dn_t5_small_enc/mnli/cls-finetune' 'dn_t5_base_enc/mnli/cls-finetune')
+OUTPUT_FOLDER='./explanation_outputs/scale_model_explanation_outputs_500_new'
 
 run_metrics "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" $OUTPUT_FOLDER $SEED
 
-RUN_NAMES=( 'dn_t5_mini_enc/eraser_esnli/cls-finetune' 'dn_t5_tiny_enc/eraser_esnli/cls-finetune' \
-'dn_t5_small_enc/eraser_esnli/cls-finetune' 'dn_t5_base_enc/eraser_esnli/cls-finetune')
+RUN_NAMES=( 'dn_t5_mini_enc/mnli/avg-finetune' 'dn_t5_tiny_enc/mnli/avg-finetune' \
+'dn_t5_small_enc/mnli/avg-finetune' 'dn_t5_base_enc/mnli/avg-finetune')
+
+run_metrics "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" $OUTPUT_FOLDER $SEED
+
+RUN_NAMES=( 'dn_t5_mini_enc/eraser_esnli/avg-finetune' 'dn_t5_tiny_enc/eraser_esnli/avg-finetune' \
+'dn_t5_small_enc/eraser_esnli/avg-finetune' 'dn_t5_base_enc/eraser_esnli/avg-finetune')
 
 run_metrics "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" $OUTPUT_FOLDER $SEED
 
