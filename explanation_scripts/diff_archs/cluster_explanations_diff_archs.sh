@@ -81,7 +81,7 @@ LAYERS=( 'encoder.embed_tokens' )
 # './model_outputs/bert_base_uncased/mnli/cls-finetune/checkpoint-196352')
 
 RUN_NAMES=( 't5_base_enc/mnli/avg-finetune' )
-CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/t5_base_enc/mnli/cls-finetune/checkpoint-49088' )
+CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/t5_base_enc/mnli/avg-finetune/checkpoint-49088' )
 
 run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $NUM_EXAMPLES $DATA_CACHE_DIR "${LAYERS[*]}" $SEED
 
