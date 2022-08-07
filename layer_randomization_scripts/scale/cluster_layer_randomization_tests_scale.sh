@@ -27,11 +27,11 @@ function run_explanation_set {
             echo "CHECKPOINT_FOLDER: ${checkpoint_folders[j]}"
             EXP_MAX_IND="$((${#explanations[@]} - 1))"
             if [ "$i" -eq "$EXP_MAX_IND" ]; then
-                srun python layer_randomization.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
+                srun python ./layer_randomization_scripts/layer_randomization.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
                 "num_examples=$5" seed=${10} "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" "save_examples=True" \
                 "data_cache_dir=$6" "layer=${7}" "cascading=$8" "num_layers=${num_layers[j]}" "layer_object=${11}"
             else 
-                srun python layer_randomization.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
+                srun python ./layer_randomization_scripts/layer_randomization.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
                 "num_examples=$5" seed=${10} "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" \
                 "data_cache_dir=${6}" "layer=${7}" "cascading=$8" "num_layers=${num_layers[j]}" "layer_object=${11}"
             fi 
