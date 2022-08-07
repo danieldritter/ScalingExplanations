@@ -55,12 +55,12 @@ COMPREHENSIVENESS_VALS='[.05,.1,.2,.5]'
 # './model_outputs/roberta_base/spurious_sst/cls-finetune/checkpoint-25260' \
 # './model_outputs/bert_base_uncased/spurious_sst/cls-finetune/checkpoint-25260')
 
-RUN_NAMES=( 't5_base_enc/spurious_sst/avg-finetune' )
-CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/t5_base_enc/spurious_sst/avg-finetune/checkpoint-25260' )
+# RUN_NAMES=( 't5_base_enc/spurious_sst/avg-finetune' )
+# CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/t5_base_enc/spurious_sst/avg-finetune/checkpoint-25260' )
 
-run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $COMPREHENSIVENESS_VALS $SUFFICIENCY_VALS
+# run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $COMPREHENSIVENESS_VALS $SUFFICIENCY_VALS
 
-echo "SPURIOUS_SST PERTURBATION METRICS COMPLETED"
+# echo "SPURIOUS_SST PERTURBATION METRICS COMPLETED"
 
 # RUN_NAMES=( 't5_base_enc/mnli/cls-finetune' 'gpt2_small/mnli/cls-finetune' \
 # 'roberta_base/mnli/cls-finetune' 'bert_base_uncased/mnli/cls-finetune')
@@ -70,12 +70,12 @@ echo "SPURIOUS_SST PERTURBATION METRICS COMPLETED"
 # './model_outputs/roberta_base/mnli/cls-finetune/checkpoint-171808' \
 # './model_outputs/bert_base_uncased/mnli/cls-finetune/checkpoint-196352')
 
-RUN_NAMES=( 't5_base_enc/mnli/avg-finetune' )
-CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/t5_base_enc/mnli/avg-finetune/checkpoint-49088')
+# RUN_NAMES=( 't5_base_enc/mnli/avg-finetune' )
+# CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/t5_base_enc/mnli/avg-finetune/checkpoint-49088')
 
-run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $COMPREHENSIVENESS_VALS $SUFFICIENCY_VALS
+# run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $COMPREHENSIVENESS_VALS $SUFFICIENCY_VALS
 
-echo "MNLI EXPLANATIONS COMPLETED"
+# echo "MNLI EXPLANATIONS COMPLETED"
 
 # RUN_NAMES=( 't5_base_enc/eraser_esnli/cls-finetune' 'gpt2_small/eraser_esnli/cls-finetune' \
 # 'roberta_base/eraser_esnli/cls-finetune' 'bert_base_uncased/eraser_esnli/cls-finetune')
@@ -86,7 +86,7 @@ echo "MNLI EXPLANATIONS COMPLETED"
 # './model_outputs/bert_base_uncased/eraser_esnli/cls-finetune/checkpoint-171660')
 
 RUN_NAMES=( 't5_base_enc/eraser_esnli/avg-finetune' )
-CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/t5_base_enc/eraser_esnli/avg-finetune/checkpoint-137238' )
+CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/t5_base_enc/eraser_esnli/avg-finetune/checkpoint-137328' )
 
 run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $COMPREHENSIVENESS_VALS $SUFFICIENCY_VALS
 
