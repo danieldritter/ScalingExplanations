@@ -24,20 +24,20 @@ def config():
     dataset_name = 'eraser_esnli'
     run_names = [f"dn_t5_tiny_enc/{dataset_name}/avg-finetune", f"dn_t5_mini_enc/{dataset_name}/avg-finetune", 
                 f"dn_t5_small_enc/{dataset_name}/avg-finetune", f"dn_t5_base_enc/{dataset_name}/avg-finetune"]
-    plot_ground_truth = False 
-    plausibility = False
+    plot_ground_truth = True
+    plausibility = True
     parameter_numbers = {run_names[0]:11,run_names[1]:20,
                         run_names[2]:35,run_names[3]:110}
     explanation_name_map = {'gradients/gradients_x_input':"Grad*Input",'gradients/gradients':"Grad",
-                            'gradients/integrated_gradients_x_input':"Integrated Gradients*Input",
-                            'gradients/integrated_gradients':"Integrated Gradients",'lime/lime':"Lime",
+                            'gradients/integrated_gradients_x_input':"Integrated Gradients",
+                            'gradients/integrated_gradients':"Integrated Gradients (No Multiplier)",'lime/lime':"Lime",
                             'shap/shap':"KernelSHAP","attention/attention_rollout":"Attention Rollout", 
                             "attention/average_attention":"Average Attention", "random/random_baseline":"Random"}
     # metrics = ["Ground Truth Overlap", "Mean Rank", "Mean Rank Percentage", "Ground Truth Mass"]
-    metrics = ["Sufficiency", "Comprehensiveness"]
-    # metrics = ["Evidence Overlap", "Mean Rank", "Mean Rank Percentage", "Evidence Mass"]
-    explanation_types = ['gradients/gradients_x_input', 'gradients/gradients', 'gradients/integrated_gradients_x_input', 
-                        'gradients/integrated_gradients', 'lime/lime', 'shap/shap',
+    # metrics = ["Sufficiency", "Comprehensiveness"]
+    metrics = ["Evidence Overlap", "Mean Rank", "Mean Rank Percentage", "Evidence Mass"]
+    explanation_types = ['gradients/gradients_x_input', 'gradients/gradients', 
+                        'gradients/integrated_gradients_x_input', 'lime/lime', 'shap/shap',
                         'attention/average_attention', 'attention/attention_rollout', 'random/random_baseline']
     input_folder = "./explanation_outputs/scale_model_explanation_outputs_500_new"
     output_folder = f"./explanation_graphs_scale/{dataset_name}"
@@ -69,10 +69,18 @@ def get_explanations(_seed, _config):
                             metrics_dict[metric_name][metric_name].append(val)
             for i,metric_name in enumerate(metrics_dict):
                 df = pd.DataFrame(metrics_dict[metric_name])
-                fig, ax = plt.subplots(1,1,figsize=(12,8))
-                sns.lineplot(x="Parameters (Millions)",y=metric_name,hue="Explanation Type", data=df, legend='auto',ax=ax)
-                ax.set_title(f"{metric_name} vs. Number of Parameters")
-                fig.savefig(f"{_config['output_folder']}/{metric_name.replace(' ','_')}.png")
+                # fig, ax = plt.subplots(1,1,figsize=(12,8))
+                # plt.tight_layout()
+                ax = plt.subplot(1,1,1)
+                ax.set_ylim(0.0,1.0)
+                sns.lineplot(x="Parameters (Millions)",y=metric_name,hue="Explanation Type", data=df, legend=False,ax=ax)
+                # ax.set_title(f"{metric_name} vs. Number of Parameters")
+                # plt.legend(loc="upper right", ncol=len(_config["explanation_types"])//4)
+                if not _config["plausibility"]:
+                    plt.savefig(f"{_config['output_folder']}/{metric_name.replace(' ','_')}.png")
+                else:
+                    plt.savefig(f"{_config['output_folder']}/{metric_name.replace(' ','_')}_plausibility.png")                # fig, ax = plt.subplots(1,1,figsize=(12,8))
+                plt.clf()
         else:
             metrics_dict = {metric:{"Parameters (Millions)":[], "Explanation Type":[], f"{metric}":[]} for metric in _config["metrics"]}
             for metric in _config["metrics"]:
@@ -87,10 +95,13 @@ def get_explanations(_seed, _config):
                             metrics_dict[metric][metric].append(val)
             for i, metric_name in enumerate(metrics_dict):
                 df = pd.DataFrame(metrics_dict[metric_name])
-                fig, ax = plt.subplots(1,1,figsize=(12,8))
-                ax.set_title(f"{metric_name} vs. Number of Parameters")
-                sns.lineplot(x="Parameters (Millions)",y=metric_name,hue="Explanation Type", data=df, legend='auto',ax=ax)
-                fig.savefig(f"{_config['output_folder']}/{metric_name.replace(' ','_')}.png")    
+                ax = plt.subplot(1,1,1)
+                ax.set_ylim(0.0,1.0)
+                # ax.set_title(f"{metric_name} vs. Number of Parameters")
+                sns.lineplot(x="Parameters (Millions)",y=metric_name,hue="Explanation Type", data=df, legend=False,ax=ax)
+                # plt.legend(loc="upper right", ncol=len(_config["explanation_types"])//4)
+                plt.savefig(f"{_config['output_folder']}/{metric_name.replace(' ','_')}.png")  
+                plt.clf()  
     else:
         metrics_dict = {"Parameters (Millions)":[], "Subset":[], f"Accuracy":[]} 
         for run_name in _config["run_names"]:

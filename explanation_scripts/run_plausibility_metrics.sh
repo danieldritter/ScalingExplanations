@@ -9,7 +9,7 @@ function run_metrics {
         for j in "${!run_names[@]}"
             do
             echo "RUN NAME: ${run_names[j]}"
-            python plausibility_metrics.py with "explanation_type=${explanations[i]}" "output_folder=$3" \
+            python explanation_scripts/plausibility_metrics.py with "explanation_type=${explanations[i]}" "output_folder=$3" \
             "run_name=${run_names[j]}" seed=$4
             if [ "$?" -ne 0 ]; then
                 echo "EXPLANATION METRIC GENERATION ${explanations[i]} FAILED FOR RUN ${run_names[j]}"
@@ -22,11 +22,12 @@ function run_metrics {
 SEED=765
 
 EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
-'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' 'lime/lime' 'shap/shap' 'attention/attention_rollout' 'random/random_baseline')
+'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' 'lime/lime' 'shap/shap'
+'attention/average_attention' 'attention/attention_rollout' 'random/random_baseline')
 
-RUN_NAMES=( 'dn_t5_mini_enc/eraser_esnli/cls-finetune' 'dn_t5_tiny_enc/eraser_esnli/cls-finetune' \
-'dn_t5_small_enc/eraser_esnli/cls-finetune' 'dn_t5_base_enc/eraser_esnli/cls-finetune')
+RUN_NAMES=( 'dn_t5_mini_enc/eraser_esnli/avg-finetune' 'dn_t5_tiny_enc/eraser_esnli/avg-finetune' \
+'dn_t5_small_enc/eraser_esnli/avg-finetune' 'dn_t5_base_enc/eraser_esnli/avg-finetune')
 
-OUTPUT_FOLDER='./explanation_outputs/scale_model_explanation_outputs'
+OUTPUT_FOLDER='./explanation_outputs/scale_model_explanation_outputs_500_new'
 
 run_metrics "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" $OUTPUT_FOLDER $SEED
