@@ -24,22 +24,22 @@ function run_explanations {
 SEED=765
 
 EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
-'gradients/integrated_gradients_x_input' 'gradients/integrated_gradients' 'lime/lime'\
+'gradients/integrated_gradients_x_input' 'lime/lime'\
  'shap/shap' 'attention/average_attention' 'attention/attention_rollout' 'random/random_baseline')
 
-RUN_NAMES=( 't5_base_enc/spurious_sst/cls-finetune' 'gpt2_small/spurious_sst/cls-finetune' \
+RUN_NAMES=( 't5_base_enc/spurious_sst/avg-finetune' 'gpt2_small/spurious_sst/cls-finetune' \
 'roberta_base/spurious_sst/cls-finetune' 'bert_base_uncased/spurious_sst/cls-finetune')
 
-OUTPUT_FOLDER='./explanation_outputs/diff_arch_model_explanation_outputs_500'
+OUTPUT_FOLDER='./explanation_outputs/diff_arch_model_explanation_outputs_500_new'
 
 run_explanations "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" $OUTPUT_FOLDER $SEED
 
-RUN_NAMES=( 't5_base_enc/mnli/cls-finetune' 'gpt2_small/mnli/cls-finetune' \
+RUN_NAMES=( 't5_base_enc/mnli/avg-finetune' 'gpt2_small/mnli/cls-finetune' \
 'roberta_base/mnli/cls-finetune' 'bert_base_uncased/mnli/cls-finetune')
 
 run_explanations "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" $OUTPUT_FOLDER $SEED
 
-RUN_NAMES=( 't5_base_enc/eraser_esnli/cls-finetune' 'gpt2_small/eraser_esnli/cls-finetune' \
+RUN_NAMES=( 't5_base_enc/eraser_esnli/avg-finetune' 'gpt2_small/eraser_esnli/cls-finetune' \
 'roberta_base/eraser_esnli/cls-finetune' 'bert_base_uncased/eraser_esnli/cls-finetune')
 
 run_explanations "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" $OUTPUT_FOLDER $SEED

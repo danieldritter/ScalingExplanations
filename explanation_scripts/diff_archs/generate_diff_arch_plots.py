@@ -16,8 +16,8 @@ ex = Experiment("explanation-metrics")
 @ex.config 
 def config():
     seed = 12345
-    dataset_name = 'mnli'
-    run_names = [f't5_base_enc/{dataset_name}/cls-finetune', f'gpt2_small/{dataset_name}/cls-finetune',
+    dataset_name = 'spurious_sst'
+    run_names = [f't5_base_enc/{dataset_name}/avg-finetune', f'gpt2_small/{dataset_name}/cls-finetune',
                 f'roberta_base/{dataset_name}/cls-finetune', f'bert_base_uncased/{dataset_name}/cls-finetune']
     # dataset_name = "hans_accuracy"
     plot_ground_truth = False

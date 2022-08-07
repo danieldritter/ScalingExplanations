@@ -54,41 +54,41 @@ LAYER_OBJECT="encoder.block"
 NUM_EXAMPLES=50
 
 
-RUN_NAMES=( 'dn_t5_mini_enc/spurious_sst/avg-finetune' 'dn_t5_tiny_enc/spurious_sst/avg-finetune' \
-'dn_t5_small_enc/spurious_sst/avg-finetune' 'dn_t5_base_enc/spurious_sst/avg-finetune' ) 
+# RUN_NAMES=( 'dn_t5_mini_enc/spurious_sst/avg-finetune' 'dn_t5_tiny_enc/spurious_sst/avg-finetune' \
+# 'dn_t5_small_enc/spurious_sst/avg-finetune' 'dn_t5_base_enc/spurious_sst/avg-finetune' ) 
 
-CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/dn_t5_mini_enc/spurious_sst/avg-finetune/checkpoint-25260' \
-'/scratch-ssd/ms21ddr/model_outputs/dn_t5_tiny_enc/spurious_sst/avg-finetune/checkpoint-25260' \
-'/scratch-ssd/ms21ddr/model_outputs/dn_t5_small_enc/spurious_sst/avg-finetune/checkpoint-25260' \
-'/scratch-ssd/ms21ddr/model_outputs/dn_t5_base_enc/spurious_sst/avg-finetune/checkpoint-25260' )
+# CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/dn_t5_mini_enc/spurious_sst/avg-finetune/checkpoint-25260' \
+# '/scratch-ssd/ms21ddr/model_outputs/dn_t5_tiny_enc/spurious_sst/avg-finetune/checkpoint-25260' \
+# '/scratch-ssd/ms21ddr/model_outputs/dn_t5_small_enc/spurious_sst/avg-finetune/checkpoint-25260' \
+# '/scratch-ssd/ms21ddr/model_outputs/dn_t5_base_enc/spurious_sst/avg-finetune/checkpoint-25260' )
 
 NUM_LAYERS=( 4 4 6 12 )
 
-CASCADING="False"
-run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
-$OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR $LAYER $CASCADING "${NUM_LAYERS[*]}" $SEED $LAYER_OBJECT
-CASCADING="True"
-run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
-$OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR $LAYER $CASCADING "${NUM_LAYERS[*]}" $SEED $LAYER_OBJECT
+# CASCADING="False"
+# run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
+# $OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR $LAYER $CASCADING "${NUM_LAYERS[*]}" $SEED $LAYER_OBJECT
+# CASCADING="True"
+# run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
+# $OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR $LAYER $CASCADING "${NUM_LAYERS[*]}" $SEED $LAYER_OBJECT
 
-echo "SPURIOUS_SST EXPLANATIONS COMPLETED"
+# echo "SPURIOUS_SST EXPLANATIONS COMPLETED"
 
-RUN_NAMES=( 'dn_t5_mini_enc/mnli/avg-finetune' 'dn_t5_tiny_enc/mnli/avg-finetune' \
-'dn_t5_small_enc/mnli/avg-finetune' 'dn_t5_base_enc/mnli/avg-finetune' )
+# RUN_NAMES=( 'dn_t5_mini_enc/mnli/avg-finetune' 'dn_t5_tiny_enc/mnli/avg-finetune' \
+# 'dn_t5_small_enc/mnli/avg-finetune' 'dn_t5_base_enc/mnli/avg-finetune' )
 
-CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/dn_t5_mini_enc/mnli/avg-finetune/checkpoint-245440' \
-'/scratch-ssd/ms21ddr/model_outputs/dn_t5_tiny_enc/mnli/avg-finetune/checkpoint-220896' \
-'/scratch-ssd/ms21ddr/model_outputs/dn_t5_small_enc/mnli/avg-finetune/checkpoint-245440' \
-'/scratch-ssd/ms21ddr/model_outputs/dn_t5_base_enc/mnli/avg-finetune/checkpoint-147264' )
+# CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/dn_t5_mini_enc/mnli/avg-finetune/checkpoint-245440' \
+# '/scratch-ssd/ms21ddr/model_outputs/dn_t5_tiny_enc/mnli/avg-finetune/checkpoint-220896' \
+# '/scratch-ssd/ms21ddr/model_outputs/dn_t5_small_enc/mnli/avg-finetune/checkpoint-245440' \
+# '/scratch-ssd/ms21ddr/model_outputs/dn_t5_base_enc/mnli/avg-finetune/checkpoint-147264' )
 
-CASCADING="False"
-run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
-$OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR $LAYER $CASCADING "${NUM_LAYERS[*]}" $SEED $LAYER_OBJECT
-CASCADING="True"
-run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
-$OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR $LAYER $CASCADING "${NUM_LAYERS[*]}" $SEED $LAYER_OBJECT
+# CASCADING="False"
+# run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
+# $OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR $LAYER $CASCADING "${NUM_LAYERS[*]}" $SEED $LAYER_OBJECT
+# CASCADING="True"
+# run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
+# $OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR $LAYER $CASCADING "${NUM_LAYERS[*]}" $SEED $LAYER_OBJECT
 
-echo "MNLI EXPLANATIONS COMPLETED"
+# echo "MNLI EXPLANATIONS COMPLETED"
 
 RUN_NAMES=( 'dn_t5_mini_enc/eraser_esnli/avg-finetune' 'dn_t5_tiny_enc/eraser_esnli/avg-finetune' \
 'dn_t5_small_enc/eraser_esnli/avg-finetune' 'dn_t5_base_enc/eraser_esnli/avg-finetune' )
@@ -98,9 +98,9 @@ CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/dn_t5_mini_enc/eraser_e
 '/scratch-ssd/ms21ddr/model_outputs/dn_t5_small_enc/eraser_esnli/avg-finetune/checkpoint-308988' \
 '/scratch-ssd/ms21ddr/model_outputs/dn_t5_base_enc/eraser_esnli/avg-finetune/checkpoint-205992' )
 
-CASCADING="False"
-run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
-$OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR $LAYER $CASCADING "${NUM_LAYERS[*]}" $SEED $LAYER_OBJECT
+# CASCADING="False"
+# run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
+# $OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR $LAYER $CASCADING "${NUM_LAYERS[*]}" $SEED $LAYER_OBJECT
 CASCADING="True"
 run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" \
 $OUTPUT_FOLDER $NUM_EXAMPLES $CACHE_DIR $LAYER $CASCADING "${NUM_LAYERS[*]}" $SEED $LAYER_OBJECT
