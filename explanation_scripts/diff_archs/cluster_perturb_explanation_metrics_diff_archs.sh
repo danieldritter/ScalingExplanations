@@ -43,7 +43,7 @@ SEED=765
 # 'attention/average_attention' 'attention/attention_rollout' 'random/random_baseline')
 EXPLANATIONS=( 'ensembles/ensemble_full' 'ensembles/ensemble_best' )
 
-OUTPUT_FOLDER='./diff_arch_model_explanation_outputs_500'
+OUTPUT_FOLDER='./diff_arch_model_explanation_outputs_500_complete'
 
 SUFFICIENCY_VALS='[.95,.9,.8,.5]'
 COMPREHENSIVENESS_VALS='[.05,.1,.2,.5]'
@@ -51,40 +51,34 @@ COMPREHENSIVENESS_VALS='[.05,.1,.2,.5]'
 RUN_NAMES=( 't5_base_enc/spurious_sst/avg-finetune' 'gpt2_small/spurious_sst/cls-finetune' \
 'roberta_base/spurious_sst/cls-finetune' 'bert_base_uncased/spurious_sst/cls-finetune')
 
-CHECKPOINT_FOLDERS=( './model_outputs/t5_base_enc/spurious_sst/avg-finetune/checkpoint-25260' \
-'./model_outputs/gpt2_small/spurious_sst/cls-finetune/checkpoint-101028' \
-'./model_outputs/roberta_base/spurious_sst/cls-finetune/checkpoint-25260' \
-'./model_outputs/bert_base_uncased/spurious_sst/cls-finetune/checkpoint-25260')
-
-RUN_NAMES=( 't5_base_enc/spurious_sst/avg-finetune' )
-CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/t5_base_enc/spurious_sst/avg-finetune/checkpoint-25260' )
+CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/t5_base_enc/spurious_sst/avg-finetune/checkpoint-25260' \
+'/scratch-ssd/ms21ddr/model_outputs/gpt2_small/spurious_sst/cls-finetune/checkpoint-101028' \
+'/scratch-ssd/ms21ddr/model_outputs/roberta_base/spurious_sst/cls-finetune/checkpoint-25260' \
+'/scratch-ssd/ms21ddr/model_outputs/bert_base_uncased/spurious_sst/cls-finetune/checkpoint-25260')
 
 run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $COMPREHENSIVENESS_VALS $SUFFICIENCY_VALS
 
 echo "SPURIOUS_SST PERTURBATION METRICS COMPLETED"
 
-RUN_NAMES=( 't5_base_enc/mnli/cls-finetune' 'gpt2_small/mnli/cls-finetune' \
+RUN_NAMES=( 't5_base_enc/mnli/avg-finetune' 'gpt2_small/mnli/cls-finetune' \
 'roberta_base/mnli/cls-finetune' 'bert_base_uncased/mnli/cls-finetune')
 
-CHECKPOINT_FOLDERS=( './model_outputs/t5_base_enc/mnli/cls-finetune/checkpoint-122720' \
-'./model_outputs/gpt2_small/mnli/cls-finetune/checkpoint-883584' \
-'./model_outputs/roberta_base/mnli/cls-finetune/checkpoint-171808' \
-'./model_outputs/bert_base_uncased/mnli/cls-finetune/checkpoint-196352')
-
-RUN_NAMES=( 't5_base_enc/mnli/avg-finetune' )
-CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/t5_base_enc/mnli/avg-finetune/checkpoint-49088')
+CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/t5_base_enc/mnli/avg-finetune/checkpoint-49088' \
+'/scratch-ssd/ms21ddr/model_outputs/gpt2_small/mnli/cls-finetune/checkpoint-883584' \
+'/scratch-ssd/ms21ddr/model_outputs/roberta_base/mnli/cls-finetune/checkpoint-171808' \
+'/scratch-ssd/ms21ddr/model_outputs/bert_base_uncased/mnli/cls-finetune/checkpoint-196352')
 
 run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $COMPREHENSIVENESS_VALS $SUFFICIENCY_VALS
 
 echo "MNLI EXPLANATIONS COMPLETED"
 
-RUN_NAMES=( 't5_base_enc/eraser_esnli/cls-finetune' 'gpt2_small/eraser_esnli/cls-finetune' \
+RUN_NAMES=( 't5_base_enc/eraser_esnli/avg-finetune' 'gpt2_small/eraser_esnli/cls-finetune' \
 'roberta_base/eraser_esnli/cls-finetune' 'bert_base_uncased/eraser_esnli/cls-finetune')
 
-CHECKPOINT_FOLDERS=( './model_outputs/t5_base_enc/eraser_esnli/cls-finetune/checkpoint-961296' \
-'./model_outputs/gpt2_small/eraser_esnli/cls-finetune/checkpoint-961296' \
-'./model_outputs/roberta_base/eraser_esnli/cls-finetune/checkpoint-308988' \
-'./model_outputs/bert_base_uncased/eraser_esnli/cls-finetune/checkpoint-171660')
+CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/t5_base_enc/eraser_esnli/avg-finetune/checkpoint-137328' \
+'/scratch-ssd/ms21ddr/model_outputs/gpt2_small/eraser_esnli/cls-finetune/checkpoint-961296' \
+'/scratch-ssd/ms21ddr/model_outputs/roberta_base/eraser_esnli/cls-finetune/checkpoint-308988' \
+'/scratch-ssd/ms21ddr/model_outputs/bert_base_uncased/eraser_esnli/cls-finetune/checkpoint-171660')
 
 run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $COMPREHENSIVENESS_VALS $SUFFICIENCY_VALS
 

@@ -44,7 +44,7 @@ SEED=765
 # 'attention/average_attention' 'attention/attention_rollout' 'random/random_baseline')
 EXPLANATIONS=( 'ensembles/ensemble_full' 'ensembles/ensemble_best' )
  
-OUTPUT_FOLDER='./scale_model_explanation_outputs_500'
+OUTPUT_FOLDER='./scale_model_explanation_outputs_500_complete'
 
 SUFFICIENCY_VALS='[.95,.9,.8,.5]'
 COMPREHENSIVENESS_VALS='[.05,.1,.2,.5]'
