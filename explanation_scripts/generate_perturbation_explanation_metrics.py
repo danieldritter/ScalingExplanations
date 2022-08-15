@@ -45,7 +45,6 @@ def config():
     # report_to = "wandb"
     report_to = "none"
     ex.add_config(f"./configs/task_configs/{run_name}.json")
-    ex.add_config(f"./configs/explanations/{explanation_type}.json")
 
 @ex.automain 
 def get_explanations(_seed, _config):
