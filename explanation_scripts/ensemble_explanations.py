@@ -41,6 +41,8 @@ def get_ensemble_explanations(_seed, _config):
         normalized_full_attributions = [torch.abs(full_attributions["attributions"]["word_attributions"][i])/torch.sum(torch.abs(full_attributions["attributions"]["word_attributions"][i])) for i in range(len(full_attributions["attributions"]["word_attributions"]))]
         num_samples = len(normalized_full_attributions)
         attributions[explanation_type] = normalized_full_attributions
+    pred_classes = full_attributions["attributions"]["pred_class"]
+    pred_probs = full_attributions["attributions"]["pred_prob"]
 
     ensemble_attrs = [] 
     for i in range(num_samples):
@@ -53,8 +55,9 @@ def get_ensemble_explanations(_seed, _config):
         ensemble_attrs.append(init_explanation)
     # save to separate, ensembled explanations folder 
     if "ground_truth_attributions" in full_attributions:
-        ensemble_attrs = {"attributions":{"word_attributions":ensemble_attrs}, "ground_truth_attributions":full_attributions["ground_truth_attributions"]}
+        ensemble_attrs = {"attributions":{"word_attributions":ensemble_attrs, "pred_class": pred_classes, "pred_prob":pred_probs}
+                        ,"ground_truth_attributions":full_attributions["ground_truth_attributions"]}
     else:
-        ensemble_attrs = {"attributions":{"word_attributions":ensemble_attrs}}
+        ensemble_attrs = {"attributions":{"word_attributions":ensemble_attrs, "pred_class":pred_classes, "pred_prob":pred_probs}}
     with open(f"{_config['full_output_folder']}/explanations.pkl", "wb+") as file:
         pickle.dump(ensemble_attrs, file)
