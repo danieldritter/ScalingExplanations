@@ -1,3 +1,8 @@
+import sys  
+from pathlib import Path  
+file = Path(__file__).resolve()  
+package_root_directory = file.parents[1]  
+sys.path.append(str(package_root_directory)) 
 from sacred import Experiment 
 import os 
 import torch 
@@ -17,22 +22,26 @@ ex = Experiment("explanation-metrics")
 def config():
     seed = 12345
     dataset_name = 'spurious_sst'
-    # run_names = [f"dn_t5_tiny_enc/{dataset_name}/cls-finetune", f"dn_t5_mini_enc/{dataset_name}/cls-finetune", 
-    #             f"dn_t5_small_enc/{dataset_name}/cls-finetune", f"dn_t5_base_enc/{dataset_name}/cls-finetune"]
-    run_names = [f't5_base_enc/{dataset_name}/cls-finetune', f'gpt2_small/{dataset_name}/cls-finetune',
+    # run_names = [f"dn_t5_tiny_enc/{dataset_name}/avg-finetune", f"dn_t5_mini_enc/{dataset_name}/avg-finetune", 
+                # f"dn_t5_small_enc/{dataset_name}/avg-finetune", f"dn_t5_base_enc/{dataset_name}/avg-finetune"]
+    run_names = [f't5_base_enc/{dataset_name}/avg-finetune', f'gpt2_small/{dataset_name}/cls-finetune',
                 f'roberta_base/{dataset_name}/cls-finetune', f'bert_base_uncased/{dataset_name}/cls-finetune']
     # model_names = {run_names[0]:"DNT5 Tiny", run_names[1]: "DNT5 Mini", run_names[2]:"DNT5 Small", run_names[3]:"DNT5 Base"}
     model_names = {run_names[0]:"T5 Base", run_names[1]: "GPT2 Small", run_names[2]:"Roberta Base", run_names[3]:"BERT Base"}
     explanation_name_map = {'gradients/gradients_x_input':"Grad*Input",'gradients/gradients':"Grad",
-                            'gradients/integrated_gradients_x_input':"Integrated Gradients*Input",
-                            'gradients/integrated_gradients':"Integrated Gradients",'lime/lime':"Lime",
-                            'shap/shap':"KernelSHAP","attention/average_attention":"Average Attention", "random/random_baseline":"Random"}
-    explanation_types = ['gradients/gradients_x_input', 'gradients/gradients', 'gradients/integrated_gradients_x_input', 
-                        'gradients/integrated_gradients', 'lime/lime', 'shap/shap', 'attention/average_attention', 'random/random_baseline']    
-    input_folder = "./explanation_outputs/layer_randomization_diff_archs_new"
+                            'gradients/integrated_gradients_x_input':"Integrated Gradients",
+                            'gradients/integrated_gradients':"Integrated Gradients (No Multiplier)",'lime/lime':"Lime",
+                            'shap/shap':"KernelSHAP","attention/attention_rollout":"Attention Rollout", 
+                            "attention/average_attention":"Average Attention", "random/random_baseline":"Random"}
+    explanation_types = ['gradients/gradients_x_input', 'gradients/gradients', 
+                        'gradients/integrated_gradients_x_input',
+                        'attention/average_attention', 'attention/attention_rollout', 'random/random_baseline']
+    input_folder = "./explanation_outputs/diff_archs_layer_randomization_50"
     output_folder = f"./layer_randomization_graphs_diff_archs/{dataset_name}"
-    cascading = True
-    absolute_value = True
+    # input_folder = "./explanation_outputs/scale_layer_randomization_50"
+    # output_folder = f"./layer_randomization_graphs_scale/{dataset_name}"
+    cascading = False
+    absolute_value = False
     if cascading:
         if absolute_value:
             metric = "Rank Correlation (Cascading+Abs)"
@@ -79,14 +88,22 @@ def get_explanations(_seed, _config):
                         metrics_dict[run_name]["Layer"].append(layer)
                     metrics_dict[run_name]["Explanation Type"].append(_config["explanation_name_map"][explanation_type])
                     metrics_dict[run_name][f"{_config['metric']}"].append(val)
-    fig, axs = plt.subplots(len(metrics_dict) // 2, len(metrics_dict) - len(metrics_dict)//2, figsize=(32,18))
-    flat_axs = [] 
-    for axs_list in axs:
-        flat_axs.extend(axs_list)
+    # fig, axs = plt.subplots(len(metrics_dict) // 2, len(metrics_dict) - len(metrics_dict)//2, figsize=(32,18))
+    # flat_axs = [] 
+    # for axs_list in axs:
+    #     flat_axs.extend(axs_list)
+    # for i,run_name in enumerate(metrics_dict):
+    #     df = pd.DataFrame(metrics_dict[run_name])
+    #     # fig, ax = plt.subplots(1,1,figsize=(12,8))
+    #     sns.lineplot(x="Layer",y=f"{_config['metric']}",hue="Explanation Type", data=df, legend='auto',ax=flat_axs[i], sort=False)
+    #     flat_axs[i].set_title(f"{_config['model_names'][run_name]}")
+    #     fig.suptitle(f"{_config['metric']}")
+    #     fig.savefig(f"{_config['output_folder']}/{_config['metric'].replace(' ','_')}.png")
     for i,run_name in enumerate(metrics_dict):
+        plt.figure(figsize=(15,8))
         df = pd.DataFrame(metrics_dict[run_name])
-        # fig, ax = plt.subplots(1,1,figsize=(12,8))
-        sns.lineplot(x="Layer",y=f"{_config['metric']}",hue="Explanation Type", data=df, legend='auto',ax=flat_axs[i], sort=False)
-        flat_axs[i].set_title(f"{_config['model_names'][run_name]}")
-        fig.suptitle(f"{_config['metric']}")
-        fig.savefig(f"{_config['output_folder']}/{_config['metric'].replace(' ','_')}.png")
+        sns.lineplot(x="Layer",y=f"{_config['metric']}",hue="Explanation Type", data=df, legend=False)
+        # plt.legend(loc=(0.69,0.39),prop={"size":18})
+        # plt.legend(prop={"size":18})
+        plt.savefig(f"{_config['output_folder']}/{_config['metric'].replace(' ', '_')}_{run_name.split('/')[0]}.png")
+        plt.clf()

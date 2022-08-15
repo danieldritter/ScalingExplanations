@@ -25,7 +25,8 @@ def config():
     run_names = [f't5_base_enc/{dataset_name}/avg-finetune', f'gpt2_small/{dataset_name}/cls-finetune',
                 f'roberta_base/{dataset_name}/cls-finetune', f'bert_base_uncased/{dataset_name}/cls-finetune']
     # dataset_name = "hans_accuracy"
-    plot_ground_truth = False
+    plot_ground_truth = True
+    plausibility = True
     model_names = {run_names[0]:"T5 Base", run_names[1]: "GPT2 Small", run_names[2]:"Roberta Base", run_names[3]:"BERT Base"}
     explanation_name_map = {'gradients/gradients_x_input':"Grad*Input",'gradients/gradients':"Grad",
                             'gradients/integrated_gradients_x_input':"Integrated Gradients",
@@ -34,7 +35,8 @@ def config():
                             "attention/average_attention":"Average Attention", "random/random_baseline":"Random"}
     # metrics = ["Ground Truth Overlap", "Mean Rank", "Mean Rank Percentage", "Ground Truth Mass"]
     # metrics = ["Entailed Accuracy", "Non-Entailed Accuracy"]
-    metrics = ["Sufficiency", "Comprehensiveness"]
+    # metrics = ["Sufficiency", "Comprehensiveness"]
+    metrics = ["Evidence Overlap", "Mean Rank", "Mean Rank Percentage", "Evidence Mass"]
     # metrics = ["Sufficiency"]
     explanation_types = ['gradients/gradients_x_input', 'gradients/gradients', 
                         'gradients/integrated_gradients_x_input', 'lime/lime', 'shap/shap',
@@ -57,7 +59,11 @@ def get_explanations(_seed, _config):
             metrics_dict = {metric:{"Model Name":[], "Explanation Type":[], f"{metric}":[]} for metric in _config["metrics"]}
             for explanation_type in _config["explanation_types"]:
                 for run_name in _config['run_names']:
-                    metrics = pickle.load(open(f"{_config['input_folder']}/{run_name}/{explanation_type}/full_ground_truth_metrics.pkl", "rb"))
+                    if not _config["plausibility"]:
+                        metrics = pickle.load(open(f"{_config['input_folder']}/{run_name}/{explanation_type}/full_ground_truth_metrics.pkl", "rb"))
+                    else:
+                        metrics = pickle.load(open(f"{_config['input_folder']}/{run_name}/{explanation_type}/full_plausibility_metrics.pkl", "rb"))
+    
                     for metric_name in metrics:
                         for val in metrics[metric_name]:
                             metrics_dict[metric_name]["Model Name"].append(_config["model_names"][run_name])
@@ -72,7 +78,10 @@ def get_explanations(_seed, _config):
                 plt.legend("",frameon=False)
                 # plt.legend(loc='upper right', ncol=2)
                 # ax.set_title(f"{metric_name} for Four Different Pretrained Models")
-                plt.savefig(f"{_config['output_folder']}/{metric_name.replace(' ','_')}.png")
+                if not _config["plausibility"]:
+                    plt.savefig(f"{_config['output_folder']}/{metric_name.replace(' ','_')}.png")
+                else:
+                    plt.savefig(f"{_config['output_folder']}/{metric_name.replace(' ','_')}_plausibility.png")
                 plt.clf()
         else:
             metrics_dict = {metric:{"Model Name":[], "Explanation Type":[], f"{metric}":[]} for metric in _config["metrics"]}
@@ -92,7 +101,7 @@ def get_explanations(_seed, _config):
                 ax.set_ylim(0.0,1.0)
                 sns.barplot(x="Model Name",y=metric_name,hue="Explanation Type", data=df, ax=ax)
                 # plt.legend(loc=(0.55,0.67))
-                # plt.legend("", frameon=False)
+                plt.legend("", frameon=False)
                 fig.savefig(f"{_config['output_folder']}/{metric_name.replace(' ','_')}.png")    
     else:
         metrics_dict = {"Model Name":[], "Subset":[], f"Accuracy":[]} 

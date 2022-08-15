@@ -23,9 +23,10 @@ function run_explanations {
 
 SEED=765
 
-EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
-'gradients/integrated_gradients_x_input' 'lime/lime'\
- 'shap/shap' 'attention/average_attention' 'attention/attention_rollout' 'random/random_baseline')
+# EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
+# 'gradients/integrated_gradients_x_input' 'lime/lime'\
+#  'shap/shap' 'attention/average_attention' 'attention/attention_rollout' 'random/random_baseline')
+EXPLANATIONS=( 'ensembles/ensemble_full' 'ensembles/ensemble_best' )
 
 RUN_NAMES=( 't5_base_enc/spurious_sst/avg-finetune' 'gpt2_small/spurious_sst/cls-finetune' \
 'roberta_base/spurious_sst/cls-finetune' 'bert_base_uncased/spurious_sst/cls-finetune')

@@ -17,17 +17,16 @@ ex = Experiment("gt-metrics")
 @ex.config 
 def config():
     seed = 12345
-    run_name = "bert_base_uncased/spurious_sst/cls-finetune"
-    explanation_type = "gradients/integrated_gradients_x_input"
-    output_folder = "./explanation_outputs/diff_arch_model_explanation_outputs"
-    process_as_batches = True
+    run_name = "t5_base_enc/spurious_sst/avg-finetune"
+    explanation_type = "ensembles/ensemble_full"
+    output_folder = "./explanation_outputs/diff_arch_model_explanation_outputs_500_new"
     full_output_folder = f"{output_folder}/{run_name}/{explanation_type}"
     save_visuals = False
     save_metrics = True
     num_samples = None
     split = "train"
     ex.add_config(f"./configs/task_configs/{run_name}.json")
-    ex.add_config(f"./configs/explanations/{explanation_type}.json")
+    # ex.add_config(f"./configs/explanations/{explanation_type}.json")
 
 @ex.automain 
 def get_gt_metrics(_seed, _config):
