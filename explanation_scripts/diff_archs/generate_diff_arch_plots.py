@@ -21,28 +21,30 @@ ex = Experiment("explanation-metrics")
 @ex.config 
 def config():
     seed = 12345
-    dataset_name = 'eraser_esnli'
+    dataset_name = 'mnli'
     run_names = [f't5_base_enc/{dataset_name}/avg-finetune', f'gpt2_small/{dataset_name}/cls-finetune',
                 f'roberta_base/{dataset_name}/cls-finetune', f'bert_base_uncased/{dataset_name}/cls-finetune']
     # dataset_name = "hans_accuracy"
-    plot_ground_truth = True
-    plausibility = True
+    plot_ground_truth = False
+    plausibility = False
     model_names = {run_names[0]:"T5 Base", run_names[1]: "GPT2 Small", run_names[2]:"Roberta Base", run_names[3]:"BERT Base"}
     explanation_name_map = {'gradients/gradients_x_input':"Grad*Input",'gradients/gradients':"Grad",
                             'gradients/integrated_gradients_x_input':"Integrated Gradients",
                             'gradients/integrated_gradients':"Integrated Gradients (No Multiplier)",'lime/lime':"Lime",
                             'shap/shap':"KernelSHAP","attention/attention_rollout":"Attention Rollout", 
-                            "attention/average_attention":"Average Attention", "random/random_baseline":"Random"}
+                            "attention/average_attention":"Average Attention", "random/random_baseline":"Random",
+                            "ensembles/ensemble_full":"Ensemble (All Methods)", "ensembles/ensemble_best":"Ensemble (Top 3)"}
     # metrics = ["Ground Truth Overlap", "Mean Rank", "Mean Rank Percentage", "Ground Truth Mass"]
     # metrics = ["Entailed Accuracy", "Non-Entailed Accuracy"]
-    # metrics = ["Sufficiency", "Comprehensiveness"]
-    metrics = ["Evidence Overlap", "Mean Rank", "Mean Rank Percentage", "Evidence Mass"]
+    metrics = ["Sufficiency", "Comprehensiveness"]
+    # metrics = ["Evidence Overlap", "Mean Rank", "Mean Rank Percentage", "Evidence Mass"]
     # metrics = ["Sufficiency"]
-    explanation_types = ['gradients/gradients_x_input', 'gradients/gradients', 
-                        'gradients/integrated_gradients_x_input', 'lime/lime', 'shap/shap',
-                        'attention/average_attention', 'attention/attention_rollout', 'random/random_baseline']
+    # explanation_types = ['gradients/gradients_x_input', 'gradients/gradients', 
+                        # 'gradients/integrated_gradients_x_input', 'lime/lime', 'shap/shap',
+                        # 'attention/average_attention', 'attention/attention_rollout', 'random/random_baseline']
+    explanation_types = ["lime/lime", "gradients/integrated_gradients_x_input", "shap/shap", "ensembles/ensemble_full", "ensembles/ensemble_best"]
     input_folder = "./explanation_outputs/diff_arch_model_explanation_outputs_500_new"
-    output_folder = f"./explanation_graphs_diff_archs/{dataset_name}"
+    output_folder = f"./explanation_graphs_diff_archs_ensemble/{dataset_name}"
     
 @ex.automain 
 def get_explanations(_seed, _config):
@@ -75,7 +77,7 @@ def get_explanations(_seed, _config):
                 ax = plt.subplot(1,1,1)
                 ax.set_ylim(0.0,1.0)                
                 sns.barplot(x="Model Name",y=metric_name,hue="Explanation Type", data=df,ax=ax)
-                plt.legend("",frameon=False)
+                # plt.legend("",frameon=False)
                 # plt.legend(loc='upper right', ncol=2)
                 # ax.set_title(f"{metric_name} for Four Different Pretrained Models")
                 if not _config["plausibility"]:
@@ -101,7 +103,7 @@ def get_explanations(_seed, _config):
                 ax.set_ylim(0.0,1.0)
                 sns.barplot(x="Model Name",y=metric_name,hue="Explanation Type", data=df, ax=ax)
                 # plt.legend(loc=(0.55,0.67))
-                plt.legend("", frameon=False)
+                # plt.legend("", frameon=False)
                 fig.savefig(f"{_config['output_folder']}/{metric_name.replace(' ','_')}.png")    
     else:
         metrics_dict = {"Model Name":[], "Subset":[], f"Accuracy":[]} 

@@ -20,108 +20,119 @@ class Explainer(ABC):
 
 class FeatureImportanceExplainer(Explainer):
 
-    def __init__(self, model: torch.nn.Module, process_as_batch=False, normalize_attributions=False, show_progress=False):
+    def __init__(self, model: torch.nn.Module, process_as_batch=False, normalize_attributions=False, 
+        show_progress=False, detach_values=True, use_embeds=False):
         super().__init__(model)
         self.process_as_batch = process_as_batch 
         self.normalize_attributions = normalize_attributions
         self.show_progress = show_progress
+        self.detach_values = detach_values 
+        self.use_embeds = use_embeds
     
-    def get_explanations(self, inputs, seq2seq=False):
+    def get_explanations(self, inputs, model_out=None, inputs_embeds=None):
         if self.process_as_batch:
-            return_dict = self.get_batch_explanations(inputs, seq2seq=seq2seq)
+            return_dict = self.get_batch_explanations(inputs, model_out=model_out, inputs_embeds=inputs_embeds)
         else:
-            return_dict = self.get_unbatch_explanations(inputs, seq2seq=seq2seq)
+            return_dict = self.get_unbatch_explanations(inputs, model_out=model_out, inputs_embeds=inputs_embeds)
         return return_dict 
     
     @abstractmethod 
-    def get_feature_importances(self, inputs, seq2seq=False):
+    def get_feature_importances(self, inputs, targets=None, model_out=None, inputs_embeds=None):
         pass 
 
-    def get_batch_explanations(self, inputs, seq2seq=False):
+    def get_batch_explanations(self, inputs, model_out=None, inputs_embeds=None):
         return_dict = {} 
         if self.device != None:
             for key in inputs:
-                inputs[key] = inputs[key].to(self.device)
-                
-        if not seq2seq:
-            logits = self.model(**inputs).logits 
-            return_dict["pred_prob"], targets = torch.softmax(logits,dim=1).max(dim=1)
-            return_dict["pred_prob"] = return_dict["pred_prob"].detach().cpu()
-            return_dict["pred_class"] = targets.detach().cpu()
-            return_dict["attr_class"] = targets.detach().cpu() 
-            if "labels" in inputs:
-                return_dict['true_class'] = inputs["labels"].cpu()
-            attribution_dict = self.get_feature_importances(inputs, seq2seq=False, targets=targets)
+                inputs[key] = inputs[key].to(self.device)  
+            if inputs_embeds != None:
+                inputs_embeds = inputs_embeds.to(self.device)
+        if model_out != None:
+            logits = model_out.logits 
         else:
-            outputs = self.model.generate(inputs["input_ids"], return_dict_in_generate=True, output_scores=True)
-            pred_classes = self.tokenizer.batch_decode(outputs["sequences"])
-            pred_probs = torch.exp(compute_sequence_sum(outputs["sequences"],outputs["scores"], self.model, is_tuple=True, return_probs=True))
-            return_dict["pred_prob"] = pred_probs.detach().cpu()
-            return_dict["pred_class"] = pred_classes
-            return_dict["attr_class"] = pred_classes
-            if "labels" in inputs:
-                pad_inputs = inputs["labels"].clone()
-                pad_inputs[pad_inputs == -100] = self.model.config.pad_token_id
-                return_dict["true_class"] = self.tokenizer.batch_decode(pad_inputs)
-            attribution_dict = self.get_feature_importances(inputs, seq2seq=True)
-        return_dict["word_attributions"] = attribution_dict["attributions"].detach().cpu()
+            if inputs_embeds != None:
+                args = {key:val for key,val in inputs.items() if key != "input_ids"}
+                logits = self.model(**args, inputs_embeds=inputs_embeds)
+            else:
+                logits = self.model(**inputs).logits 
+        return_dict["pred_prob"], targets = torch.softmax(logits,dim=1).max(dim=1)
+        return_dict["pred_prob"] = return_dict["pred_prob"]
+        return_dict["pred_class"] = targets
+        return_dict["attr_class"] = targets
+        if "labels" in inputs:
+            return_dict['true_class'] = inputs["labels"]
+        attribution_dict = self.get_feature_importances(inputs, targets=targets, model_out=model_out, inputs_embeds=inputs_embeds)
+        return_dict["word_attributions"] = attribution_dict["attributions"]
         if self.normalize_attributions:
             return_dict["word_attributions"] = return_dict["word_attributions"] / torch.linalg.norm(return_dict["word_attributions"], ord=1, dim=1, keepdims=True)
         return_dict["attr_score"] = return_dict["word_attributions"].sum(dim=1)
         return_dict["raw_input_ids"] = [self.tokenizer.convert_ids_to_tokens(inputs["input_ids"][i]) for i in range(inputs["input_ids"].shape[0])]
         return_dict["raw_input_ids"] = [[val for val in id_list if val != self.tokenizer.pad_token] for id_list in return_dict["raw_input_ids"]]
-        return_dict["convergence_score"] = attribution_dict["deltas"]         
+        return_dict["convergence_score"] = attribution_dict["deltas"]   
+        if self.detach_values:
+            return_dict["pred_prob"] = return_dict["pred_prob"].detach().cpu() 
+            return_dict["pred_class"] = return_dict["pred_class"].detach().cpu() 
+            return_dict["attr_class"] = return_dict["attr_class"].detach().cpu() 
+            return_dict["word_attributions"] = return_dict["word_attributions"].detach().cpu()
+            return_dict["true_class"] = return_dict["true_class"].detach().cpu()
         return return_dict 
     
-    def get_unbatch_explanations(self, inputs, seq2seq=False):
+    def get_unbatch_explanations(self, inputs, model_out=None, inputs_embeds=None):
         return_dict = {"pred_prob":[],"pred_class":[],"attr_class":[],"true_class":[], "word_attributions":[], "convergence_score":[]} 
-        if not seq2seq:
-            if self.show_progress:
-                input_loader = tqdm(inputs)
+        if self.show_progress:
+            input_loader = tqdm(inputs)
+        else:
+            input_loader = inputs 
+        for i,example in enumerate(input_loader):
+            # Adding batch dimension
+            if self.device == None:
+                example = {key:example[key].unsqueeze(0) for key in example}
+                if inputs_embeds != None:
+                    inputs_embeds[i] = inputs_embeds[i].unsqueeze(0)
             else:
-                input_loader = inputs 
-            for example in input_loader:
-                # Adding batch dimension
-                if self.device == None:
-                    example = {key:example[key].unsqueeze(0) for key in example}
+                example = {key:example[key].unsqueeze(0).to(self.device) for key in example}
+                if inputs_embeds != None:
+                    inputs_embeds[i] = inputs_embeds[i].unsqueeze(0).to(self.device)
+            if model_out != None:
+                logits = model_out.logits[i].unsqueeze(0)
+            else:
+                if inputs_embeds != None:
+                    args = {key:val for key,val in inputs.items() if key != "input_ids"}
+                    logits = self.model(**args, inputs_embeds=inputs_embeds).logits 
                 else:
-                    example = {key:example[key].unsqueeze(0).to(self.device) for key in example}
-                logits = self.model(**example).logits 
-                pred_prob, target = torch.softmax(logits,dim=1).max(dim=1)
+                    logits = self.model(**example).logits 
+            pred_prob, target = torch.softmax(logits,dim=1).max(dim=1)
+            if self.detach_values:
                 return_dict["pred_prob"].append(pred_prob.item())
                 return_dict["pred_class"].append(target.item())
                 return_dict["attr_class"].append(target.item())
-                if "labels" in example:
-                    return_dict['true_class'].append(example["labels"].item())
-                attribution_dict = self.get_feature_importances(example, seq2seq=False, targets=target)
-                return_dict["word_attributions"].append(attribution_dict["attributions"].squeeze().detach().cpu())
-                return_dict["convergence_score"].append(attribution_dict["deltas"][0].item() if attribution_dict["deltas"][0] != None else None)
-        else:
-            if self.show_progress:
-                input_loader = tqdm(inputs)
             else:
-                input_loader = inputs 
-            for example in input_loader:
-                if self.device == None:
-                    example = {key:example[key].unsqueeze(0) for key in example}
+                return_dict["pred_prob"].append(pred_prob)
+                return_dict["pred_class"].append(target)
+                return_dict["attr_class"].append(target)            
+            if "labels" in example:
+                if self.detach_values:
+                    return_dict['true_class'].append(example["labels"].item())
                 else:
-                    example = {key:example[key].unsqueeze(0).to(self.device) for key in example}
-                output = self.model.generate(example["input_ids"], return_dict_in_generate=True, output_scores=True)
-                pred_class = self.tokenizer.batch_decode(output["sequences"])
-                pred_probs = torch.exp(compute_sequence_sum(output["sequences"],output["scores"], self.model, is_tuple=True, return_probs=True))
-                return_dict["pred_prob"].append(pred_probs.item())
-                return_dict["pred_class"].append(" ".join(pred_class))
-                return_dict["attr_class"].append(" ".join(pred_class))
-                if "labels" in example:
-                    return_dict["true_class"].append(" ".join(self.tokenizer.batch_decode(example["labels"])))
-                attribution_dict = self.get_feature_importances(example, seq2seq=True)
+                    return_dict['true_class'].append(example["labels"])
+            attribution_dict = self.get_feature_importances(example, targets=target)
+            if self.detach_values:
                 return_dict["word_attributions"].append(attribution_dict["attributions"].squeeze().detach().cpu())
                 return_dict["convergence_score"].append(attribution_dict["deltas"][0].item() if attribution_dict["deltas"][0] != None else None)
+            else:
+                return_dict["word_attributions"].append(attribution_dict["attributions"].squeeze())
+                return_dict["convergence_score"].append(attribution_dict["deltas"][0] if attribution_dict["deltas"][0] != None else None)
+
         if self.normalize_attributions:
             return_dict["word_attributions"] = [return_dict["word_attributions"][i] / torch.linalg.norm(return_dict["word_attributions"][i], ord=1, keepdims=True) for i in range(len(return_dict["word_attributions"]))]
-        return_dict["attr_score"] = [return_dict["word_attributions"][i].sum() for i in range(len(return_dict["word_attributions"]))]
-        return_dict["raw_input_ids"] = [self.tokenizer.convert_ids_to_tokens(inputs["input_ids"][i]) for i in range(len(inputs["input_ids"]))]
-        return_dict["raw_input_ids"] = [[val for val in id_list if val != self.tokenizer.pad_token] for id_list in return_dict["raw_input_ids"]]
+        if model_out == None:
+            return_dict["attr_score"] = [return_dict["word_attributions"][i].sum() for i in range(len(return_dict["word_attributions"]))]
+            return_dict["raw_input_ids"] = [self.tokenizer.convert_ids_to_tokens(inputs["input_ids"][i]) for i in range(len(inputs["input_ids"]))]
+            return_dict["raw_input_ids"] = [[val for val in id_list if val != self.tokenizer.pad_token] for id_list in return_dict["raw_input_ids"]]
+        else:
+            return_dict["attr_score"] = [return_dict["word_attributions"][i].sum() for i in range(len(return_dict["word_attributions"]))]
+            return_dict["raw_input_ids"] = [self.tokenizer.convert_ids_to_tokens(inputs[i]["input_ids"]) for i in range(len(inputs))]
+            return_dict["raw_input_ids"] = [[val for val in id_list if val != self.tokenizer.pad_token] for id_list in return_dict["raw_input_ids"]]
         return return_dict 
 
     @staticmethod

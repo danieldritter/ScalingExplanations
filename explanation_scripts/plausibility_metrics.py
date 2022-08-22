@@ -32,7 +32,6 @@ def config():
     cache_dir = "./cached_examples"
     max_length = 512 
     ex.add_config(f"./configs/task_configs/{run_name}.json")
-    ex.add_config(f"./configs/explanations/{explanation_type}.json")
 
 def get_esnli_evidence_mask(example, tokenizer):
     premise = example["premise"]

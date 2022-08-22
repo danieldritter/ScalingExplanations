@@ -21,9 +21,10 @@ function run_metrics {
 
 SEED=765
 
-EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
-'gradients/integrated_gradients_x_input' 'lime/lime' 'shap/shap'
-'attention/average_attention' 'attention/attention_rollout' 'random/random_baseline')
+# EXPLANATIONS=('gradients/gradients_x_input' 'gradients/gradients' \
+# 'gradients/integrated_gradients_x_input' 'lime/lime' 'shap/shap'
+# 'attention/average_attention' 'attention/attention_rollout' 'random/random_baseline')
+EXPLANATIONS=( 'ensembles/ensemble_full' 'ensembles/ensemble_best' )
 
 RUN_NAMES=( 't5_base_enc/eraser_esnli/avg-finetune' 'gpt2_small/eraser_esnli/cls-finetune' \
 'roberta_base/eraser_esnli/cls-finetune' 'bert_base_uncased/eraser_esnli/cls-finetune')

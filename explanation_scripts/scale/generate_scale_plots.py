@@ -21,26 +21,28 @@ ex = Experiment("explanation-metrics")
 @ex.config 
 def config():
     seed = 12345
-    dataset_name = 'eraser_esnli'
+    dataset_name = 'spurious_sst'
     run_names = [f"dn_t5_tiny_enc/{dataset_name}/avg-finetune", f"dn_t5_mini_enc/{dataset_name}/avg-finetune", 
                 f"dn_t5_small_enc/{dataset_name}/avg-finetune", f"dn_t5_base_enc/{dataset_name}/avg-finetune"]
-    plot_ground_truth = True
-    plausibility = True
+    plot_ground_truth = False
+    plausibility = False
     parameter_numbers = {run_names[0]:11,run_names[1]:20,
                         run_names[2]:35,run_names[3]:110}
     explanation_name_map = {'gradients/gradients_x_input':"Grad*Input",'gradients/gradients':"Grad",
                             'gradients/integrated_gradients_x_input':"Integrated Gradients",
                             'gradients/integrated_gradients':"Integrated Gradients (No Multiplier)",'lime/lime':"Lime",
                             'shap/shap':"KernelSHAP","attention/attention_rollout":"Attention Rollout", 
-                            "attention/average_attention":"Average Attention", "random/random_baseline":"Random"}
+                            "attention/average_attention":"Average Attention", "random/random_baseline":"Random",
+                            "ensembles/ensemble_full":"Ensemble (All Methods)", "ensembles/ensemble_best":"Ensemble (Top 3)"}
     # metrics = ["Ground Truth Overlap", "Mean Rank", "Mean Rank Percentage", "Ground Truth Mass"]
-    # metrics = ["Sufficiency", "Comprehensiveness"]
-    metrics = ["Evidence Overlap", "Mean Rank", "Mean Rank Percentage", "Evidence Mass"]
-    explanation_types = ['gradients/gradients_x_input', 'gradients/gradients', 
-                        'gradients/integrated_gradients_x_input', 'lime/lime', 'shap/shap',
-                        'attention/average_attention', 'attention/attention_rollout', 'random/random_baseline']
+    metrics = ["Sufficiency", "Comprehensiveness"]
+    # metrics = ["Evidence Overlap", "Mean Rank", "Mean Rank Percentage", "Evidence Mass"]
+    # explanation_types = ['gradients/gradients_x_input', 'gradients/gradients', 
+    #                     'gradients/integrated_gradients_x_input', 'lime/lime', 'shap/shap',
+    #                     'attention/average_attention', 'attention/attention_rollout', 'random/random_baseline']
+    explanation_types = ["lime/lime", "gradients/integrated_gradients_x_input", "shap/shap", "ensembles/ensemble_full", "ensembles/ensemble_best"]
     input_folder = "./explanation_outputs/scale_model_explanation_outputs_500_new"
-    output_folder = f"./explanation_graphs_scale/{dataset_name}"
+    output_folder = f"./explanation_graphs_scale_ensemble/{dataset_name}"
     
 @ex.automain 
 def get_explanations(_seed, _config):
