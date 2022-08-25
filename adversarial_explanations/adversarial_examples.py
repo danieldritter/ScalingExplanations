@@ -1,7 +1,6 @@
 import torch
 from tqdm import tqdm 
 from scipy.stats import spearmanr 
-from torchviz import make_dot
 from torch.optim.lr_scheduler import MultiplicativeLR
 
 def get_adversarial_example(model, example, explainer, max_steps=500, alpha=1.0, beta=1.0, 

@@ -42,7 +42,7 @@ function run_adversarial_explanations {
 EXPLANATIONS=( 'gradients/gradients' 'gradients/gradients_x_input' 'gradients/integrated_gradients_x_input' )
 DATA_CACHE_DIR="/scratch-ssd/ms21ddr/data/hf_language_datasets"
 SEED=768
-OUTPUT_FOLDER="./adv_explanation_outputs"
+OUTPUT_FOLDER="./adv_explanation_outputs_scale"
 NUM_EXAMPLES=20
 
 RUN_NAMES=( 'dn_t5_mini_enc/spurious_sst/avg-finetune' 'dn_t5_tiny_enc/spurious_sst/avg-finetune' \
