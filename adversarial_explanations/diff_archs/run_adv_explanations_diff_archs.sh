@@ -24,10 +24,10 @@ function run_adversarial_explanations {
             do
             echo "RUN NAME: ${run_names[j]}"
             echo "CHECKPOINT_FOLDER: ${checkpoint_folders[j]}"
-            srun python adversarial_explanations/generate_adversarial_explanations.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
+            srun python adversarial_explanations/generate_adversarial_examples.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
             "num_examples=$5" seed=${7} "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" \
             "data_cache_dir=${6}" "optimize_pred=True"
-            srun python adversarial_explanations/generate_adversarial_explanations.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
+            srun python adversarial_explanations/generate_adversarial_examples.py with "explanation_type=${explanations[i]}" "output_folder=${4}" \
             "num_examples=$5" seed=${7} "checkpoint_folder=${checkpoint_folders[j]}" "run_name=${run_names[j]}" \
             "data_cache_dir=${6}" "optimize_pred=False"
             if [ "$?" -ne 0 ]; then
