@@ -40,7 +40,7 @@ function run_adversarial_explanations {
 }
 
 
-EXPLANATIONS=( 'gradients/gradients' 'gradients/gradients_x_input' )
+EXPLANATIONS=( 'gradients/gradients' 'gradients/gradients_x_input' 'gradients/integrated_gradients_x_input' )
 DATA_CACHE_DIR="/scratch-ssd/ms21ddr/data/hf_language_datasets"
 SEED=768
 OUTPUT_FOLDER="./adv_explanation_outputs"

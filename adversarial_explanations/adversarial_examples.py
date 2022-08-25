@@ -4,8 +4,8 @@ from scipy.stats import spearmanr
 from torchviz import make_dot
 from torch.optim.lr_scheduler import MultiplicativeLR
 
-def get_adversarial_example(model, example, explainer, max_steps=5000, alpha=1.0, beta=1.0, 
-                            max_eps=2.0, k_percent=0.15, threshold=1e-7, patience=20, optimize_pred=True, 
+def get_adversarial_example(model, example, explainer, max_steps=500, alpha=1.0, beta=1.0, 
+                            max_eps=2.0, k_percent=0.15, threshold=1e-5, patience=20, optimize_pred=True, 
                             num_lr_steps=200, lr=.1, decay_factor=0.5):
     for key in example:
         example[key] = example[key].to(explainer.device)

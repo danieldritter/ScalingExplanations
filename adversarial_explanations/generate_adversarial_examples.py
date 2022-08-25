@@ -30,16 +30,17 @@ Need to fix unbatch explanations to use inputs embeds instead of input ids
 @ex.config 
 def config():
     seed = 12345
-    run_name = "bert_base_uncased/spurious_sst/cls-finetune"
-    # run_name = "dn_t5_tiny_enc/eraser_esnli/cls-finetune"
-    checkpoint_folder = "./model_outputs/bert_base_uncased/spurious_sst/cls-finetune/checkpoint-25260"
-    # checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/eraser_esnli/cls-finetune/checkpoint-343320"
+    # run_name = "bert_base_uncased/spurious_sst/cls-finetune"
+    run_name = "dn_t5_tiny_enc/eraser_esnli/cls-finetune"
+    # checkpoint_folder = "./model_outputs/bert_base_uncased/spurious_sst/cls-finetune/checkpoint-25260"
+    checkpoint_folder = "./model_outputs/dn_t5_tiny_enc/eraser_esnli/cls-finetune/checkpoint-343320"
     data_cache_dir = "./cached_datasets"
-    explanation_type = "gradients/gradients_x_input"
+    explanation_type = "gradients/integrated_gradients_x_input"
+    # explanation_type = "gradients/gradients_x_input"
     output_folder = "./explanation_outputs/test_adv_explanation_outputs"
     full_output_folder = f"{output_folder}/{run_name}/{explanation_type}"
     num_samples = 20
-    num_examples = 4
+    num_examples = 1
     optimize_pred = True
     batch_size=8
     example_split = "train"
