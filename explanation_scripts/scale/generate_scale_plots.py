@@ -21,7 +21,7 @@ ex = Experiment("explanation-metrics")
 @ex.config 
 def config():
     seed = 12345
-    dataset_name = 'spurious_sst'
+    dataset_name = 'eraser_esnli'
     run_names = [f"dn_t5_tiny_enc/{dataset_name}/avg-finetune", f"dn_t5_mini_enc/{dataset_name}/avg-finetune", 
                 f"dn_t5_small_enc/{dataset_name}/avg-finetune", f"dn_t5_base_enc/{dataset_name}/avg-finetune"]
     plot_ground_truth = False
@@ -37,12 +37,12 @@ def config():
     # metrics = ["Ground Truth Overlap", "Mean Rank", "Mean Rank Percentage", "Ground Truth Mass"]
     metrics = ["Sufficiency", "Comprehensiveness"]
     # metrics = ["Evidence Overlap", "Mean Rank", "Mean Rank Percentage", "Evidence Mass"]
-    # explanation_types = ['gradients/gradients_x_input', 'gradients/gradients', 
-    #                     'gradients/integrated_gradients_x_input', 'lime/lime', 'shap/shap',
-    #                     'attention/average_attention', 'attention/attention_rollout', 'random/random_baseline']
-    explanation_types = ["lime/lime", "gradients/integrated_gradients_x_input", "shap/shap", "ensembles/ensemble_full", "ensembles/ensemble_best"]
+    explanation_types = ['gradients/gradients_x_input', 'gradients/gradients', 
+                        'gradients/integrated_gradients_x_input', 'lime/lime', 'shap/shap',
+                        'attention/average_attention', 'attention/attention_rollout', 'random/random_baseline']
+    # explanation_types = ["lime/lime", "gradients/integrated_gradients_x_input", "shap/shap", "ensembles/ensemble_full", "ensembles/ensemble_best"]
     input_folder = "./explanation_outputs/scale_model_explanation_outputs_500_new"
-    output_folder = f"./explanation_graphs_scale_ensemble/{dataset_name}"
+    output_folder = f"./explanation_graphs_scale/{dataset_name}"
     
 @ex.automain 
 def get_explanations(_seed, _config):
@@ -71,13 +71,25 @@ def get_explanations(_seed, _config):
                             metrics_dict[metric_name][metric_name].append(val)
             for i,metric_name in enumerate(metrics_dict):
                 df = pd.DataFrame(metrics_dict[metric_name])
+                plt.figure(figsize=(8,8))
+                # plt.rc('axes', titlesize=14) #fontsize of the title
+                plt.rc('axes', labelsize=28) #fontsize of the x and y labels
+                plt.rc('xtick', labelsize=22) #fontsize of the x tick labels
+                plt.rc('ytick', labelsize=22) #fontsize of the y tick labels
                 # fig, ax = plt.subplots(1,1,figsize=(12,8))
-                # plt.tight_layout()
                 ax = plt.subplot(1,1,1)
                 ax.set_ylim(0.0,1.0)
                 sns.lineplot(x="Parameters (Millions)",y=metric_name,hue="Explanation Type", data=df, legend=False,ax=ax)
+                # handles, labels = ax.get_legend_handles_labels()
+                # plt.clf()
+                # fig = plt.figure(figsize=(3.1,4.5))
+                # fig.legend(handles, labels, labelspacing=0.9, prop={"size":15},)
+                # plt.tight_layout()
+                # plt.savefig(f"{_config['output_folder']}/legend.png")
+                # exit()
                 # ax.set_title(f"{metric_name} vs. Number of Parameters")
                 # plt.legend(loc="upper right", ncol=len(_config["explanation_types"])//4)
+                plt.tight_layout()
                 if not _config["plausibility"]:
                     plt.savefig(f"{_config['output_folder']}/{metric_name.replace(' ','_')}.png")
                 else:
@@ -97,11 +109,17 @@ def get_explanations(_seed, _config):
                             metrics_dict[metric][metric].append(val)
             for i, metric_name in enumerate(metrics_dict):
                 df = pd.DataFrame(metrics_dict[metric_name])
+                plt.figure(figsize=(8,8))
+                # plt.rc('axes', titlesize=14) #fontsize of the title
+                plt.rc('axes', labelsize=28) #fontsize of the x and y labels
+                plt.rc('xtick', labelsize=22) #fontsize of the x tick labels
+                plt.rc('ytick', labelsize=22) #fontsize of the y tick labels
                 ax = plt.subplot(1,1,1)
                 ax.set_ylim(0.0,1.0)
                 # ax.set_title(f"{metric_name} vs. Number of Parameters")
                 sns.lineplot(x="Parameters (Millions)",y=metric_name,hue="Explanation Type", data=df, legend=False,ax=ax)
                 # plt.legend(loc="upper right", ncol=len(_config["explanation_types"])//4)
+                plt.tight_layout()
                 plt.savefig(f"{_config['output_folder']}/{metric_name.replace(' ','_')}.png")  
                 plt.clf()  
     else:

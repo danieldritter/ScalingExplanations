@@ -21,7 +21,7 @@ ex = Experiment("explanation-metrics")
 @ex.config 
 def config():
     seed = 12345
-    dataset_name = 'spurious_sst'
+    dataset_name = 'eraser_esnli'
     # run_names = [f"dn_t5_tiny_enc/{dataset_name}/avg-finetune", f"dn_t5_mini_enc/{dataset_name}/avg-finetune", 
                 # f"dn_t5_small_enc/{dataset_name}/avg-finetune", f"dn_t5_base_enc/{dataset_name}/avg-finetune"]
     run_names = [f't5_base_enc/{dataset_name}/avg-finetune', f'gpt2_small/{dataset_name}/cls-finetune',

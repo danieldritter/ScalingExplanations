@@ -85,10 +85,14 @@ def get_adversarial_example(model, example, explainer, max_steps=500, alpha=1.0,
             else:
                 top_example_ind = sort_score_inds[i]
                 break
-        adv_pred = perturb_preds[top_example_ind]
-        adv_score = adversarial_scores[top_example_ind]
-        adv_logits = adversarial_logits[top_example_ind]
-        adv_attributions = adversarial_explanations[top_example_ind]
+        # If the optimization process fails to find any samples that match the prediction of the original
+        # then we take the values of the original as a (very bad) adversarial explanation. 
+        if top_example_ind == None:
+            adv_logits = model_out.logits
+            adv_attributions = attributions
+        else:
+            adv_logits = adversarial_logits[top_example_ind]
+            adv_attributions = adversarial_explanations[top_example_ind]
         result = {} 
         result["eps"] = eps.detach().cpu()
         result["adv_attributions"] = adv_attributions.detach().cpu() 
