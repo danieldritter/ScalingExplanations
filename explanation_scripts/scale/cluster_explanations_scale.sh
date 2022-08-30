@@ -10,7 +10,7 @@ export CONDA_ENVS_PATH=/scratch-ssd/$USER/conda_envs
 export CONDA_PKGS_DIRS=/scratch-ssd/$USER/conda_pkgs
 
 /scratch-ssd/oatml/run_locked.sh /scratch-ssd/oatml/miniconda3/bin/conda-env update -f environment.yml
-source /scratch-ssd/oatml/miniconda3/bin/activate ms21ddr_llms
+source /scratch-ssd/oatml/miniconda3/bin/activate anon_llms
 
 function run_explanation_set {
     local explanations=( $1 )
@@ -53,15 +53,15 @@ OUTPUT_FOLDER='./scale_model_explanation_outputs_500'
 
 LAYER='encoder.embed_tokens'
 NUM_EXAMPLES=500
-DATA_CACHE_DIR="/scratch-ssd/ms21ddr/data/hf_language_datasets"
+DATA_CACHE_DIR="/scratch-ssd/anon/data/hf_language_datasets"
 
 RUN_NAMES=( 'dn_t5_mini_enc/spurious_sst/avg-finetune' 'dn_t5_tiny_enc/spurious_sst/avg-finetune' \
 'dn_t5_small_enc/spurious_sst/avg-finetune' 'dn_t5_base_enc/spurious_sst/avg-finetune' ) 
 
-CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/dn_t5_mini_enc/spurious_sst/avg-finetune/checkpoint-25260' \
-'/scratch-ssd/ms21ddr/model_outputs/dn_t5_tiny_enc/spurious_sst/avg-finetune/checkpoint-25260' \
-'/scratch-ssd/ms21ddr/model_outputs/dn_t5_small_enc/spurious_sst/avg-finetune/checkpoint-25260' \
-'/scratch-ssd/ms21ddr/model_outputs/dn_t5_base_enc/spurious_sst/avg-finetune/checkpoint-25260' )
+CHECKPOINT_FOLDERS=( '/scratch-ssd/anon/model_outputs/dn_t5_mini_enc/spurious_sst/avg-finetune/checkpoint-25260' \
+'/scratch-ssd/anon/model_outputs/dn_t5_tiny_enc/spurious_sst/avg-finetune/checkpoint-25260' \
+'/scratch-ssd/anon/model_outputs/dn_t5_small_enc/spurious_sst/avg-finetune/checkpoint-25260' \
+'/scratch-ssd/anon/model_outputs/dn_t5_base_enc/spurious_sst/avg-finetune/checkpoint-25260' )
 
 run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $NUM_EXAMPLES $DATA_CACHE_DIR $LAYER $SEED
 echo "SPURIOUS_SST EXPLANATIONS COMPLETED"
@@ -69,10 +69,10 @@ echo "SPURIOUS_SST EXPLANATIONS COMPLETED"
 RUN_NAMES=( 'dn_t5_mini_enc/mnli/avg-finetune' 'dn_t5_tiny_enc/mnli/avg-finetune' \
 'dn_t5_small_enc/mnli/avg-finetune' 'dn_t5_base_enc/mnli/avg-finetune' )
 
-CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/dn_t5_mini_enc/mnli/avg-finetune/checkpoint-245440' \
-'/scratch-ssd/ms21ddr/model_outputs/dn_t5_tiny_enc/mnli/avg-finetune/checkpoint-220896' \
-'/scratch-ssd/ms21ddr/model_outputs/dn_t5_small_enc/mnli/avg-finetune/checkpoint-245440' \
-'/scratch-ssd/ms21ddr/model_outputs/dn_t5_base_enc/mnli/avg-finetune/checkpoint-147264' )
+CHECKPOINT_FOLDERS=( '/scratch-ssd/anon/model_outputs/dn_t5_mini_enc/mnli/avg-finetune/checkpoint-245440' \
+'/scratch-ssd/anon/model_outputs/dn_t5_tiny_enc/mnli/avg-finetune/checkpoint-220896' \
+'/scratch-ssd/anon/model_outputs/dn_t5_small_enc/mnli/avg-finetune/checkpoint-245440' \
+'/scratch-ssd/anon/model_outputs/dn_t5_base_enc/mnli/avg-finetune/checkpoint-147264' )
 
 
 run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $NUM_EXAMPLES $DATA_CACHE_DIR $LAYER $SEED
@@ -82,10 +82,10 @@ echo "MNLI EXPLANATIONS COMPLETED"
 RUN_NAMES=( 'dn_t5_mini_enc/eraser_esnli/avg-finetune' 'dn_t5_tiny_enc/eraser_esnli/avg-finetune' \
 'dn_t5_small_enc/eraser_esnli/avg-finetune' 'dn_t5_base_enc/eraser_esnli/avg-finetune' )
 
-CHECKPOINT_FOLDERS=( '/scratch-ssd/ms21ddr/model_outputs/dn_t5_mini_enc/eraser_esnli/avg-finetune/checkpoint-308988' \
-'/scratch-ssd/ms21ddr/model_outputs/dn_t5_tiny_enc/eraser_esnli/avg-finetune/checkpoint-343320' \
-'/scratch-ssd/ms21ddr/model_outputs/dn_t5_small_enc/eraser_esnli/avg-finetune/checkpoint-308988' \
-'/scratch-ssd/ms21ddr/model_outputs/dn_t5_base_enc/eraser_esnli/avg-finetune/checkpoint-205992' )
+CHECKPOINT_FOLDERS=( '/scratch-ssd/anon/model_outputs/dn_t5_mini_enc/eraser_esnli/avg-finetune/checkpoint-308988' \
+'/scratch-ssd/anon/model_outputs/dn_t5_tiny_enc/eraser_esnli/avg-finetune/checkpoint-343320' \
+'/scratch-ssd/anon/model_outputs/dn_t5_small_enc/eraser_esnli/avg-finetune/checkpoint-308988' \
+'/scratch-ssd/anon/model_outputs/dn_t5_base_enc/eraser_esnli/avg-finetune/checkpoint-205992' )
 
 run_explanation_set "${EXPLANATIONS[*]}" "${RUN_NAMES[*]}" "${CHECKPOINT_FOLDERS[*]}" $OUTPUT_FOLDER $NUM_EXAMPLES $DATA_CACHE_DIR $LAYER $SEED
 echo "ERASER ESNLI EXPLANATIONS COMPLETED"
