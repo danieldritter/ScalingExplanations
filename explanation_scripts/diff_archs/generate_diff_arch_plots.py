@@ -15,19 +15,18 @@ import pandas as pd
 from explanation_registry import EXPLANATIONS
 from explanations.metrics import ground_truth_overlap, mean_rank, ground_truth_mass 
 sns.set_theme()
-
 ex = Experiment("explanation-metrics")
 
 @ex.config 
 def config():
     seed = 12345
-    dataset_name = 'spurious_sst'
+    dataset_name = 'eraser_esnli'
     run_names = [f't5_base_enc/{dataset_name}/avg-finetune', f'gpt2_small/{dataset_name}/cls-finetune',
                 f'roberta_base/{dataset_name}/cls-finetune', f'bert_base_uncased/{dataset_name}/cls-finetune']
     # dataset_name = "hans_accuracy"
     plot_ground_truth = False
     plausibility = False
-    model_names = {run_names[0]:"T5 Base", run_names[1]: "GPT2 Small", run_names[2]:"Roberta Base", run_names[3]:"BERT Base"}
+    model_names = {run_names[0]:"T5", run_names[1]: "GPT2", run_names[2]:"RoBERTa", run_names[3]:"BERT"}
     explanation_name_map = {'gradients/gradients_x_input':"Grad*Input",'gradients/gradients':"Grad",
                             'gradients/integrated_gradients_x_input':"Integrated Gradients",
                             'gradients/integrated_gradients':"Integrated Gradients (No Multiplier)",'lime/lime':"Lime",
@@ -42,6 +41,9 @@ def config():
     # explanation_types = ['gradients/gradients_x_input', 'gradients/gradients', 
                         # 'gradients/integrated_gradients_x_input', 'lime/lime', 'shap/shap',
                         # 'attention/average_attention', 'attention/attention_rollout', 'random/random_baseline']
+    # Must match number of explanation methods 
+    # hatch_textures = ['/', '\\', '|', '-', '+', 'x', 'o', 'O']
+    hatch_textures = ["/","\\","|","-","+"]
     explanation_types = ["lime/lime", "gradients/integrated_gradients_x_input", "shap/shap", "ensembles/ensemble_full", "ensembles/ensemble_best"]
     input_folder = "./explanation_outputs/diff_arch_model_explanation_outputs_500_new"
     output_folder = f"./explanation_graphs_diff_archs_ensemble/{dataset_name}"
@@ -73,17 +75,28 @@ def get_explanations(_seed, _config):
                             metrics_dict[metric_name][metric_name].append(val)
             for i,metric_name in enumerate(metrics_dict):
                 df = pd.DataFrame(metrics_dict[metric_name])
-                plt.figure(figsize=(8,9))
+                plt.figure(figsize=(12,9))
                 # plt.rc('font', size=10) #controls default text size
-                plt.rc('axes', titlesize=14) #fontsize of the title
-                plt.rc('axes', labelsize=14) #fontsize of the x and y labels
-                plt.rc('xtick', labelsize=14) #fontsize of the x tick labels
-                plt.rc('ytick', labelsize=14) #fontsize of the y tick labels
+                # plt.rc('axes', titlesize=14) #fontsize of the title
+                plt.rc('axes', labelsize=40) #fontsize of the x and y labels
+                plt.rc('xtick', labelsize=26) #fontsize of the x tick labels
+                plt.rc('ytick', labelsize=26) #fontsize of the y tick labels
                 # plt.rc('legend', fontsize=10) #fontsize of the legend
                 ax = plt.subplot(1,1,1)
-                ax.set_ylim(0.0,1.0)                
+                ax.set_ylim(0.0,1.05)                
                 sns.barplot(x="Model Name",y=metric_name,hue="Explanation Type", data=df,ax=ax)
-                plt.legend("",frameon=False)
+                bars = sorted(ax.patches,key=lambda x: x.xy[0])
+                for i,bar in enumerate(bars):
+                    bar.set(hatch=_config["hatch_textures"][i % len(_config["hatch_textures"])])
+                # plt.legend(title="Explanation Type")
+                # plt.legend("",frameon=False)
+                # handles, labels = ax.get_legend_handles_labels()
+                # plt.clf()
+                # fig = plt.figure(figsize=(3.4,2.8))
+                # fig.legend(handles, labels, labelspacing=0.9, prop={"size":15}, title="Explanation Type")
+                # plt.tight_layout()
+                # plt.savefig(f"{_config['output_folder']}/legend.png")
+                # exit()
                 # plt.legend(loc=(0.0,0.74), ncol=2, title="Explanation Type")
                 # ax.set_title(f"{metric_name} for Four Different Pretrained Models")
                 if not _config["plausibility"]:
@@ -105,14 +118,18 @@ def get_explanations(_seed, _config):
                             metrics_dict[metric][metric].append(val)
             for i, metric_name in enumerate(metrics_dict):
                 df = pd.DataFrame(metrics_dict[metric_name])
-                plt.figure(figsize=(8,9))
-                plt.rc('axes', titlesize=14) #fontsize of the title
-                plt.rc('axes', labelsize=14) #fontsize of the x and y labels
-                plt.rc('xtick', labelsize=14) #fontsize of the x tick labels
-                plt.rc('ytick', labelsize=14) #fontsize of the y tick labels
+                plt.figure(figsize=(12,9))
+                # plt.rc('font', size=10) #controls default text size
+                # plt.rc('axes', titlesize=14) #fontsize of the title
+                plt.rc('axes', labelsize=40) #fontsize of the x and y labels
+                plt.rc('xtick', labelsize=26) #fontsize of the x tick labels
+                plt.rc('ytick', labelsize=26) #fontsize of the y tick labels
                 ax = plt.subplot(1,1,1)
-                ax.set_ylim(0.0,1.0)
+                ax.set_ylim(0.0,1.05)
                 sns.barplot(x="Model Name",y=metric_name,hue="Explanation Type", data=df, ax=ax)
+                bars = sorted(ax.patches,key=lambda x: x.xy[0])
+                for i,bar in enumerate(bars):
+                    bar.set(hatch=_config["hatch_textures"][i % len(_config["hatch_textures"])])
                 # plt.legend(loc=(0.55,0.67))
                 plt.legend("", frameon=False)
                 plt.savefig(f"{_config['output_folder']}/{metric_name.replace(' ','_')}.png")    

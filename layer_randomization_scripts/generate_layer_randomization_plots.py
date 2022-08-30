@@ -84,26 +84,28 @@ def get_explanations(_seed, _config):
                         metrics_dict[run_name]["Layer"].append("Full")
                     elif layer == "Classification Head":
                         metrics_dict[run_name]["Layer"].append("Head")
+                    elif layer == "Embeddings":
+                        metrics_dict[run_name]["Layer"].append("Embeds")
                     else:
-                        metrics_dict[run_name]["Layer"].append(layer)
+                        metrics_dict[run_name]["Layer"].append(layer.split()[1])
                     metrics_dict[run_name]["Explanation Type"].append(_config["explanation_name_map"][explanation_type])
                     metrics_dict[run_name][f"{_config['metric']}"].append(val)
-    # fig, axs = plt.subplots(len(metrics_dict) // 2, len(metrics_dict) - len(metrics_dict)//2, figsize=(32,18))
-    # flat_axs = [] 
-    # for axs_list in axs:
-    #     flat_axs.extend(axs_list)
-    # for i,run_name in enumerate(metrics_dict):
-    #     df = pd.DataFrame(metrics_dict[run_name])
-    #     # fig, ax = plt.subplots(1,1,figsize=(12,8))
-    #     sns.lineplot(x="Layer",y=f"{_config['metric']}",hue="Explanation Type", data=df, legend='auto',ax=flat_axs[i], sort=False)
-    #     flat_axs[i].set_title(f"{_config['model_names'][run_name]}")
-    #     fig.suptitle(f"{_config['metric']}")
-    #     fig.savefig(f"{_config['output_folder']}/{_config['metric'].replace(' ','_')}.png")
     for i,run_name in enumerate(metrics_dict):
         plt.figure(figsize=(15,8))
         df = pd.DataFrame(metrics_dict[run_name])
-        sns.lineplot(x="Layer",y=f"{_config['metric']}",hue="Explanation Type", data=df, legend=False)
+        plt.rc('axes', labelsize=34) #fontsize of the x and y labels
+        plt.rc('xtick', labelsize=20) #fontsize of the x tick labels
+        plt.rc('ytick', labelsize=20) #fontsize of the y tick labels
+        sns.lineplot(x="Layer",y=f"{_config['metric']}",hue="Explanation Type", markers=True, style="Explanation Type", markersize=14, data=df, legend=False)
+        # handles, labels = plt.gca().get_legend_handles_labels()
+        # plt.clf()
+        # fig = plt.figure(figsize=(14.3,0.7))
+        # fig.legend(handles, labels, ncol=6, labelspacing=0.9, prop={"size":15},)
+        # plt.tight_layout()
+        # plt.savefig(f"{_config['output_folder']}/legend.png")
+        # exit()
         # plt.legend(loc=(0.69,0.39),prop={"size":18})
         # plt.legend(prop={"size":18})
+        plt.tight_layout()
         plt.savefig(f"{_config['output_folder']}/{_config['metric'].replace(' ', '_')}_{run_name.split('/')[0]}.png")
         plt.clf()
